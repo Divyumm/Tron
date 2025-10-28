@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributed Ledger Technologies for Smart Cities and Social Compliance</title>
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --glass-blue: rgba(29, 90, 255, 0.6);
+            --glass-emerald: rgba(4, 160, 130, 0.6);
+            --glass-amber: rgba(255, 166, 0, 0.6);
+            --glass-crimson: rgba(220, 20, 60, 0.6);
+            --text-light: #f3f6ff;
+            --accent: #00f7ff;
+            --grid-size: 140px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Poppins", "Segoe UI", sans-serif;
+            color: var(--text-light);
+            background: var(--bg-dark);
+            min-height: 100vh;
+            line-height: 1.55;
+            overflow-x: hidden;
+        }
+
+        .presentation {
+            display: flex;
+            flex-direction: column;
+            gap: 6rem;
+            padding: 6rem 8vw;
+            position: relative;
+        }
+
+        .presentation::before,
+        .presentation::after {
+            content: "";
+            position: fixed;
+            inset: -40vh -40vw;
+            z-index: -3;
+            background-image:
+                linear-gradient(120deg, rgba(0, 255, 240, 0.05) 25%, transparent 25%),
+                linear-gradient(240deg, rgba(255, 47, 109, 0.07) 25%, transparent 25%),
+                linear-gradient(60deg, rgba(230, 190, 40, 0.04) 25%, transparent 25%),
+                radial-gradient(circle at 20% 20%, rgba(0, 120, 255, 0.2), transparent 60%),
+                radial-gradient(circle at 80% 80%, rgba(255, 0, 120, 0.25), transparent 60%),
+                radial-gradient(circle at 10% 80%, rgba(0, 255, 170, 0.2), transparent 60%);
+            background-size: var(--grid-size) var(--grid-size), var(--grid-size) var(--grid-size), var(--grid-size) var(--grid-size), 100% 100%, 100% 100%, 100% 100%;
+            mix-blend-mode: screen;
+            animation: rotateGrid 36s linear infinite;
+        }
+
+        .presentation::after {
+            inset: -30vh -30vw;
+            filter: blur(60px);
+            opacity: 0.8;
+            animation-direction: reverse;
+        }
+
+        @keyframes rotateGrid {
+            from {
+                transform: rotate(0deg) scale(1.05);
+            }
+            to {
+                transform: rotate(360deg) scale(1.05);
+            }
+        }
+
+        .slide {
+            background: linear-gradient(145deg, rgba(12, 18, 35, 0.95), rgba(4, 8, 18, 0.7));
+            border-radius: 28px;
+            padding: 3rem;
+            box-shadow:
+                0 30px 60px rgba(0, 0, 0, 0.65),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+                0 0 45px rgba(0, 255, 255, 0.08);
+            backdrop-filter: blur(18px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide::before {
+            content: "";
+            position: absolute;
+            inset: -120px;
+            background: repeating-linear-gradient(45deg,
+                    rgba(8, 174, 234, 0.12),
+                    rgba(8, 174, 234, 0.12) 28px,
+                    rgba(231, 99, 250, 0.08) 28px,
+                    rgba(231, 99, 250, 0.08) 56px);
+            mix-blend-mode: screen;
+            filter: blur(2px);
+            opacity: 0.35;
+            transform: rotate(1.5deg);
+        }
+
+        .slide::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 120% -20%, rgba(0, 255, 248, 0.3), transparent 50%),
+                radial-gradient(circle at -20% 110%, rgba(255, 67, 103, 0.28), transparent 60%);
+            opacity: 0.85;
+            mix-blend-mode: screen;
+        }
+
+        .slide > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .slide-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .slide-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--glass-blue), rgba(0, 0, 0, 0.4));
+            box-shadow: 0 0 24px rgba(0, 255, 255, 0.25);
+            display: grid;
+            place-items: center;
+            font-size: 1.4rem;
+        }
+
+        h1, h2, h3 {
+            font-weight: 700;
+            letter-spacing: 0.01em;
+        }
+
+        h1 {
+            font-size: clamp(2.6rem, 4vw, 3.6rem);
+            color: var(--text-light);
+        }
+
+        h2 {
+            font-size: clamp(2rem, 3vw, 2.8rem);
+            color: var(--accent);
+        }
+
+        h3 {
+            font-size: clamp(1.4rem, 2vw, 1.8rem);
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        p, li, blockquote {
+            color: rgba(230, 235, 255, 0.9);
+            font-size: 1.05rem;
+        }
+
+        ul {
+            list-style: none;
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        ul li::before {
+            content: "";
+            width: 12px;
+            height: 12px;
+            display: inline-block;
+            margin-right: 12px;
+            background: linear-gradient(135deg, var(--glass-emerald), var(--glass-amber));
+            border-radius: 4px;
+            box-shadow: 0 0 14px rgba(0, 255, 220, 0.65);
+        }
+
+        blockquote {
+            margin: 2rem 0;
+            padding: 1.5rem 2rem;
+            border-left: 4px solid var(--accent);
+            background: rgba(0, 49, 122, 0.22);
+            border-radius: 18px;
+            font-style: italic;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 1rem 1.3rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        th {
+            background: rgba(0, 120, 255, 0.18);
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.92);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .grid-layout {
+            display: grid;
+            gap: 1.2rem;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .chip {
+            padding: 0.75rem 1rem;
+            border-radius: 14px;
+            background: rgba(12, 33, 74, 0.6);
+            border: 1px solid rgba(0, 255, 255, 0.18);
+            box-shadow: inset 0 0 18px rgba(0, 255, 240, 0.18);
+        }
+
+        .visual-hint {
+            margin-top: 1.5rem;
+            padding: 1rem 1.2rem;
+            border-radius: 16px;
+            background: rgba(50, 150, 255, 0.15);
+            border: 1px solid rgba(0, 255, 255, 0.25);
+            display: inline-flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .visual-hint span {
+            font-size: 2rem;
+        }
+
+        .title-card {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .title-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            opacity: 0.85;
+            font-size: 1rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .title-meta span {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 0.6rem 0.9rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 255, 0.18);
+        }
+
+        .floating-orbit {
+            position: absolute;
+            inset: -6% -6% auto auto;
+            width: min(36vw, 400px);
+            aspect-ratio: 1;
+            background: conic-gradient(from 120deg,
+                    rgba(0, 220, 255, 0.15),
+                    rgba(255, 80, 120, 0.25),
+                    rgba(0, 220, 255, 0.15));
+            border-radius: 50%;
+            filter: blur(30px);
+            opacity: 0.55;
+            animation: orbit 28s ease-in-out infinite;
+        }
+
+        @keyframes orbit {
+            0%, 100% {
+                transform: rotate(0deg) scale(1);
+            }
+            50% {
+                transform: rotate(180deg) scale(1.1);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .presentation {
+                padding: 4rem 1.5rem;
+                gap: 4rem;
+            }
+
+            .slide {
+                padding: 2.5rem;
+            }
+
+            .slide-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="presentation">
+        <span class="floating-orbit" aria-hidden="true"></span>
+
+        <section class="slide" id="slide-1">
+            <header class="slide-header">
+                <span class="slide-icon">🎞️</span>
+                <h2>Slide 1 · Title + Context</h2>
+            </header>
+            <div class="title-card">
+                <h1>Distributed Ledger Technologies for Smart Cities and Social Compliance</h1>
+                <h3>(Based on Ferraro, King &amp; Shorten — IEEE, 2018)</h3>
+                <p>Presented by <strong>Divyum Maheshwari</strong></p>
+                <div class="title-meta">
+                    <span>Assignment 1</span>
+                    <span>15% Coursework Presentation</span>
+                    <span>Smart Cities Module</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="slide" id="slide-2">
+            <header class="slide-header">
+                <span class="slide-icon">🪙</span>
+                <h2>Slide 2 · The Rise of Distributed Ledgers</h2>
+            </header>
+            <h3>From Bitcoin to Distributed Ledgers: A New Era of Shared Trust</h3>
+            <ul>
+                <li><strong>Bitcoin (2008)</strong> introduced peer-verified, decentralised transactions.</li>
+                <li>Debate emerged between champions of democratised value systems and critics warning of bubbles and illegality.</li>
+                <li>Broader <strong>Distributed Ledger Technologies (DLTs)</strong> evolved to include blockchains, DAGs, and other trustless systems.</li>
+            </ul>
+            <blockquote>“DLT removes the greedy middle that manages and exploits our assets and identities for financial reward.” — Ferraro et al.</blockquote>
+            <div class="visual-hint"><span>🜂</span>Suggested visual: Timeline from Bitcoin → Blockchain Era → DLT Expansion</div>
+        </section>
+
+        <section class="slide" id="slide-3">
+            <header class="slide-header">
+                <span class="slide-icon">🌐</span>
+                <h2>Slide 3 · Motivation — Shared Resource Economy</h2>
+            </header>
+            <h3>Why Shared Resources Need Smarter Compliance</h3>
+            <ul>
+                <li>The economy is evolving toward <strong>prosumers</strong> who both consume and contribute resources.</li>
+                <li>Smart systems require mutual trust among humans, autonomous agents, and infrastructure.</li>
+                <li>Central enforcement is inefficient for the scale of IoT-driven environments.</li>
+                <li>DLT-backed incentives make compliance quantifiable, programmable, and fair.</li>
+            </ul>
+            <div class="visual-hint"><span>🜂</span>Visual flow: Shared Resource → User Interaction → Compliance Mechanism → DLT Solution</div>
+        </section>
+
+        <section class="slide" id="slide-4">
+            <header class="slide-header">
+                <span class="slide-icon">🚗</span>
+                <h2>Slide 4 · Real-World Compliance Challenges</h2>
+            </header>
+            <h3>Smart City Problems of Shared Behaviour</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Example</th>
+                        <th>Problem</th>
+                        <th>DLT-Based Incentive Idea</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Electric Vehicle Charging</td>
+                        <td>Chargers blocked by fully charged cars</td>
+                        <td>Refund deposits when dockChain reconnects correctly</td>
+                    </tr>
+                    <tr>
+                        <td>E-bike Batteries / Home Energy</td>
+                        <td>Shared batteries not returned</td>
+                        <td>Return deposit upon responsible battery drop-off</td>
+                    </tr>
+                    <tr>
+                        <td>Disposable Cups</td>
+                        <td>Recyclable cups discarded improperly</td>
+                        <td>Token tied to cup ID refunded upon proper disposal</td>
+                    </tr>
+                    <tr>
+                        <td>Traffic &amp; Shared Parking</td>
+                        <td>Non-compliance blocks efficiency</td>
+                        <td>Dynamic deposits anchored to licence tokens</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="slide" id="slide-5">
+            <header class="slide-header">
+                <span class="slide-icon">⚖️</span>
+                <h2>Slide 5 · The Core Problem</h2>
+            </header>
+            <h3>How to Incentivise Social Compliance in Smart Cities?</h3>
+            <ul>
+                <li>Technological infrastructure exists, yet behaviour misalignment causes system failure.</li>
+                <li>Social contracts demand solutions that are transparent, decentralised, scalable, and fair.</li>
+                <li>Dynamic deposits transform responsible behaviour into an economically rational choice.</li>
+            </ul>
+            <div class="visual-hint"><span>🜂</span>Diagram: Citizen ↔ DLT ↔ Shared Resource with return / forfeit feedback</div>
+        </section>
+
+        <section class="slide" id="slide-6">
+            <header class="slide-header">
+                <span class="slide-icon">🔗</span>
+                <h2>Slide 6 · From Blockchain to DAG</h2>
+            </header>
+            <h3>Limitations of Blockchain and the Move to DAGs</h3>
+            <div class="grid-layout">
+                <div class="chip">
+                    ⛏️ Proof-of-Work consumes vast energy and slows validation cycles.
+                </div>
+                <div class="chip">
+                    ⏳ Low throughput (7–20 TPS) undermines micro-transaction needs.
+                </div>
+                <div class="chip">
+                    💰 Transaction fees inhibit machine-to-machine economies.
+                </div>
+                <div class="chip">
+                    ⚖️ Competitive mining introduces centralisation risks.
+                </div>
+            </div>
+            <p style="margin-top: 1.5rem;">Directed Acyclic Graph (DAG) architectures — exemplified by the <strong>IOTA Tangle</strong> — enable fee-less, low-latency, and collaborative consensus suitable for smart cities.</p>
+            <div class="visual-hint"><span>🜂</span>Reserve space for comparative schematics: Blockchain chain vs. DAG mesh</div>
+        </section>
+
+        <section class="slide" id="slide-7">
+            <header class="slide-header">
+                <span class="slide-icon">🕸️</span>
+                <h2>Slide 7 · Inside the Tangle</h2>
+            </header>
+            <h3>The Logic of the Tangle — Cooperative Consensus</h3>
+            <ul>
+                <li>Each new transaction approves two previous transactions, weaving a directed graph.</li>
+                <li>Approved transactions gain cumulative weight and security.</li>
+                <li>Unapproved transactions remain as tips until selected by new arrivals.</li>
+                <li>Lightweight Proof-of-Work minimises spam while preserving decentralisation.</li>
+                <li>Swarm consensus emerges as the network continuously validates itself.</li>
+            </ul>
+            <div class="visual-hint"><span>🜂</span>Diagram: Genesis node → validated nodes → floating tips awaiting approval</div>
+        </section>
+
+        <section class="slide" id="slide-8">
+            <header class="slide-header">
+                <span class="slide-icon">💡</span>
+                <h2>Slide 8 · Dynamic Deposit Pricing</h2>
+            </header>
+            <h3>DLT as a Mechanism for Social Compliance</h3>
+            <ul>
+                <li>Users stake tokens to access resources and regain them after compliant behaviour.</li>
+                <li>Loss of tokens for non-compliance generates immediate accountability.</li>
+                <li>Micro-incentives allow IoT systems to run autonomously with economic guardrails.</li>
+                <li>DAGs enable high-frequency, fee-less settlement between citizens and infrastructure.</li>
+            </ul>
+            <div class="visual-hint"><span>🜂</span>Flow: User → Deposit → Ledger → Compliance Check → Return / Forfeit</div>
+        </section>
+
+        <section class="slide" id="slide-9">
+            <header class="slide-header">
+                <span class="slide-icon">⚖️</span>
+                <h2>Slide 9 · Critical Analysis</h2>
+            </header>
+            <h3>Evaluating the DLT-Based Compliance Model</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Strengths</th>
+                        <th>Limitations / Risks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Transparent, decentralised enforcement for social contracts.</td>
+                        <td>Pseudo-anonymity can be revoked, raising ethical concerns.</td>
+                    </tr>
+                    <tr>
+                        <td>Fee-less DAG transactions suit micro interactions.</td>
+                        <td>Requires sustained activity to remain stable.</td>
+                    </tr>
+                    <tr>
+                        <td>Aligns incentives for responsible citizenship.</td>
+                        <td>May drift toward social credit dynamics.</td>
+                    </tr>
+                    <tr>
+                        <td>Mathematically modelled for equilibrium.</td>
+                        <td>Assumes perfect data collection and cross-jurisdiction regulation.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="slide" id="slide-10">
+            <header class="slide-header">
+                <span class="slide-icon">🚀</span>
+                <h2>Slide 10 · Beyond the Paper</h2>
+            </header>
+            <h3>Expanding Dynamic Deposits Beyond Smart Cities</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Domain</th>
+                        <th>How It Works</th>
+                        <th>Intended Outcome</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Intellectual Property Creation</td>
+                        <td>Tokens awarded for novel contributions, refunded as value appreciates.</td>
+                        <td>Rewards originality and discourages volume-based gaming.</td>
+                    </tr>
+                    <tr>
+                        <td>Educational / Research Networks</td>
+                        <td>Stake tokens for verified academic input; regain value after peer validation.</td>
+                        <td>Elevates genuine participation and knowledge integrity.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="margin-top: 1.75rem;">“By embedding economics into behaviour, DAG-based DLTs could transform social contracts into programmable incentives.”</p>
+        </section>
+    </main>
+</body>
+</html>
