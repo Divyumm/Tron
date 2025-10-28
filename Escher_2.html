@@ -3,711 +3,587 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DLT for Smart Cities Presentation</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        serif: ['Crimson Text', 'serif'],
-                    }
-                }
-            }
-        }
-    </script>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    
+    <title>DLT for Smart Cities &amp; Social Compliance</title>
     <style>
+        :root {
+            color-scheme: dark light;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            /* bg-black is set on the body tag class, but this is a good fallback */
-            background-color: #000;
+            margin: 0;
+            font-family: 'Cambria', 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(180deg, #0f172a 0%, #111827 45%, #0b1120 100%);
+            color: #111827;
+            line-height: 1.65;
         }
 
-        /* Slide container styles */
-        .slide {
+        header {
+            background: rgba(248, 250, 252, 0.9);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+            box-shadow: 0 15px 35px rgba(15, 23, 42, 0.25);
+        }
+
+        .hero-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 4rem 1.5rem 3rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            margin: 0;
+            font-size: clamp(2.5rem, 4vw, 3.4rem);
+            letter-spacing: 0.04em;
+            color: #0b1b38;
+        }
+
+        .hero-text p {
+            margin: 0.35rem 0;
+            font-size: 1.05rem;
+            color: #1e293b;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 5rem;
+        }
+
+        section {
+            background: rgba(248, 250, 252, 0.92);
+            border-radius: 18px;
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            padding: 2.75rem;
+            margin-bottom: 2.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        section::after {
+            content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            padding: 2.5rem 3rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.6s ease-in-out;
+            inset: 0;
+            background-image:
+                linear-gradient(135deg, rgba(56, 189, 248, 0.12), transparent 55%),
+                linear-gradient(215deg, rgba(236, 72, 153, 0.08), transparent 50%);
+            pointer-events: none;
+            mix-blend-mode: multiply;
+        }
+
+        section > * {
+            position: relative;
             z-index: 1;
-            background-color: #11182b; /* gray-900 - The new dark slide background */
-            overflow-y: auto;
         }
 
-        /* Active slide styles */
-        .slide.active {
-            opacity: 1;
-            z-index: 10;
+        h2 {
+            font-size: clamp(1.9rem, 3vw, 2.4rem);
+            margin-top: 0;
+            color: #0f172a;
+            letter-spacing: 0.03em;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.2);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.75rem;
         }
 
-        /* Headings - Re-themed */
-        .slide h1 {
-            font-family: 'Inter', sans-serif; /* Changed from Crimson Text */
-            font-weight: 800; /* Extra bold */
-            color: #ffffff; /* white */
-            text-shadow: 0 0 8px rgba(59, 130, 246, 0.3); /* Subtle blue glow */
-        }
-        
-        .slide h2 {
-            font-family: 'Inter', sans-serif; /* Changed from Crimson Text */
-            font-weight: 700; /* Bold */
-            color: #38bdf8; /* sky-400 - Accent color */
-            font-size: 2rem; /* 3xl */
-            line-height: 1.2;
-            margin-bottom: 1.5rem; /* mb-6 */
-            text-align: center;
-            width: 100%;
-            border-bottom: 1px solid #374151; /* gray-700 */
-            padding-bottom: 0.5rem;
-        }
-        
-        .slide h3 {
-            font-family: 'Inter', sans-serif; /* Changed from Crimson Text */
-            font-weight: 700;
-            font-size: 1.25rem; /* xl */
-            color: #fb923c; /* orange-400 - Accent color 2 */
-            margin-top: 1rem;
-            margin-bottom: 0.5rem;
+        h3 {
+            font-size: 1.25rem;
+            margin-top: 0;
+            color: #1f2937;
         }
 
-        /* List styles - Re-themed */
-        .slide ul {
-            list-style-position: outside;
-            margin-left: 1.5rem;
-            max-width: 80ch;
-        }
-        
-        .slide li {
-            margin-bottom: 0.75rem; /* mb-3 */
-            padding-left: 0.5rem;
-            color: #d1d5db; /* gray-300 - Light text */
-        }
-        
-        .slide li::marker {
-            color: #fb923c; /* orange-400 - Accent marker */
-            content: '—  ';
+        p {
+            font-size: 1.05rem;
+            margin-bottom: 1rem;
         }
 
-        /* Added rule for bold text in lists */
-        .slide li b {
-            color: #f9fafb; /* gray-50 - Make bold text brighter */
+        ul {
+            padding-left: 1.25rem;
+            margin: 0 0 1rem;
         }
 
-        /* Blockquote for quotes - Re-themed */
-        .slide blockquote {
-            border-left: 4px solid #fb923c; /* orange-400 */
-            padding-left: 1.5rem; /* pl-6 */
-            margin: 1.5rem 0;
+        li {
+            margin-bottom: 0.55rem;
+        }
+
+        blockquote {
+            margin: 1.75rem 0;
+            padding: 1.25rem 1.5rem;
+            background: rgba(226, 232, 240, 0.55);
+            border-left: 5px solid rgba(56, 189, 248, 0.55);
             font-style: italic;
-            color: #9ca3af; /* gray-400 */
-            font-family: 'Inter', sans-serif; /* Changed from Crimson Text */
-            font-size: 1.125rem; /* text-lg */
-        }
-        
-        /* Updated citation color */
-        .slide blockquote cite {
-             color: #6b7280; /* gray-500 */
+            color: #1e293b;
         }
 
-        /* Visual placeholder - Re-themed for dark JPEGs */
-        .sketch-visual {
-            width: 100%;
-            height: 100%;
-            min-height: 200px;
-            background-color: #000000; /* black - to blend with image backgrounds */
-            border: 1px solid #374151; /* gray-700 */
-            border-radius: 0.5rem; /* rounded-lg */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            color: #6b7280; /* text-gray-500 */
-            font-style: italic;
-            font-family: 'Inter', sans-serif; /* Changed from Crimson Text */
-            overflow: hidden; /* Added */
-        }
-        
-        /* SVG Diagram styles - Re-themed as "light panels" */
-        .svg-diagram {
-             width: 100%;
-            height: 100%;
-            min-height: 200px;
-            background-color: #f9fafb; /* bg-gray-50 - Kept light to show SVG */
-            border: 2px solid #38bdf8; /* sky-400 - Accent border */
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); /* Glow effect */
-            border-radius: 0.5rem; /* rounded-lg */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            color: #6b7280; /* text-gray-500 */
-            font-family: 'Inter', sans-serif; /* Changed from Crimson Text */
-            overflow: hidden; /* Added */
-        }
-        
-        /* New rule for images inside the visual containers */
-        .sketch-visual img, .svg-diagram img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        /* Keep this consistent */
-        .svg-diagram text {
-            font-family: 'Inter', sans-serif;
+        cite {
+            display: block;
+            margin-top: 0.75rem;
+            font-style: normal;
+            color: #0f172a;
+            text-align: right;
+            font-weight: 600;
         }
 
-        /* Table styles - Re-themed */
-        .slide table {
+        table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9rem;
+            margin: 1.5rem 0;
+            background: rgba(255, 255, 255, 0.85);
         }
-        
-        .slide th, .slide td {
-            border: 1px solid #374151; /* gray-700 */
-            padding: 0.75rem 1rem;
+
+        th, td {
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            padding: 0.85rem 1rem;
             text-align: left;
             vertical-align: top;
+            font-size: 0.98rem;
         }
-        
-        .slide th {
-            background-color: #1f2937; /* gray-800 */
-            font-family: 'Inter', sans-serif; /* Changed from Crimson Text */
+
+        th {
+            background: rgba(15, 23, 42, 0.08);
             font-weight: 700;
-            color: #e5e7eb; /* gray-200 */
+            color: #0f172a;
         }
-        
-        .slide td {
-            color: #d1d5db; /* gray-300 */
-        }
-        
-        .slide table code {
-            font-size: 0.85rem;
-            background-color: #374151; /* gray-700 */
-            padding: 2px 5px;
+
+        code {
+            font-family: "Consolas", "Courier New", monospace;
+            background: rgba(15, 23, 42, 0.08);
+            padding: 0.1rem 0.35rem;
             border-radius: 4px;
-            color: #86efac; /* green-300 - "terminal" green */
+            font-size: 0.95rem;
+        }
+
+        figure {
+            margin: 1.75rem 0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);
+        }
+
+        figure img {
+            width: 100%;
+            display: block;
+            height: auto;
+        }
+
+        figcaption {
+            padding: 0.85rem 1.2rem;
+            font-size: 0.95rem;
+            background: rgba(15, 23, 42, 0.75);
+            color: #f8fafc;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .diagram-panel {
+            background: rgba(15, 23, 42, 0.03);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 14px;
+            padding: 1.5rem;
+        }
+
+        .diagram-panel svg {
+            width: 100%;
+            height: auto;
+        }
+
+        .caption-muted {
+            text-align: center;
+            color: #475569;
+            font-style: italic;
+            margin-top: 1.5rem;
+        }
+
+        footer {
+            text-align: center;
+            color: #cbd5f5;
+            font-size: 0.95rem;
+            padding: 2.5rem 1rem 3rem;
+        }
+
+        @media (max-width: 720px) {
+            section {
+                padding: 2.1rem;
+            }
+
+            figure {
+                margin: 1.25rem 0;
+            }
         }
     </style>
-    </head>
-
-<body class="bg-black flex flex-col items-center justify-center min-h-screen font-sans">
-
-    <div id="slide-deck" class="w-full max-w-6xl aspect-[16/9] bg-white shadow-2xl rounded-lg relative overflow-hidden m-4">
-
-        <section class="slide active items-center text-center">
-            <div class="sketch-visual w-full max-w-md h-auto aspect-square mb-8">
-                <img src="a-detailed-digital-illustration-of-an-im_F4gecyg4SJmMinO5uuKyIg_bmXY9CIDQMKE64Jza2zhQQ.jpeg" alt="Escher-style cityscape">
-            </div>
-            
-            <h1 class="text-4xl md:text-5xl">Distributed Ledger Technologies for Smart Cities and Social Compliance</h1>
-            <p class="font-serif text-2xl text-gray-400 mt-4">(Ferraro, King & Shorten — IEEE, 2018)</p>
-            <p class="text-xl text-gray-300 mt-12">Presented by: Divyum Maheshwari</p>
-            <p class="absolute bottom-10 text-sm text-gray-500">Assignment 1 — 15% Coursework Presentation</p>
-        </section>
-
-        <section class="slide">
-            <h2>From Bitcoin to Distributed Ledgers: A New Era of Shared Trust</h2>
-            <div class="flex-grow w-full flex flex-col md:flex-row items-center gap-8 md:gap-12">
-                <div class="w-full md:w-1/2">
-                    <h3>Key Points:</h3>
-                    <ul>
-                        <li><b>Bitcoin (2008)</b> introduced the first <b>decentralized ledger</b> — transactions verified by peers, not central authorities.</li>
-                        <li>Sparked a <b>global debate</b>:
-                            <ul class="mt-3">
-                                <li><b>Supporters:</b> democratization, peer-to-peer ownership.</li>
-                                <li><b>Critics:</b> speculation, illegality.</li>
-                            </ul>
-                        </li>
-                        <li>Gave rise to <b>Distributed Ledger Technologies (DLTs)</b> — Blockchain, DAGs, and others.</li>
-                    </ul>
-                    <blockquote class="mt-6">
-                        “DLT removes the greedy middle that manages and exploits our assets and identities for financial reward.”
-                        <cite class="block text-right mt-2 not-italic text-gray-500">— Ferraro et al.</cite>
-                    </blockquote>
-                </div>
-                <div class="w-full md:w-1/2 h-full">
-                    <div class="svg-diagram h-full">
-                        <span class="text-lg self-start ml-4">Visual: Pencil timeline</span>
-                        <svg class="w-full h-full" viewBox="0 0 350 100" preserveAspectRatio="xMidYMid meet">
-                          <defs>
-                            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                              <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af" />
-                            </marker>
-                          </defs>
-                          <line x1="20" y1="50" x2="330" y2="50" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arrow)" stroke-dasharray="4 2"/>
-                          
-                          <circle cx="50" cy="50" r="4" fill="#6b7280" />
-                          <text x="50" y="35" text-anchor="middle" font-size="10" fill="#374151">Bitcoin (2008)</text>
-                          
-                          <circle cx="175" cy="50" r="4" fill="#6b7280" />
-                          <text x="175" y="35" text-anchor="middle" font-size="10" fill="#374151">Blockchain (2010s)</text>
-                          
-                          <circle cx="300" cy="50" r="4" fill="#6b7280" />
-                          <text x="300" y="35" text-anchor="middle" font-size="10" fill="#374151">DLT Expansion</text>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <section class="slide">
-            <h2>Why Shared Resources Need Smarter Compliance</h2>
-            <div class="flex-grow w-full flex flex-col md:flex-row items-center gap-8 md:gap-12">
-                <div class="w-full md:w-1/2">
-                    <h3>Narrative:</h3>
-                    <ul>
-                        <li>The economy is shifting from <b>consumers</b> to <b>prosumers</b> — users who both consume and contribute.</li>
-                        <li>Shared systems depend on <b>trust and cooperation</b> between humans and machines.</li>
-                        <li><b>The challenge:</b> How can responsible behavior emerge without central authority?</li>
-                        <li>Traditional enforcement (laws, ratings) is inefficient in IoT ecosystems.</li>
-                    </ul>
-                </div>
-                <div class="w-full md:w-1/2 h-full">
-                    <div class="svg-diagram h-full">
-                        <span class="text-lg self-start ml-4">Visual: Flow sketch</span>
-                        <svg class="w-full h-full" viewBox="0 0 150 220" preserveAspectRatio="xMidYMid meet">
-                          <defs>
-                            <marker id="arrow-gray" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                              <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af" />
-                            </marker>
-                          </defs>
-                          <rect x="10" y="10" width="130" height="30" fill="#f9fafb" stroke="#9ca3af" rx="5" />
-                          <text x="75" y="30" text-anchor="middle" font-size="10" fill="#374151">Shared Resource</text>
-                          
-                          <line x1="75" y1="40" x2="75" y2="60" stroke="#9ca3af" stroke-width="1" marker-end="url(#arrow-gray)" stroke-dasharray="3 1"/>
-                          
-                          <rect x="10" y="65" width="130" height="30" fill="#f9fafb" stroke="#9ca3af" rx="5" />
-                          <text x="75" y="85" text-anchor="middle" font-size="10" fill="#374151">User Interaction</text>
-                          
-                          <line x1="75" y1="95" x2="75" y2="115" stroke="#9ca3af" stroke-width="1" marker-end="url(#arrow-gray)" stroke-dasharray="3 1"/>
-                          
-                          <rect x="10" y="120" width="130" height="30" fill="#f9fafb" stroke="#9ca3af" rx="5" />
-                          <text x="75" y="140" text-anchor="middle" font-size="10" fill="#374151">Need for Compliance</text>
-                          
-                          <line x1="75" y1="150" x2="75" y2="170" stroke="#9ca3af" stroke-width="1" marker-end="url(#arrow-gray)" stroke-dasharray="3 1"/>
-                          
-                          <rect x="10" y="175" width="130" height="30" fill="#e5e7eb" stroke="#6b7280" rx="5" />
-                          <text x="75" y="195" text-anchor="middle" font-size="10" fill="#1f2937" font-weight="bold">DLT as Solution</text>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <section class="slide">
-            <h2>Smart City Problems of Shared Behaviour</h2>
-            <div class="flex-grow w-full flex flex-col items-center gap-6">
-                <div class="w-full overflow-x-auto">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Example</th>
-                                <th>Problem</th>
-                                <th>DLT-Based Incentive</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><b>Electric Vehicle Charging</b></td>
-                                <td>Cars block chargers after charging</td>
-                                <td>Deposit refunded upon reconnection (<code>dockChain</code>)</td>
-                            </tr>
-                            <tr>
-                                <td><b>E-bike Batteries / Home Energy</b></td>
-                                <td>Shared batteries not returned</td>
-                                <td>Deposit returned upon responsible return (<code>ChargeWall</code>)</td>
-                            </tr>
-                            <tr>
-                                <td><b>Disposable Cups</b></td>
-                                <td>Improper disposal</td>
-                                <td>Token refunded upon correct segregation</td>
-                            </tr>
-                            <tr>
-                                <td><b>Traffic Signals / Shared Parking</b></td>
-                                <td>Non-compliance disrupts efficiency</td>
-                                <td>Dynamic deposits linked to driving license tokens</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="w-full h-1/3">
-                    <div class="sketch-visual h-full">
-                        <img src="a-breathtaking-digital-illustration-depi_rvGBJfasTKOw-2nbTJFYWw_2gyzrflSSCmqD3rh8Y-40A.jpeg" alt="Escher-esque street">
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="slide">
-            <h2>How to Incentivise Social Compliance in Smart Cities?</h2>
-            <div class="flex-grow w-full flex flex-col md:flex-row items-center gap-8 md:gap-12">
-                <div class="w-full md:w-1/2">
-                    <h3>Key Points:</h3>
-                    <ul>
-                        <li>Systems fail not from lack of tech, but <b>lack of behavioral alignment</b>.</li>
-                        <li>DLT enables <b>transparent</b>, <b>scalable</b>, <b>fair</b> enforcement of social contracts.</li>
-                        <li>Digital deposits make compliance <b>economically rational</b>.</li>
-                    </ul>
-                </div>
-                <div class="w-full md:w-1/2 h-full">
-                    <div class="svg-diagram h-full text-base md:text-lg">
-                        <span class="text-lg mb-4 self-start ml-4">Visual: Core Loop</span>
-                        <svg class="w-full h-full" viewBox="0 0 300 150" preserveAspectRatio="xMidYMid meet" style="font-family: 'Inter', sans-serif;">
-                          <rect x="10" y="20" width="80" height="40" fill="#f9fafb" stroke="#9ca3af" rx="5" />
-                          <text x="50" y="45" text-anchor="middle" font-size="12" fill="#374151" class="font-sans">Citizen</text>
-                          
-                          <rect x="110" y="20" width="80" height="40" fill="#e5e7eb" stroke="#6b7280" rx="5" />
-                          <text x="150" y="45" text-anchor="middle" font-size="12" fill="#1f2937" class="font-sans">DLT</text>
-                          
-                          <rect x="210" y="20" width="80" height="40" fill="#f9fafb" stroke="#9ca3af" rx="5" />
-                          <text x="250" y="45" text-anchor="middle" font-size="12" fill="#374151" class="font-sans">Resource</text>
-                          
-                          <line x1="90" y1="40" x2="110" y2="40" stroke="#6b7280" stroke-width="1.5" />
-                          <path d="M 105 37 L 110 40 L 105 43" fill="none" stroke="#6b7280" stroke-width="1.5" />
-                          
-                          <line x1="190" y1="40" x2="210" y2="40" stroke="#6b7280" stroke-width="1.5" />
-                          <path d="M 205 37 L 210 40 L 205 43" fill="none" stroke="#6b7280" stroke-width="1.5" />
-
-                          <text x="30" y="90" text-anchor="start" font-size="12" fill="#16a34a" font-weight="bold" class="font-sans">Compliant → ✅ Token Returned</text>
-                          <text x="30" y="115" text-anchor="start" font-size="12" fill="#dc2626" font-weight="bold" class="font-sans">Non-compliant → ⚠️ Deposit Lost</text>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="slide">
-            <h2>Limitations of Blockchain and the Move to DAGs</h2>
-            <div class="flex-grow w-full flex flex-col md:flex-row items-stretch gap-8">
-                <div class="w-full md:w-1/2 flex flex-col">
-                    <h3>Blockchain Limitations:</h3>
-                    <ul>
-                        <li>⛏️ <b>Proof-of-Work</b> → high energy cost</li>
-                        <li>⏳ <b>7–20 transactions/sec</b> → slow</li>
-                        <li>💰 <b>Transaction fees</b> hinder micro-trades</li>
-                        <li>⚖️ <b>Competitive consensus</b> favors centralization</li>
-                    </ul>
-                    <div class="svg-diagram flex-grow mt-6">
-                        <svg class="w-full h-full" viewBox="0 0 200 50">
-                          <text x="100" y="15" text-anchor="middle" font-size="10" fill="#374151">Blockchain (Linear)</text>
-                          <rect x="10" y="25" width="30" height="20" fill="#f9fafb" stroke="#9ca3af" rx="2" stroke-dasharray="2 1"/>
-                          <line x1="40" y1="35" x2="50" y2="35" stroke="#9ca3af" stroke-width="1.5" />
-                          <rect x="50" y="25" width="30" height="20" fill="#f9fafb" stroke="#9ca3af" rx="2" stroke-dasharray="2 1"/>
-                          <line x1="80" y1="35" x2="90" y2="35" stroke="#9ca3af" stroke-width="1.5" />
-                          <rect x="90" y="25" width="30" height="20" fill="#f9fafb" stroke="#9ca3af" rx="2" stroke-dasharray="2 1"/>
-                          <line x1="120" y1="35" x2="130" y2="35" stroke="#9ca3af" stroke-width="1.5" />
-                          <text x="140" y="40" font-size="10" fill="#9ca3af">...</text>
-                        </svg>
-                    </div>
-                </div>
-                <div class="w-full md:w-1/2 flex flex-col">
-                    <h3>DAG Advantages:</h3>
-                    <ul>
-                        <li>Cooperative, fee-less, low-latency</li>
-                        <li>Supports IoT-scale microtransactions</li>
-                    </ul>
-                    <div class="svg-diagram flex-grow mt-6">
-                        <svg class="w-full h-full" viewBox="0 0 200 80">
-                          <text x="100" y="15" text-anchor="middle" font-size="10" fill="#374151">DAG (Web-like)</text>
-                          <circle cx="30" cy="45" r="5" fill="#e5e7eb" stroke="#9ca3af" />
-                          <circle cx="70" cy="30" r="5" fill="#e5e7eb" stroke="#9ca3af" />
-                          <circle cx="70" cy="60" r="5" fill="#e5e7eb" stroke="#9ca3af" />
-                          <circle cx="120" cy="45" r="5" fill="#e5e7eb" stroke="#9ca3af" />
-                          <circle cx="160" cy="30" r="5" fill="#e5e7eb" stroke="#9ca3af" />
-                          <circle cx="160" cy="60" r="5" fill="#e5e7eb" stroke="#9ca3af" />
-                          <line x1="70" y1="30" x2="30" y2="45" stroke="#9ca3af" stroke-width="1" stroke-dasharray="2 1"/>
-                          <line x1="70" y1="60" x2="30" y2="45" stroke="#9ca3af" stroke-width="1" stroke-dasharray="2 1"/>
-                          <line x1="120" y1="45" x2="70" y2="30" stroke="#9ca3af" stroke-width="1" stroke-dasharray="2 1"/>
-                          <line x1="120" y1="45" x2="70" y2="60" stroke="#9ca3af" stroke-width="1" stroke-dasharray="2 1"/>
-                          <line x1="160" y1="30" x2="120" y2="45" stroke="#9ca3af" stroke-width="1" stroke-dasharray="2 1"/>
-                          <line x1="160" y1="60" x2="120" y2="45" stroke="#9ca3af" stroke-width="1" stroke-dasharray="2 1"/>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-            <p class="w-full text-center mt-6 text-gray-500 font-serif italic">Caption: Each new transaction validates two previous ones → swarm consensus.</p>
-        </section>
-
-        <section class="slide">
-            <h2>The Logic of the Tangle: Cooperative Consensus</h2>
-            <div class="flex-grow w-full flex flex-col md:flex-row items-center gap-8 md:gap-12">
-                <div class="w-full md:w-1/2">
-                    <h3>Flow:</h3>
-                    <ul>
-                        <li>Each new transaction <b>approves two prior ones</b>.</li>
-                        <li>Approved transactions gain “weight.”</li>
-                        <li>Unapproved = “tips.”</li>
-                        <li>Random tips selected → <b>directed acyclic graph</b> forms.</li>
-                        <li>Continuous validation stabilizes system.</li>
-                    </ul>
-                </div>
-                <div class="w-full md:w-1/2 h-full">
-                    <div class="sketch-visual h-full">
-                        <img src="a-detailed-digital-illustration-presents_9h49D7Z6SwG5KCHzamp4JA_2gyzrflSSCmqD3rh8Y-40A.jpeg" alt="Tangle Diagram">
-                    </div>
-                </div>
-            </div>
-            <p class="w-full text-center mt-6 text-gray-500 font-serif italic">Caption: Light Proof-of-Work deters spam and prevents double spending.</p>
-        </section>
-
-        <section class="slide">
-            <h2>DLT as a Mechanism for Social Compliance</h2>
-            <div class="flex-grow w-full flex flex-col md:flex-row items-start gap-8 md:gap-12">
-                <div class="w-full md:w-1/2">
-                    <h3>Concept Summary:</h3>
-                    <ul>
-                        <li><b>Traditional pricing</b> = pay-to-use.</li>
-                        <li><b>Dynamic deposit pricing</b> = stake tokens to behave responsibly.</li>
-                        <li>Deposit returned upon compliance; forfeited otherwise.</li>
-                        <li>Threshold breach → authority alert.</li>
-                    </ul>
-                    
-                    <h3 class="mt-6">Traffic Example:</h3>
-                    <ul>
-                        <li>Driver gets finite token balance with license.</li>
-                        <li>Obeys rules → retains tokens.</li>
-                        <li>Violates → loses tokens.</li>
-                        <li>Below threshold → authority notified.</li>
-                    </ul>
-                </div>
-                <div class="w-full md:w-1/2 flex flex-col h-full">
-                    <div class="svg-diagram h-1/2">
-                        <span class="text-lg self-start ml-4">Visual: Pencil Flowchart</span>
-                        <svg class="w-full h-full" viewBox="0 0 450 100">
-                          <defs>
-                            <marker id="arrow-gray-h" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                              <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af" />
-                            </marker>
-                          </defs>
-                          <rect x="10" y="30" width="70" height="30" fill="#f9fafb" stroke="#9ca3af" rx="5" />
-                          <text x="45" y="50" text-anchor="middle" font-size="10">Driver</text>
-                          <line x1="80" y1="45" x2="100" y2="45" stroke="#9ca3af" stroke-width="1" marker-end="url(#arrow-gray-h)" stroke-dasharray="2 1"/>
-                          
-                          <rect x="100" y="30" width="70" height="30" fill="#f9fafb" stroke="#9ca3af" rx="5" />
-                          <text x="135" y="50" text-anchor="middle" font-size="10">Deposit</text>
-                          <line x1="170" y1="45" x2="190" y2="45" stroke="#9ca3af" stroke-width="1" marker-end="url(#arrow-gray-h)" stroke-dasharray="2 1"/>
-                          
-                          <rect x="190" y="30" width="70" height="30" fill="#f9fafb" stroke="#9ca3af" rx="5" />
-                          <text x="225" y="50" text-anchor="middle" font-size="10">Ledger</text>
-                          <line x1="260" y1="45" x2="280" y2="45" stroke="#9ca3af" stroke-width="1" marker-end="url(#arrow-gray-h)" stroke-dasharray="2 1"/>
-                          
-                          <rect x="280" y="30" width="70" height="30" fill="#f9fafb" stroke="#9ca3af" rx="5" />
-                          <text x="315" y="50" text-anchor="middle" font-size="10">Compliance</text>
-                          <line x1="350" y1="45" x2="370" y2="45" stroke="#9ca3af" stroke-width="1" marker-end="url(#arrow-gray-h)" stroke-dasharray="2 1"/>
-                          
-                          <rect x="370" y="30" width="70" height="30" fill="#e5e7eb" stroke="#6b7280" rx="5" />
-                          <text x="405" y="45" text-anchor="middle" font-size="10">Return /</text>
-                          <text x="405" y="58" text-anchor="middle" font-size="10">Report</text>
-                        </svg>
-                    </div>
-                    
-                    <h3 class="mt-6">Why DAGs Excel:</h3>
-                    <ul>
-                        <li>High transaction frequency</li>
-                        <li>Zero fees</li>
-                        <li>M2M microtransactions</li>
-                        <li>Tamper resistance</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-        
-        <section class="slide">
-            <h2>Evaluating the DLT-Based Compliance Model</h2>
-            <div class="flex-grow w-full flex flex-col items-center gap-6">
-                <div class="w-full overflow-x-auto">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Strengths</th>
-                                <th>Limitations / Risks</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Decentralized, transparent enforcement</td>
-                                <td>Pseudo-anonymity may be lifted → ethical issues</td>
-                            </tr>
-                            <tr>
-                                <td>Fee-less, scalable DAGs</td>
-                                <td>Needs high transaction rate for stability</td>
-                            </tr>
-                            <tr>
-                                <td>Aligns incentives with compliance</td>
-                                <td>May evolve into <b>social credit system</b></td>
-                            </tr>
-                            <tr>
-                                <td>Mathematically validated for stability</td>
-                                <td>Assumes accurate IoT data → privacy loss</td>
-                            </tr>
-                            <tr>
-                                <td>IoT, mobility, and energy-ready</td>
-                                <td>Complex cross-jurisdiction regulation</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="w-full h-1/3 max-w-md">
-                    <div class="sketch-visual h-full">
-                        <img src="a-digital-art-presentation-slide-featuri_lEbY7jPKRnW-rg2VFoMWXA_bmXY9CIDQMKE64Jza2zhQQ.jpeg" alt="Visual representation of balance">
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="slide">
-            <h2>Expanding Dynamic Deposits Beyond Smart Cities</h2>
-            <div class="flex-grow w-full flex flex-col items-center gap-6">
-                <div class="w-full overflow-x-auto">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Domain</th>
-                                <th>Mechanism</th>
-                                <th>Outcome</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><b>Intellectual Property</b></td>
-                                <td>Crypto tokens for originality, refunded once value multiplies</td>
-                                <td>Rewards novelty, discourages spam production</td>
-                            </tr>
-                            <tr>
-                                <td><b>Educational Networks</b></td>
-                                <td>Dynamic staking for verified research or learning</td>
-                                <td>Promotes authentic contributions</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <blockquote>
-                    “By embedding economics into behaviour, DAG-based DLTs could transform social contracts into programmable incentives.”
-                </blockquote>
-
-                <div class="w-full h-1/3 max-w-lg">
-                    <div class="sketch-visual h-full">
-                        <img src="a-digital-art-presentation-slide-featuri_P6Jryb0URkWO5qLqvpDs_w_bmXY9CIDQMKE64Jza2zhQQ.jpeg" alt="Escher-style infinite loop">
-                    </div>
-                </div>
-            </div>
-        </section>
-
-    </div>
-
-    <div class="flex items-center justify-center space-x-4 mt-4 mb-8">
-        <button id="prev-slide" class="bg-gray-800 text-gray-200 px-5 py-2 rounded-lg shadow-md hover:bg-gray-700 active:scale-95 transition-all">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
-        </button>
-        
-        <div id="slide-counter" class="text-gray-400 font-medium w-20 text-center" aria-live="polite">
-            1 / 10
+</head>
+<body>
+<header>
+    <div class="hero-inner">
+        <figure>
+            <img src="a-detailed-digital-illustration-of-an-im_F4gecyg4SJmMinO5uuKyIg_bmXY9CIDQMKE64Jza2zhQQ.jpeg" alt="Escher-style smart city mosaic">
+            <figcaption>Impossible smart city rendered in tessellated stained glass, setting the thematic backdrop.</figcaption>
+        </figure>
+        <div class="hero-text">
+            <h1>Distributed Ledger Technologies for Smart Cities &amp; Social Compliance</h1>
+            <p><strong>Presenter:</strong> Divyum Maheshwari</p>
+            <p><strong>Source:</strong> Ferraro, King &amp; Shorten — IEEE (2018)</p>
+            <p><strong>Assessment:</strong> Assignment 1 · 15% Coursework Presentation</p>
         </div>
-        
-        <button id="next-slide" class="bg-gray-800 text-gray-200 px-5 py-2 rounded-lg shadow-md hover:bg-gray-700 active:scale-95 transition-all">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            </svg>
-        </button>
     </div>
+</header>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const slides = document.querySelectorAll('.slide');
-            const prevButton = document.getElementById('prev-slide');
-            const nextButton = document.getElementById('next-slide');
-            const slideCounter = document.getElementById('slide-counter');
-            
-            // --- FIX ---
-            // Add guards to ensure all elements are present before attaching listeners.
-            // A "Script error" often means one of these elements was null when
-            // an event listener was attached or a property was accessed.
-            if (!slides || slides.length === 0 || !prevButton || !nextButton || !slideCounter) {
-                console.error("Presentation script failed to initialize: One or more essential elements are missing (slides, buttons, or counter).");
-                // We can't proceed if the core components aren't found.
-                return; 
-            }
-            // --- END FIX ---
-            
-            let currentSlide = 0;
-            const totalSlides = slides.length;
+<main>
+    <section>
+        <h2>From Bitcoin to Distributed Ledgers: A New Era of Shared Trust</h2>
+        <div class="two-column">
+            <div>
+                <h3>Key transitions</h3>
+                <ul>
+                    <li><strong>Bitcoin (2008)</strong> introduced the first decentralised ledger, verified by peers instead of central authorities.</li>
+                    <li>The model prompted a vigorous debate between those championing democratised ownership and critics wary of speculation and illicit activity.</li>
+                    <li>The outcome was an explosion of <strong>Distributed Ledger Technologies (DLTs)</strong> — including blockchains, DAGs, and hybrid architectures.</li>
+                </ul>
+                <blockquote>
+                    “DLT removes the greedy middle that manages and exploits our assets and identities for financial reward.”
+                    <cite>Ferraro et&nbsp;al.</cite>
+                </blockquote>
+            </div>
+            <div class="diagram-panel" aria-label="Timeline from Bitcoin to wider DLT adoption">
+                <svg viewBox="0 0 360 120" role="img" aria-labelledby="timeline-title">
+                    <title id="timeline-title">Timeline highlighting the move from Bitcoin to wider DLT adoption</title>
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569" />
+                        </marker>
+                    </defs>
+                    <line x1="25" y1="70" x2="330" y2="70" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="6 4" />
+                    <circle cx="65" cy="70" r="6" fill="#0f172a" />
+                    <text x="65" y="45" text-anchor="middle" font-size="12" fill="#0f172a">Bitcoin (2008)</text>
+                    <circle cx="185" cy="70" r="6" fill="#0f172a" />
+                    <text x="185" y="45" text-anchor="middle" font-size="12" fill="#0f172a">Blockchain (2010s)</text>
+                    <circle cx="305" cy="70" r="6" fill="#0f172a" />
+                    <text x="305" y="45" text-anchor="middle" font-size="12" fill="#0f172a">DLT Expansion</text>
+                </svg>
+            </div>
+        </div>
+    </section>
 
-            function showSlide(slideIndex) {
-                // Handle wrap-around
-                if (slideIndex >= totalSlides) {
-                    slideIndex = 0;
-                }
-                if (slideIndex < 0) {
-                    slideIndex = totalSlides - 1;
-                }
+    <section>
+        <h2>Why Shared Resources Need Smarter Compliance</h2>
+        <div class="two-column">
+            <div>
+                <h3>Narrative</h3>
+                <ul>
+                    <li>The economy is shifting from <strong>consumers</strong> to <strong>prosumers</strong> who both use and contribute to services.</li>
+                    <li>Shared systems thrive on trust and cooperation across human and machine actors.</li>
+                    <li><strong>The challenge:</strong> encouraging responsible behaviour without heavy central control.</li>
+                    <li>Traditional enforcement—laws, ratings, manual oversight—is sluggish for dense IoT environments.</li>
+                </ul>
+            </div>
+            <div class="diagram-panel" aria-label="Flow from shared resources to DLT-enabled compliance">
+                <svg viewBox="0 0 180 240" role="img" aria-labelledby="compliance-flow">
+                    <title id="compliance-flow">Flow showing how distributed ledgers support compliance</title>
+                    <defs>
+                        <marker id="arrow-gray" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569" />
+                        </marker>
+                    </defs>
+                    <rect x="15" y="20" width="150" height="40" fill="#f8fafc" stroke="#94a3b8" rx="6" />
+                    <text x="90" y="45" text-anchor="middle" font-size="12" fill="#0f172a">Shared Resource</text>
+                    <line x1="90" y1="60" x2="90" y2="92" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow-gray)" stroke-dasharray="5 3" />
+                    <rect x="15" y="95" width="150" height="40" fill="#f8fafc" stroke="#94a3b8" rx="6" />
+                    <text x="90" y="120" text-anchor="middle" font-size="12" fill="#0f172a">User Interaction</text>
+                    <line x1="90" y1="135" x2="90" y2="167" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow-gray)" stroke-dasharray="5 3" />
+                    <rect x="15" y="170" width="150" height="40" fill="#f8fafc" stroke="#94a3b8" rx="6" />
+                    <text x="90" y="195" text-anchor="middle" font-size="12" fill="#0f172a">Need for Compliance</text>
+                    <line x1="90" y1="210" x2="90" y2="230" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow-gray)" stroke-dasharray="5 3" />
+                    <polygon points="35,235 145,235 145,260 35,260" fill="#e2e8f0" stroke="#475569" stroke-width="1.2" />
+                    <text x="90" y="250" text-anchor="middle" font-size="12" fill="#1f2937" font-weight="bold">DLT as Solution</text>
+                </svg>
+            </div>
+        </div>
+    </section>
 
-                // Deactivate all slides
-                slides.forEach((slide) => {
-                    slide.classList.remove('active');
-                });
+    <section>
+        <h2>Smart City Problems of Shared Behaviour</h2>
+        <p>Dynamic deposits link behaviour to access, helping cities protect shared infrastructure and reduce misuse.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Example</th>
+                    <th>Problem</th>
+                    <th>DLT-Based Incentive</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Electric Vehicle Charging</strong></td>
+                    <td>Vehicles occupy chargers long after charging finishes.</td>
+                    <td>Deposit is refunded when the vehicle reconnects (<code>dockChain</code>).</td>
+                </tr>
+                <tr>
+                    <td><strong>E-bike Batteries &amp; Home Energy</strong></td>
+                    <td>Shared batteries disappear or return late.</td>
+                    <td>Deposit released on verified returns (<code>ChargeWall</code>).</td>
+                </tr>
+                <tr>
+                    <td><strong>Disposable Cups</strong></td>
+                    <td>Improper disposal damages recycling loops.</td>
+                    <td>Token refunded upon correct segregation.</td>
+                </tr>
+                <tr>
+                    <td><strong>Traffic Signals &amp; Shared Parking</strong></td>
+                    <td>Rule-breaking undermines throughput and fairness.</td>
+                    <td>Dynamic deposits tied to driver licence tokens.</td>
+                </tr>
+            </tbody>
+        </table>
+        <figure>
+            <img src="a-breathtaking-digital-illustration-depi_rvGBJfasTKOw-2nbTJFYWw_2gyzrflSSCmqD3rh8Y-40A.jpeg" alt="Escher-inspired smart city street in jewel tones">
+            <figcaption>Shared mobility scenes echo the precarious balance of cooperation in dense smart cities.</figcaption>
+        </figure>
+    </section>
 
-                // Activate the new slide
-                currentSlide = slideIndex;
-                
-                // --- FIX ---
-                // Add a check to prevent errors if slideIndex is somehow invalid
-                // (though the wrap-around should prevent this, it's safer)
-                if (slides[currentSlide]) {
-                    slides[currentSlide].classList.add('active');
-                } else {
-                    console.error(`Slide index ${currentSlide} is out of bounds.`);
-                }
-                // --- END FIX ---
+    <section>
+        <h2>How to Incentivise Social Compliance in Smart Cities?</h2>
+        <div class="two-column">
+            <div>
+                <h3>Key points</h3>
+                <ul>
+                    <li>Systems rarely fail for lack of technology; they fail when behaviour misaligns with collective goals.</li>
+                    <li>DLT can make enforcement transparent, scalable, and auditable across city-scale networks.</li>
+                    <li>Digital deposits and rebates ensure compliance is the economically rational option.</li>
+                </ul>
+            </div>
+            <div class="diagram-panel" aria-label="Citizen to resource incentive loop">
+                <svg viewBox="0 0 320 200" role="img" aria-labelledby="loop-title">
+                    <title id="loop-title">Loop showing how citizens, ledgers, and resources interact</title>
+                    <rect x="20" y="30" width="90" height="50" fill="#f8fafc" stroke="#94a3b8" rx="6" />
+                    <text x="65" y="60" text-anchor="middle" font-size="13" fill="#0f172a">Citizen</text>
+                    <rect x="125" y="30" width="90" height="50" fill="#e2e8f0" stroke="#475569" rx="6" />
+                    <text x="170" y="60" text-anchor="middle" font-size="13" fill="#0f172a">DLT Ledger</text>
+                    <rect x="230" y="30" width="90" height="50" fill="#f8fafc" stroke="#94a3b8" rx="6" />
+                    <text x="275" y="60" text-anchor="middle" font-size="13" fill="#0f172a">Resource</text>
+                    <line x1="110" y1="55" x2="125" y2="55" stroke="#475569" stroke-width="1.8" />
+                    <polygon points="125,55 119,51 119,59" fill="#475569" />
+                    <line x1="215" y1="55" x2="230" y2="55" stroke="#475569" stroke-width="1.8" />
+                    <polygon points="230,55 224,51 224,59" fill="#475569" />
+                    <text x="30" y="130" font-size="13" fill="#166534" font-weight="700">Compliant → Token Returned</text>
+                    <text x="30" y="155" font-size="13" fill="#b91c1c" font-weight="700">Non-compliant → Deposit Lost</text>
+                </svg>
+            </div>
+        </div>
+    </section>
 
-                // Update counter
-                slideCounter.textContent = `${currentSlide + 1} / ${totalSlides}`;
-            }
+    <section>
+        <h2>Limitations of Blockchain and the Move to DAGs</h2>
+        <div class="two-column">
+            <div>
+                <h3>Blockchain limitations</h3>
+                <ul>
+                    <li>⛏️ Proof-of-Work consumes vast energy.</li>
+                    <li>⏳ Throughput averages only 7–20 transactions per second.</li>
+                    <li>💰 Transaction fees prevent fine-grained micro-trades.</li>
+                    <li>⚖️ Competitive consensus drifts toward centralisation.</li>
+                </ul>
+                <div class="diagram-panel">
+                    <svg viewBox="0 0 220 90" role="img" aria-labelledby="blockchain-linear">
+                        <title id="blockchain-linear">Linear representation of chained blocks</title>
+                        <text x="110" y="30" text-anchor="middle" font-size="12" fill="#0f172a">Blockchain (Linear)</text>
+                        <rect x="25" y="45" width="35" height="25" fill="#f8fafc" stroke="#94a3b8" rx="4" stroke-dasharray="4 2" />
+                        <line x1="60" y1="57" x2="70" y2="57" stroke="#475569" stroke-width="1.5" />
+                        <rect x="70" y="45" width="35" height="25" fill="#f8fafc" stroke="#94a3b8" rx="4" stroke-dasharray="4 2" />
+                        <line x1="105" y1="57" x2="115" y2="57" stroke="#475569" stroke-width="1.5" />
+                        <rect x="115" y="45" width="35" height="25" fill="#f8fafc" stroke="#94a3b8" rx="4" stroke-dasharray="4 2" />
+                        <line x1="150" y1="57" x2="160" y2="57" stroke="#475569" stroke-width="1.5" />
+                        <text x="175" y="62" font-size="12" fill="#64748b">...</text>
+                    </svg>
+                </div>
+            </div>
+            <div>
+                <h3>DAG advantages</h3>
+                <ul>
+                    <li>Cooperative validation keeps latency low and fees at zero.</li>
+                    <li>Supports dense IoT ecosystems and machine-to-machine microtransactions.</li>
+                </ul>
+                <div class="diagram-panel">
+                    <svg viewBox="0 0 220 120" role="img" aria-labelledby="dag-web">
+                        <title id="dag-web">Web-like structure of a directed acyclic graph</title>
+                        <text x="110" y="30" text-anchor="middle" font-size="12" fill="#0f172a">DAG (Web-like)</text>
+                        <circle cx="45" cy="75" r="6" fill="#e2e8f0" stroke="#475569" />
+                        <circle cx="85" cy="50" r="6" fill="#e2e8f0" stroke="#475569" />
+                        <circle cx="85" cy="95" r="6" fill="#e2e8f0" stroke="#475569" />
+                        <circle cx="135" cy="75" r="6" fill="#e2e8f0" stroke="#475569" />
+                        <circle cx="175" cy="50" r="6" fill="#e2e8f0" stroke="#475569" />
+                        <circle cx="175" cy="95" r="6" fill="#e2e8f0" stroke="#475569" />
+                        <line x1="85" y1="50" x2="45" y2="75" stroke="#475569" stroke-width="1.2" stroke-dasharray="4 3" />
+                        <line x1="85" y1="95" x2="45" y2="75" stroke="#475569" stroke-width="1.2" stroke-dasharray="4 3" />
+                        <line x1="135" y1="75" x2="85" y2="50" stroke="#475569" stroke-width="1.2" stroke-dasharray="4 3" />
+                        <line x1="135" y1="75" x2="85" y2="95" stroke="#475569" stroke-width="1.2" stroke-dasharray="4 3" />
+                        <line x1="175" y1="50" x2="135" y2="75" stroke="#475569" stroke-width="1.2" stroke-dasharray="4 3" />
+                        <line x1="175" y1="95" x2="135" y2="75" stroke="#475569" stroke-width="1.2" stroke-dasharray="4 3" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <p class="caption-muted">Each new transaction approves two previous ones, propagating consensus throughout the tangle.</p>
+    </section>
 
-            // Button event listeners
-            // (We know prevButton and nextButton exist because of the guard check above)
-            prevButton.addEventListener('click', () => {
-                showSlide(currentSlide - 1);
-            });
+    <section>
+        <h2>The Logic of the Tangle: Cooperative Consensus</h2>
+        <div class="two-column">
+            <div>
+                <h3>Flow of validation</h3>
+                <ul>
+                    <li>Every new transaction approves two earlier transactions.</li>
+                    <li>Validated transactions accumulate “weight,” while unapproved ones remain as “tips.”</li>
+                    <li>Randomised tip selection produces a directed acyclic graph.</li>
+                    <li>Continuous approval cycles stabilise the network over time.</li>
+                </ul>
+                <p class="caption-muted">A lightweight proof-of-work discourages spam and prevents double spending.</p>
+            </div>
+            <figure>
+                <img src="a-detailed-digital-illustration-presents_9h49D7Z6SwG5KCHzamp4JA_2gyzrflSSCmqD3rh8Y-40A.jpeg" alt="Diagrammatic tangle of luminous nodes">
+                <figcaption>Illuminated strands metaphorically illustrate the living structure of the tangle.</figcaption>
+            </figure>
+        </div>
+    </section>
 
-            nextButton.addEventListener('click', () => {
-                showSlide(currentSlide + 1);
-            });
+    <section>
+        <h2>DLT as a Mechanism for Social Compliance</h2>
+        <div class="two-column">
+            <div>
+                <h3>Concept summary</h3>
+                <ul>
+                    <li><strong>Traditional pricing:</strong> pay for access, regardless of behaviour.</li>
+                    <li><strong>Dynamic deposit pricing:</strong> stake tokens that are refunded when behaviour remains responsible.</li>
+                    <li>Deposits are forfeited when rules are broken; falling below a threshold escalates to authorities.</li>
+                </ul>
+                <h3>Traffic example</h3>
+                <ul>
+                    <li>Drivers receive a finite token balance along with their licence.</li>
+                    <li>Compliant driving preserves the balance.</li>
+                    <li>Violations deduct tokens, and repeated offences trigger intervention.</li>
+                </ul>
+            </div>
+            <div>
+                <div class="diagram-panel" aria-label="Dynamic deposit workflow">
+                    <svg viewBox="0 0 480 140" role="img" aria-labelledby="deposit-flow">
+                        <title id="deposit-flow">Workflow of deposits through a compliance ledger</title>
+                        <defs>
+                            <marker id="arrow-gray-h" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569" />
+                            </marker>
+                        </defs>
+                        <rect x="15" y="45" width="80" height="40" fill="#f8fafc" stroke="#94a3b8" rx="6" />
+                        <text x="55" y="70" text-anchor="middle" font-size="12" fill="#0f172a">Driver</text>
+                        <line x1="95" y1="65" x2="115" y2="65" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-gray-h)" stroke-dasharray="4 2" />
+                        <rect x="115" y="45" width="80" height="40" fill="#f8fafc" stroke="#94a3b8" rx="6" />
+                        <text x="155" y="70" text-anchor="middle" font-size="12" fill="#0f172a">Deposit</text>
+                        <line x1="195" y1="65" x2="215" y2="65" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-gray-h)" stroke-dasharray="4 2" />
+                        <rect x="215" y="45" width="80" height="40" fill="#f8fafc" stroke="#94a3b8" rx="6" />
+                        <text x="255" y="70" text-anchor="middle" font-size="12" fill="#0f172a">Ledger</text>
+                        <line x1="295" y1="65" x2="315" y2="65" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-gray-h)" stroke-dasharray="4 2" />
+                        <rect x="315" y="45" width="80" height="40" fill="#f8fafc" stroke="#94a3b8" rx="6" />
+                        <text x="355" y="70" text-anchor="middle" font-size="12" fill="#0f172a">Compliance</text>
+                        <line x1="395" y1="65" x2="415" y2="65" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-gray-h)" stroke-dasharray="4 2" />
+                        <rect x="415" y="45" width="80" height="40" fill="#e2e8f0" stroke="#475569" rx="6" />
+                        <text x="455" y="65" text-anchor="middle" font-size="12" fill="#1f2937">Return /</text>
+                        <text x="455" y="78" text-anchor="middle" font-size="12" fill="#1f2937">Report</text>
+                    </svg>
+                </div>
+                <h3>Why DAGs excel</h3>
+                <ul>
+                    <li>High transaction frequency sustains ledger stability.</li>
+                    <li>Zero fees support ubiquitous machine-to-machine payments.</li>
+                    <li>Tamper resistance preserves auditability across agencies.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
 
-            // Keyboard event listeners
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowRight') {
-                    showSlide(currentSlide + 1);
-                } else if (e.key === 'ArrowLeft') {
-                    showSlide(currentSlide - 1);
-                }
-            });
+    <section>
+        <h2>Evaluating the DLT-Based Compliance Model</h2>
+        <div class="two-column">
+            <div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Strengths</th>
+                            <th>Limitations / Risks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Decentralised, transparent enforcement.</td>
+                            <td>Pseudo-anonymity can be lifted, raising ethical concerns.</td>
+                        </tr>
+                        <tr>
+                            <td>Fee-less, scalable DAG foundations.</td>
+                            <td>Requires a sustained transaction rate for stability.</td>
+                        </tr>
+                        <tr>
+                            <td>Aligns incentives with compliance.</td>
+                            <td>Could drift toward an intrusive social credit model.</td>
+                        </tr>
+                        <tr>
+                            <td>Mathematically validated for robustness.</td>
+                            <td>Assumes accurate IoT data, increasing privacy exposure.</td>
+                        </tr>
+                        <tr>
+                            <td>Ready for mobility, energy, and IoT scenarios.</td>
+                            <td>Complex cross-jurisdiction regulation to reconcile.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <figure>
+                <img src="a-digital-art-presentation-slide-featuri_lEbY7jPKRnW-rg2VFoMWXA_bmXY9CIDQMKE64Jza2zhQQ.jpeg" alt="Stained glass scales representing balance">
+                <figcaption>Balancing incentives and risks demands strong governance frameworks.</figcaption>
+            </figure>
+        </div>
+    </section>
 
-            // Show the first slide initially
-            showSlide(0);
-        });
-    </script>
+    <section>
+        <h2>Expanding Dynamic Deposits Beyond Smart Cities</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Domain</th>
+                    <th>Mechanism</th>
+                    <th>Outcome</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Intellectual Property</strong></td>
+                    <td>Crypto tokens staked to validate originality, refunded once value multiplies.</td>
+                    <td>Rewards novelty and disincentivises derivative spam.</td>
+                </tr>
+                <tr>
+                    <td><strong>Educational Networks</strong></td>
+                    <td>Dynamic staking for verified research or authentic learning activity.</td>
+                    <td>Encourages high-quality contributions to shared knowledge.</td>
+                </tr>
+            </tbody>
+        </table>
+        <blockquote>
+            “By embedding economics into behaviour, DAG-based DLTs could transform social contracts into programmable incentives.”
+        </blockquote>
+        <figure>
+            <img src="a-digital-art-presentation-slide-featuri_P6Jryb0URkWO5qLqvpDs_w_bmXY9CIDQMKE64Jza2zhQQ.jpeg" alt="Escher-style infinite loop of smart infrastructure">
+            <figcaption>Interlocking pathways hint at future sectors ready for programmable compliance.</figcaption>
+        </figure>
+    </section>
+</main>
 
+<footer>
+    &copy; 2024 Distributed Ledger Technologies for Smart Cities · Design inspired by impossible stained-glass smart city vistas.
+</footer>
 </body>
 </html>
