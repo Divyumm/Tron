@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Divyum Maheshwari</title>
+<style>
+  :root {
+    --pink: #ff0080;
+    --white: #ffffff;
+    --black: #000000;
+    --dim: rgba(255,255,255,0.08);
+    --pink-glow: rgba(255,0,128,0.15);
+    --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font);
+    font-weight: 700;
+    overflow: hidden;
+  }
+
+  /* Scanline overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.18) 2px,
+      rgba(0,0,0,0.18) 4px
+    );
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  canvas#bg {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.18;
+  }
+
+  #shell {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: grid;
+    grid-template-rows: auto 1px auto 1fr auto;
+    grid-template-columns: 260px 1px 1fr;
+    gap: 0;
+    padding: 32px 40px;
+    overflow: hidden;
+  }
+
+  /* HEADER spans all columns */
+  header {
+    grid-column: 1 / -1;
+    padding-bottom: 20px;
+  }
+
+  header h1 {
+    font-size: clamp(18px, 2.4vw, 28px);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  header h1 span {
+    color: var(--pink);
+  }
+
+  header p {
+    margin-top: 6px;
+    font-size: clamp(10px, 1.1vw, 13px);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    font-weight: 700;
+  }
+
+  /* Horizontal rule spans all columns */
+  .rule-h {
+    grid-column: 1 / -1;
+    height: 1px;
+    background: rgba(255,255,255,0.15);
+  }
+
+  /* Vertical rule between menu and content */
+  .rule-v {
+    grid-row: 3 / 5;
+    grid-column: 2;
+    width: 1px;
+    background: rgba(255,255,255,0.12);
+    margin: 0 0;
+  }
+
+  /* NAV */
+  nav {
+    grid-row: 3;
+    grid-column: 1;
+    padding-top: 28px;
+    padding-right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  nav button {
+    background: none;
+    border: none;
+    border-left: 4px solid transparent;
+    padding: 10px 14px;
+    text-align: left;
+    font-family: var(--font);
+    font-weight: 700;
+    font-size: clamp(11px, 1.1vw, 13px);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.38);
+    cursor: pointer;
+    transition: all 0.12s ease;
+    position: relative;
+  }
+
+  nav button:hover {
+    color: rgba(255,255,255,0.7);
+    transform: translateX(3px);
+  }
+
+  nav button.active {
+    border-left-color: var(--pink);
+    color: var(--white);
+    background: var(--pink-glow);
+    box-shadow: inset 0 0 24px var(--pink-glow);
+  }
+
+  nav button.active::before {
+    content: '▌';
+    position: absolute;
+    left: -14px;
+    color: var(--pink);
+    font-size: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* CONTENT PANEL */
+  #content-area {
+    grid-row: 3;
+    grid-column: 3;
+    padding: 28px 0 28px 32px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--pink) transparent;
+  }
+
+  #content-area::-webkit-scrollbar { width: 3px; }
+  #content-area::-webkit-scrollbar-track { background: transparent; }
+  #content-area::-webkit-scrollbar-thumb { background: var(--pink); }
+
+  .section {
+    display: none;
+    animation: fadeIn 0.2s ease forwards;
+  }
+
+  .section.visible { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Section typography */
+  .section h2 {
+    font-size: clamp(10px, 1vw, 12px);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--pink);
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,0,128,0.3);
+  }
+
+  .section p {
+    font-size: clamp(12px, 1.1vw, 14px);
+    line-height: 1.75;
+    color: rgba(255,255,255,0.82);
+    font-weight: 400;
+    max-width: 580px;
+    margin-bottom: 20px;
+  }
+
+  .section p strong {
+    color: var(--white);
+    font-weight: 700;
+  }
+
+  /* Value chips */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .chip {
+    border: 1px solid rgba(255,0,128,0.5);
+    padding: 4px 12px;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--pink);
+    font-weight: 700;
+  }
+
+  /* Project groups */
+  .proj-group {
+    margin-bottom: 24px;
+  }
+
+  .proj-group-header {
+    background: none;
+    border: none;
+    font-family: var(--font);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    width: 100%;
+    text-align: left;
+    transition: color 0.12s;
+  }
+
+  .proj-group-header:hover { color: rgba(255,255,255,0.7); }
+
+  .proj-group-header .arrow {
+    color: var(--pink);
+    font-size: 8px;
+    transition: transform 0.15s;
+    display: inline-block;
+  }
+
+  .proj-group-header.open .arrow { transform: rotate(90deg); }
+
+  .proj-list {
+    display: none;
+    padding-left: 16px;
+    border-left: 1px solid rgba(255,0,128,0.2);
+    margin-top: 4px;
+  }
+
+  .proj-list.open { display: block; }
+
+  .proj-item {
+    font-size: clamp(11px, 1.05vw, 13px);
+    color: rgba(255,255,255,0.72);
+    font-weight: 400;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    line-height: 1.5;
+    transition: color 0.1s;
+  }
+
+  .proj-item:hover { color: var(--white); }
+
+  /* Skills grid */
+  .skill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .skill {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 6px 12px;
+    font-weight: 700;
+    transition: all 0.12s;
+  }
+
+  .skill:hover {
+    border-color: var(--pink);
+    color: var(--pink);
+  }
+
+  /* Timeline entries */
+  .entry {
+    margin-bottom: 24px;
+    padding-left: 16px;
+    border-left: 2px solid rgba(255,0,128,0.35);
+  }
+
+  .entry-title {
+    font-size: clamp(12px, 1.1vw, 14px);
+    color: var(--white);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .entry-sub {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--pink);
+    margin: 4px 0 6px;
+  }
+
+  .entry-date {
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.1em;
+  }
+
+  /* Achievement list */
+  .ach-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .ach-list li {
+    font-size: clamp(11px, 1.05vw, 13px);
+    color: rgba(255,255,255,0.75);
+    font-weight: 400;
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.55;
+  }
+
+  .ach-list li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--pink);
+    font-weight: 700;
+  }
+
+  /* Footer */
+  footer {
+    grid-column: 1 / -1;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.22);
+  }
+
+  footer a {
+    color: rgba(255,255,255,0.35);
+    text-decoration: none;
+    transition: color 0.12s;
+  }
+
+  footer a:hover { color: var(--pink); }
+
+  /* Mobile */
+  @media (max-width: 680px) {
+    body { overflow-y: auto; }
+
+    html, body { height: auto; }
+
+    #shell {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 20px;
+      overflow: visible;
+    }
+
+    .rule-v { display: none; }
+
+    nav {
+      flex-direction: row;
+      flex-wrap: wrap;
+      padding: 16px 0 0;
+      gap: 4px;
+    }
+
+    nav button {
+      border-left: none;
+      border-bottom: 2px solid transparent;
+      padding: 6px 10px;
+      font-size: 10px;
+      transform: none !important;
+    }
+
+    nav button.active {
+      border-bottom-color: var(--pink);
+      border-left: none;
+      background: none;
+    }
+
+    nav button.active::before { display: none; }
+
+    #content-area {
+      padding: 20px 0;
+      overflow-y: visible;
+    }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<div id="shell">
+
+  <header>
+    <h1>Divyum Maheshwari<span>.</span></h1>
+    <p>AI Design Engineer &nbsp;·&nbsp; London, GB</p>
+  </header>
+
+  <div class="rule-h"></div>
+
+  <nav id="nav" role="navigation" aria-label="Portfolio sections">
+    <button class="active" data-section="about">About</button>
+    <button data-section="projects">Projects</button>
+    <button data-section="skills">Skills</button>
+    <button data-section="experience">Experience</button>
+    <button data-section="education">Education</button>
+    <button data-section="achievements">Achievements</button>
+  </nav>
+
+  <div class="rule-v"></div>
+
+  <main id="content-area">
+
+    <!-- ABOUT -->
+    <div class="section visible" id="about">
+      <h2>About</h2>
+      <p>Product Practitioner educated in <strong>Business</strong>, <strong>Design</strong> and <strong>Engineering</strong>. Capable of articulating novelty and aggregate limits to define scope. Using my skills I hope to create value by combining concepts into exciting new applications in equitable tech.</p>
+      <h2 style="margin-top:24px;">Values</h2>
+      <div class="chips">
+        <span class="chip">Tenacity</span>
+        <span class="chip">Altruism</span>
+        <span class="chip">Audacity</span>
+        <span class="chip">Orchestration</span>
+        <span class="chip">Signposting</span>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="section" id="projects">
+      <h2>Projects</h2>
+
+      <div class="proj-group">
+        <button class="proj-group-header open" onclick="toggleGroup(this)">
+          <span class="arrow">▶</span> Tech + Data
+        </button>
+        <div class="proj-list open">
+          <div class="proj-item">Scaling Design Education through Licensure Exams in India</div>
+          <div class="proj-item">Systemic Biases in Scaling Agent Based AI for Design in India</div>
+          <div class="proj-item">Inventory System for Informal Vendors in Electronic Repair: Mumbai</div>
+          <div class="proj-item">Traffic Optimisation System for Kurla, Mumbai</div>
+          <div class="proj-item">Emulation of Devices for Integration: An Experiment</div>
+          <div class="proj-item">Full Stack Social Media Platform using Flask, SQL, JS, CSS and Python</div>
+        </div>
+      </div>
+
+      <div class="proj-group">
+        <button class="proj-group-header" onclick="toggleGroup(this)">
+          <span class="arrow">▶</span> Business
+        </button>
+        <div class="proj-list">
+          <div class="proj-item">Safety Match Making App for Walking Home</div>
+          <div class="proj-item">Cars24: A Turnaround Strategy</div>
+          <div class="proj-item">Diversity, Equity and Inclusion: An Essay</div>
+          <div class="proj-item">Boeing's Demise: An Essay</div>
+        </div>
+      </div>
+
+      <div class="proj-group">
+        <button class="proj-group-header" onclick="toggleGroup(this)">
+          <span class="arrow">▶</span> Product · Design · Graphic
+        </button>
+        <div class="proj-list">
+          <div class="proj-item">A Memory Inducing Interactive Game for Patients with Dementia</div>
+          <div class="proj-item">Mycelium Based Agriculture Facilitator</div>
+          <div class="proj-item">Indigenous House Bricks for Coolings</div>
+          <div class="proj-item">Cycle Battery Parametric Lock</div>
+          <div class="proj-item">Opposing Limb Facilitating Drawing Mechanism</div>
+          <div class="proj-item">Universal Customisable Bottle Holder for Cars</div>
+          <div class="proj-item">Ercon: A Rebranding Exercise</div>
+          <div class="proj-item">Ethnographic Exercise in a Maharashtran Village</div>
+          <div class="proj-item">Dozens of Lighting Fixtures Made for IP68</div>
+          <div class="proj-item">Geometrical Exploration in 2 Dimensions</div>
+          <div class="proj-item">Human Anatomy Sketching Exploration</div>
+          <div class="proj-item">Parametric Installation Curation</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKILLS -->
+    <div class="section" id="skills">
+      <h2>Competencies</h2>
+      <div class="skill-list">
+        <span class="skill">Writing &amp; Storytelling</span>
+        <span class="skill">Product Thinking</span>
+        <span class="skill">Design Thinking</span>
+        <span class="skill">Screening Resources</span>
+        <span class="skill">Organising Events</span>
+        <span class="skill">Intuitive Perception</span>
+        <span class="skill">Prompt Engineering</span>
+        <span class="skill">Ink Based Sketching</span>
+        <span class="skill">Pitching to Market</span>
+        <span class="skill">Data Communication</span>
+        <span class="skill">Curating Knowledge</span>
+      </div>
+    </div>
+
+    <!-- EXPERIENCE -->
+    <div class="section" id="experience">
+      <h2>Experience</h2>
+      <div class="entry">
+        <div class="entry-title">Product Design Intern</div>
+        <div class="entry-sub">Ercon Composites</div>
+        <div class="entry-date">Aug 2023 — Apr 2024</div>
+      </div>
+    </div>
+
+    <!-- EDUCATION -->
+    <div class="section" id="education">
+      <h2>Education</h2>
+      <div class="entry">
+        <div class="entry-title">MSc. Design Engineering</div>
+        <div class="entry-sub">Imperial College London</div>
+      </div>
+      <div class="entry">
+        <div class="entry-title">Undergraduate in Management</div>
+        <div class="entry-sub">Atlas SkillTech University · Mumbai</div>
+      </div>
+      <div class="entry">
+        <div class="entry-title">Diploma in Programming</div>
+        <div class="entry-sub">IIT Madras · Chennai</div>
+      </div>
+    </div>
+
+    <!-- ACHIEVEMENTS -->
+    <div class="section" id="achievements">
+      <h2>Scholastic Achievements</h2>
+      <ul class="ach-list">
+        <li>Top 8 finalist out of 375 teams in Hackathon with Technical Pitching</li>
+        <li>Second Place out of 1500 teams in Hackathon with Technical Pitching</li>
+        <li>Third Place in Data Narrative Contest out of 30+ teams</li>
+        <li>First in Jodhpur batch to complete Programming diploma out of 30 students</li>
+        <li>First Prize Presentation out of 120 students</li>
+        <li>Selected for the Makers Asylum Goa UN SDG Scholarship</li>
+        <li>IIT Madras Qualifier Subject Topper</li>
+      </ul>
+    </div>
+
+  </main>
+
+  <footer>
+    <span>↑ ↓ navigate &nbsp;·&nbsp; enter / click select</span>
+    <a href="https://www.linkedin.com/in/divyum-maheshwari/" target="_blank" rel="noopener">LinkedIn</a>
+  </footer>
+
+</div>
+
+<script>
+// ── Canvas background: cascading coordinate numbers ──────────────────────────
+(function () {
+  const canvas = document.getElementById('bg');
+  const ctx = canvas.getContext('2d');
+  const colors = ['#ff4040', '#4080ff', '#40ff80', '#ffffff', '#ff8040'];
+  let cols, drops, values;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const fontSize = 11;
+    cols = Math.floor(canvas.width / 68);
+    drops = Array.from({ length: cols }, () => Math.random() * -canvas.height / fontSize);
+    values = Array.from({ length: cols }, () => randomCoord());
+  }
+
+  function randomCoord() {
+    const a = Math.floor(Math.random() * 2500);
+    const b = Math.floor(Math.random() * 2000);
+    const c = Math.floor(Math.random() * 500);
+    return `${a},${b},${c}`;
+  }
+
+  function draw() {
+    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font = '11px "Helvetica Neue", Helvetica, monospace';
+
+    for (let i = 0; i < cols; i++) {
+      ctx.fillStyle = colors[i % colors.length];
+      const x = i * 68 + 8;
+      const y = drops[i] * 14;
+      ctx.fillText(values[i], x, y);
+
+      if (Math.random() < 0.03) values[i] = randomCoord();
+      drops[i] += 0.35;
+      if (drops[i] * 14 > canvas.height && Math.random() < 0.02) {
+        drops[i] = 0;
+      }
+    }
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+  setInterval(draw, 50);
+})();
+
+// ── Menu navigation ───────────────────────────────────────────────────────────
+(function () {
+  const buttons = Array.from(document.querySelectorAll('nav button'));
+  const sections = Array.from(document.querySelectorAll('.section'));
+  let current = 0;
+
+  function activate(idx) {
+    buttons[current].classList.remove('active');
+    sections[current].classList.remove('visible');
+    current = (idx + buttons.length) % buttons.length;
+    buttons[current].classList.add('active');
+    // Re-trigger animation
+    const s = sections[current];
+    s.classList.remove('visible');
+    void s.offsetWidth;
+    s.classList.add('visible');
+    document.getElementById('content-area').scrollTop = 0;
+  }
+
+  buttons.forEach((btn, i) => {
+    btn.addEventListener('click', () => activate(i));
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); activate(current + 1); }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); activate(current - 1); }
+    if (e.key === 'Enter')     { buttons[current].click(); }
+  });
+})();
+
+// ── Project group toggle ──────────────────────────────────────────────────────
+function toggleGroup(btn) {
+  const list = btn.nextElementSibling;
+  const isOpen = list.classList.toggle('open');
+  btn.classList.toggle('open', isOpen);
+}
+</script>
+
+</body>
+</html>
