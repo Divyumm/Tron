@@ -5,670 +5,599 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Divyum Maheshwari</title>
 <style>
-  :root {
-    --pink: #ff0080;
-    --white: #ffffff;
-    --black: #000000;
-    --dim: rgba(255,255,255,0.08);
-    --pink-glow: rgba(255,0,128,0.15);
-    --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  }
+:root {
+  --pink: #ff0080;
+  --white: #ffffff;
+  --bg: #05050d;
+  --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font);
+  font-weight: 700;
+  overflow: hidden;
+  user-select: none;
+}
+canvas#bg {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+}
+/* scanlines */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px);
+  pointer-events: none; z-index: 999;
+}
+/* dark center vignette for readability */
+#vignette {
+  position: fixed; inset: 0; z-index: 1;
+  background: radial-gradient(ellipse 70% 80% at 50% 55%, rgba(5,5,13,0.72) 0%, transparent 100%);
+  pointer-events: none;
+}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+#ui {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; flex-direction: column;
+}
 
-  html, body {
-    width: 100%; height: 100%;
-    background: var(--black);
-    color: var(--white);
-    font-family: var(--font);
-    font-weight: 700;
-    overflow: hidden;
-  }
+/* ── Top bar ── */
+#topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 28px 0;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+#topbar a {
+  color: rgba(255,255,255,0.35);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+#topbar a:hover { color: var(--pink); }
 
-  /* Scanline overlay */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.18) 2px,
-      rgba(0,0,0,0.18) 4px
-    );
-    pointer-events: none;
-    z-index: 100;
-  }
+/* ── XMB main ── */
+#xmb {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 48px;
+  gap: 0;
+}
 
-  canvas#bg {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    opacity: 0.18;
-  }
+/* ── Category icons bar ── */
+#cat-track {
+  position: relative;
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  #shell {
-    position: fixed;
-    inset: 0;
-    z-index: 10;
-    display: grid;
-    grid-template-rows: auto 1px auto 1fr auto;
-    grid-template-columns: 260px 1px 1fr;
-    gap: 0;
-    padding: 32px 40px;
-    overflow: hidden;
-  }
+.cat-item {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: left 0.35s cubic-bezier(0.25,0.46,0.45,0.94),
+              opacity 0.35s ease,
+              transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94);
+  top: 50%;
+}
 
-  /* HEADER spans all columns */
-  header {
-    grid-column: 1 / -1;
-    padding-bottom: 20px;
-  }
+.cat-icon {
+  transition: width 0.3s ease, height 0.3s ease, filter 0.3s ease;
+}
+.cat-icon svg {
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 
-  header h1 {
-    font-size: clamp(18px, 2.4vw, 28px);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    line-height: 1;
-  }
+.cat-label {
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: opacity 0.3s, font-size 0.3s;
+}
 
-  header h1 span {
-    color: var(--pink);
-  }
+/* ── Divider line ── */
+#xmb-line {
+  width: 280px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,0,128,0.55), transparent);
+  margin: 4px 0 18px;
+  flex-shrink: 0;
+}
 
-  header p {
-    margin-top: 6px;
-    font-size: clamp(10px, 1.1vw, 13px);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.5);
-    font-weight: 700;
-  }
+/* ── Submenu ── */
+#submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 340px;
+  max-width: 90vw;
+}
 
-  /* Horizontal rule spans all columns */
-  .rule-h {
-    grid-column: 1 / -1;
-    height: 1px;
-    background: rgba(255,255,255,0.15);
-  }
+.sub-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: color 0.1s, background 0.1s;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  border-left: 2px solid transparent;
+}
+.sub-item .arr {
+  font-size: 7px;
+  color: var(--pink);
+  opacity: 0;
+  transition: opacity 0.1s;
+  flex-shrink: 0;
+  width: 8px;
+}
+.sub-item.active {
+  color: var(--white);
+  border-left-color: var(--pink);
+  background: rgba(255,0,128,0.06);
+}
+.sub-item.active .arr { opacity: 1; }
+.sub-item:hover:not(.active) { color: rgba(255,255,255,0.65); }
 
-  /* Vertical rule between menu and content */
-  .rule-v {
-    grid-row: 3 / 5;
-    grid-column: 2;
-    width: 1px;
-    background: rgba(255,255,255,0.12);
-    margin: 0 0;
-  }
+/* ── Description ── */
+#desc {
+  margin-top: 18px;
+  width: 420px;
+  max-width: 88vw;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  line-height: 1.85;
+  color: rgba(255,255,255,0.45);
+  font-weight: 400;
+  text-align: center;
+  min-height: 36px;
+  transition: opacity 0.18s ease;
+}
 
-  /* NAV */
-  nav {
-    grid-row: 3;
-    grid-column: 1;
-    padding-top: 28px;
-    padding-right: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
+/* ── Footer ── */
+#footer {
+  padding: 0 28px 16px;
+  display: flex; justify-content: center; gap: 36px;
+  font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: rgba(255,255,255,0.18);
+  flex-shrink: 0;
+}
 
-  nav button {
-    background: none;
-    border: none;
-    border-left: 4px solid transparent;
-    padding: 10px 14px;
-    text-align: left;
-    font-family: var(--font);
-    font-weight: 700;
-    font-size: clamp(11px, 1.1vw, 13px);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.38);
-    cursor: pointer;
-    transition: all 0.12s ease;
-    position: relative;
-  }
-
-  nav button:hover {
-    color: rgba(255,255,255,0.7);
-    transform: translateX(3px);
-  }
-
-  nav button.active {
-    border-left-color: var(--pink);
-    color: var(--white);
-    background: var(--pink-glow);
-    box-shadow: inset 0 0 24px var(--pink-glow);
-  }
-
-  nav button.active::before {
-    content: '▌';
-    position: absolute;
-    left: -14px;
-    color: var(--pink);
-    font-size: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-  }
-
-  /* CONTENT PANEL */
-  #content-area {
-    grid-row: 3;
-    grid-column: 3;
-    padding: 28px 0 28px 32px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--pink) transparent;
-  }
-
-  #content-area::-webkit-scrollbar { width: 3px; }
-  #content-area::-webkit-scrollbar-track { background: transparent; }
-  #content-area::-webkit-scrollbar-thumb { background: var(--pink); }
-
-  .section {
-    display: none;
-    animation: fadeIn 0.2s ease forwards;
-  }
-
-  .section.visible { display: block; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Section typography */
-  .section h2 {
-    font-size: clamp(10px, 1vw, 12px);
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--pink);
-    margin-bottom: 20px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255,0,128,0.3);
-  }
-
-  .section p {
-    font-size: clamp(12px, 1.1vw, 14px);
-    line-height: 1.75;
-    color: rgba(255,255,255,0.82);
-    font-weight: 400;
-    max-width: 580px;
-    margin-bottom: 20px;
-  }
-
-  .section p strong {
-    color: var(--white);
-    font-weight: 700;
-  }
-
-  /* Value chips */
-  .chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-
-  .chip {
-    border: 1px solid rgba(255,0,128,0.5);
-    padding: 4px 12px;
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--pink);
-    font-weight: 700;
-  }
-
-  /* Project groups */
-  .proj-group {
-    margin-bottom: 24px;
-  }
-
-  .proj-group-header {
-    background: none;
-    border: none;
-    font-family: var(--font);
-    font-weight: 700;
-    font-size: 10px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.4);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 0;
-    width: 100%;
-    text-align: left;
-    transition: color 0.12s;
-  }
-
-  .proj-group-header:hover { color: rgba(255,255,255,0.7); }
-
-  .proj-group-header .arrow {
-    color: var(--pink);
-    font-size: 8px;
-    transition: transform 0.15s;
-    display: inline-block;
-  }
-
-  .proj-group-header.open .arrow { transform: rotate(90deg); }
-
-  .proj-list {
-    display: none;
-    padding-left: 16px;
-    border-left: 1px solid rgba(255,0,128,0.2);
-    margin-top: 4px;
-  }
-
-  .proj-list.open { display: block; }
-
-  .proj-item {
-    font-size: clamp(11px, 1.05vw, 13px);
-    color: rgba(255,255,255,0.72);
-    font-weight: 400;
-    padding: 7px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    line-height: 1.5;
-    transition: color 0.1s;
-  }
-
-  .proj-item:hover { color: var(--white); }
-
-  /* Skills grid */
-  .skill-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 4px;
-  }
-
-  .skill {
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.6);
-    border: 1px solid rgba(255,255,255,0.12);
-    padding: 6px 12px;
-    font-weight: 700;
-    transition: all 0.12s;
-  }
-
-  .skill:hover {
-    border-color: var(--pink);
-    color: var(--pink);
-  }
-
-  /* Timeline entries */
-  .entry {
-    margin-bottom: 24px;
-    padding-left: 16px;
-    border-left: 2px solid rgba(255,0,128,0.35);
-  }
-
-  .entry-title {
-    font-size: clamp(12px, 1.1vw, 14px);
-    color: var(--white);
-    font-weight: 700;
-    letter-spacing: 0.05em;
-  }
-
-  .entry-sub {
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--pink);
-    margin: 4px 0 6px;
-  }
-
-  .entry-date {
-    font-size: 10px;
-    color: rgba(255,255,255,0.35);
-    letter-spacing: 0.1em;
-  }
-
-  /* Achievement list */
-  .ach-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .ach-list li {
-    font-size: clamp(11px, 1.05vw, 13px);
-    color: rgba(255,255,255,0.75);
-    font-weight: 400;
-    padding-left: 18px;
-    position: relative;
-    line-height: 1.55;
-  }
-
-  .ach-list li::before {
-    content: '—';
-    position: absolute;
-    left: 0;
-    color: var(--pink);
-    font-weight: 700;
-  }
-
-  /* Footer */
-  footer {
-    grid-column: 1 / -1;
-    padding-top: 16px;
-    border-top: 1px solid rgba(255,255,255,0.08);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.22);
-  }
-
-  footer a {
-    color: rgba(255,255,255,0.35);
-    text-decoration: none;
-    transition: color 0.12s;
-  }
-
-  footer a:hover { color: var(--pink); }
-
-  /* Mobile */
-  @media (max-width: 680px) {
-    body { overflow-y: auto; }
-
-    html, body { height: auto; }
-
-    #shell {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      padding: 24px 20px;
-      overflow: visible;
-    }
-
-    .rule-v { display: none; }
-
-    nav {
-      flex-direction: row;
-      flex-wrap: wrap;
-      padding: 16px 0 0;
-      gap: 4px;
-    }
-
-    nav button {
-      border-left: none;
-      border-bottom: 2px solid transparent;
-      padding: 6px 10px;
-      font-size: 10px;
-      transform: none !important;
-    }
-
-    nav button.active {
-      border-bottom-color: var(--pink);
-      border-left: none;
-      background: none;
-    }
-
-    nav button.active::before { display: none; }
-
-    #content-area {
-      padding: 20px 0;
-      overflow-y: visible;
-    }
-  }
+/* ── Mobile ── */
+@media (max-width: 600px) {
+  #cat-track { height: 80px; }
+  #submenu { width: 90vw; }
+  #desc { font-size: 10px; }
+}
 </style>
 </head>
 <body>
 
 <canvas id="bg"></canvas>
+<div id="vignette"></div>
 
-<div id="shell">
+<div id="ui">
+  <div id="topbar">
+    <span>Divyum Maheshwari</span>
+    <a href="https://www.linkedin.com/in/divyum-maheshwari/" target="_blank" rel="noopener">LinkedIn ↗</a>
+    <span id="clock-display"></span>
+  </div>
 
-  <header>
-    <h1>Divyum Maheshwari<span>.</span></h1>
-    <p>AI Design Engineer &nbsp;·&nbsp; London, GB</p>
-  </header>
+  <div id="xmb">
+    <div id="cat-track"></div>
+    <div id="xmb-line"></div>
+    <div id="submenu"></div>
+    <div id="desc"></div>
+  </div>
 
-  <div class="rule-h"></div>
-
-  <nav id="nav" role="navigation" aria-label="Portfolio sections">
-    <button class="active" data-section="about">About</button>
-    <button data-section="projects">Projects</button>
-    <button data-section="skills">Skills</button>
-    <button data-section="experience">Experience</button>
-    <button data-section="education">Education</button>
-    <button data-section="achievements">Achievements</button>
-  </nav>
-
-  <div class="rule-v"></div>
-
-  <main id="content-area">
-
-    <!-- ABOUT -->
-    <div class="section visible" id="about">
-      <h2>About</h2>
-      <p>Product Practitioner educated in <strong>Business</strong>, <strong>Design</strong> and <strong>Engineering</strong>. Capable of articulating novelty and aggregate limits to define scope. Using my skills I hope to create value by combining concepts into exciting new applications in equitable tech.</p>
-      <h2 style="margin-top:24px;">Values</h2>
-      <div class="chips">
-        <span class="chip">Tenacity</span>
-        <span class="chip">Altruism</span>
-        <span class="chip">Audacity</span>
-        <span class="chip">Orchestration</span>
-        <span class="chip">Signposting</span>
-      </div>
-    </div>
-
-    <!-- PROJECTS -->
-    <div class="section" id="projects">
-      <h2>Projects</h2>
-
-      <div class="proj-group">
-        <button class="proj-group-header open" onclick="toggleGroup(this)">
-          <span class="arrow">▶</span> Tech + Data
-        </button>
-        <div class="proj-list open">
-          <div class="proj-item">Scaling Design Education through Licensure Exams in India</div>
-          <div class="proj-item">Systemic Biases in Scaling Agent Based AI for Design in India</div>
-          <div class="proj-item">Inventory System for Informal Vendors in Electronic Repair: Mumbai</div>
-          <div class="proj-item">Traffic Optimisation System for Kurla, Mumbai</div>
-          <div class="proj-item">Emulation of Devices for Integration: An Experiment</div>
-          <div class="proj-item">Full Stack Social Media Platform using Flask, SQL, JS, CSS and Python</div>
-        </div>
-      </div>
-
-      <div class="proj-group">
-        <button class="proj-group-header" onclick="toggleGroup(this)">
-          <span class="arrow">▶</span> Business
-        </button>
-        <div class="proj-list">
-          <div class="proj-item">Safety Match Making App for Walking Home</div>
-          <div class="proj-item">Cars24: A Turnaround Strategy</div>
-          <div class="proj-item">Diversity, Equity and Inclusion: An Essay</div>
-          <div class="proj-item">Boeing's Demise: An Essay</div>
-        </div>
-      </div>
-
-      <div class="proj-group">
-        <button class="proj-group-header" onclick="toggleGroup(this)">
-          <span class="arrow">▶</span> Product · Design · Graphic
-        </button>
-        <div class="proj-list">
-          <div class="proj-item">A Memory Inducing Interactive Game for Patients with Dementia</div>
-          <div class="proj-item">Mycelium Based Agriculture Facilitator</div>
-          <div class="proj-item">Indigenous House Bricks for Coolings</div>
-          <div class="proj-item">Cycle Battery Parametric Lock</div>
-          <div class="proj-item">Opposing Limb Facilitating Drawing Mechanism</div>
-          <div class="proj-item">Universal Customisable Bottle Holder for Cars</div>
-          <div class="proj-item">Ercon: A Rebranding Exercise</div>
-          <div class="proj-item">Ethnographic Exercise in a Maharashtran Village</div>
-          <div class="proj-item">Dozens of Lighting Fixtures Made for IP68</div>
-          <div class="proj-item">Geometrical Exploration in 2 Dimensions</div>
-          <div class="proj-item">Human Anatomy Sketching Exploration</div>
-          <div class="proj-item">Parametric Installation Curation</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SKILLS -->
-    <div class="section" id="skills">
-      <h2>Competencies</h2>
-      <div class="skill-list">
-        <span class="skill">Writing &amp; Storytelling</span>
-        <span class="skill">Product Thinking</span>
-        <span class="skill">Design Thinking</span>
-        <span class="skill">Screening Resources</span>
-        <span class="skill">Organising Events</span>
-        <span class="skill">Intuitive Perception</span>
-        <span class="skill">Prompt Engineering</span>
-        <span class="skill">Ink Based Sketching</span>
-        <span class="skill">Pitching to Market</span>
-        <span class="skill">Data Communication</span>
-        <span class="skill">Curating Knowledge</span>
-      </div>
-    </div>
-
-    <!-- EXPERIENCE -->
-    <div class="section" id="experience">
-      <h2>Experience</h2>
-      <div class="entry">
-        <div class="entry-title">Product Design Intern</div>
-        <div class="entry-sub">Ercon Composites</div>
-        <div class="entry-date">Aug 2023 — Apr 2024</div>
-      </div>
-    </div>
-
-    <!-- EDUCATION -->
-    <div class="section" id="education">
-      <h2>Education</h2>
-      <div class="entry">
-        <div class="entry-title">MSc. Design Engineering</div>
-        <div class="entry-sub">Imperial College London</div>
-      </div>
-      <div class="entry">
-        <div class="entry-title">Undergraduate in Management</div>
-        <div class="entry-sub">Atlas SkillTech University · Mumbai</div>
-      </div>
-      <div class="entry">
-        <div class="entry-title">Diploma in Programming</div>
-        <div class="entry-sub">IIT Madras · Chennai</div>
-      </div>
-    </div>
-
-    <!-- ACHIEVEMENTS -->
-    <div class="section" id="achievements">
-      <h2>Scholastic Achievements</h2>
-      <ul class="ach-list">
-        <li>Top 8 finalist out of 375 teams in Hackathon with Technical Pitching</li>
-        <li>Second Place out of 1500 teams in Hackathon with Technical Pitching</li>
-        <li>Third Place in Data Narrative Contest out of 30+ teams</li>
-        <li>First in Jodhpur batch to complete Programming diploma out of 30 students</li>
-        <li>First Prize Presentation out of 120 students</li>
-        <li>Selected for the Makers Asylum Goa UN SDG Scholarship</li>
-        <li>IIT Madras Qualifier Subject Topper</li>
-      </ul>
-    </div>
-
-  </main>
-
-  <footer>
-    <span>↑ ↓ navigate &nbsp;·&nbsp; enter / click select</span>
-    <a href="https://www.linkedin.com/in/divyum-maheshwari/" target="_blank" rel="noopener">LinkedIn</a>
-  </footer>
-
+  <div id="footer">
+    <span>← → category</span>
+    <span>↑ ↓ select</span>
+    <span>enter / click open</span>
+  </div>
 </div>
 
 <script>
-// ── Canvas background: cascading coordinate numbers ──────────────────────────
-(function () {
-  const canvas = document.getElementById('bg');
-  const ctx = canvas.getContext('2d');
-  const colors = ['#ff4040', '#4080ff', '#40ff80', '#ffffff', '#ff8040'];
-  let cols, drops, values;
+// ── Content data ──────────────────────────────────────────────────────────────
+const DATA = [
+  {
+    label: 'About',
+    icon: `<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-5 3.6-8 8-8s8 3 8 8"/></svg>`,
+    items: [
+      { label: 'Profile',    desc: 'AI Design Engineer · 25 · London, GB' },
+      { label: 'Mission',    desc: 'Product Practitioner educated in Business, Design and Engineering — creating value by combining concepts into exciting new applications in equitable tech.' },
+      { label: 'Values',     desc: 'Tenacity · Altruism · Audacity · Orchestration · Signposting' },
+      { label: 'LinkedIn',   desc: 'linkedin.com/in/divyum-maheshwari', link: 'https://www.linkedin.com/in/divyum-maheshwari/' },
+    ]
+  },
+  {
+    label: 'Projects',
+    icon: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`,
+    items: [
+      { label: 'Tech + Data',        desc: 'Scaling Design Education · Agent Based AI Biases · Inventory System Mumbai · Traffic Optimisation Kurla · Device Emulation · Full Stack Social Platform (Flask / SQL / JS)' },
+      { label: 'Business',           desc: 'Safety Match Making App · Cars24 Turnaround Strategy · Diversity Equity & Inclusion Essay · Boeing\'s Demise Essay' },
+      { label: 'Product',            desc: 'Dementia Memory Game · Mycelium Agriculture Facilitator · Cycle Battery Parametric Lock · Opposing Limb Drawing Mechanism · IP68 Lighting Fixtures · Bottle Holder for Cars' },
+      { label: 'Design + Graphic',   desc: 'Indigenous House Bricks · Ercon Rebranding · Maharashtran Village Ethnography · Geometrical Exploration in 2D · Human Anatomy Sketching · Parametric Installation Curation' },
+    ]
+  },
+  {
+    label: 'Skills',
+    icon: `<svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
+    items: [
+      { label: 'Craft',       desc: 'Writing & Storytelling · Ink Based Sketching · Data Communication · Curating Exhaustive Knowledge' },
+      { label: 'Thinking',    desc: 'Product Thinking · Design Thinking · Intuitive & Emotional Perception · Screening Resources' },
+      { label: 'Execution',   desc: 'Prompt Engineering · Organising & Orchestrating Events · Pitching to Market · Selling Products' },
+    ]
+  },
+  {
+    label: 'Experience',
+    icon: `<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>`,
+    items: [
+      { label: 'Ercon Composites',   desc: 'Product Design Intern · Aug 2023 — Apr 2024 · Mumbai, India' },
+    ]
+  },
+  {
+    label: 'Education',
+    icon: `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="12" y1="6" x2="16" y2="6"/><line x1="12" y1="10" x2="16" y2="10"/></svg>`,
+    items: [
+      { label: 'Imperial College London',     desc: 'MSc. Design Engineering · London, UK' },
+      { label: 'Atlas SkillTech University',  desc: 'Undergraduate in Management · Mumbai, India' },
+      { label: 'IIT Madras',                  desc: 'Diploma in Programming · Chennai, India' },
+    ]
+  },
+  {
+    label: 'Achievements',
+    icon: `<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+    items: [
+      { label: 'Hackathon — Top 8',       desc: 'Top 8 finalist out of 375 teams · Technical Pitching' },
+      { label: 'Hackathon — 2nd Place',   desc: 'Second Place out of 1500 teams · Technical Pitching' },
+      { label: 'Data Narrative — 3rd',    desc: 'Third Place out of 30+ teams' },
+      { label: 'UN SDG Scholar',          desc: 'Selected for Makers Asylum Goa UN SDG Scholarship' },
+      { label: 'IIT Madras Topper',       desc: 'First in Jodhpur batch out of 30 students · Subject Topper · Qualifier' },
+      { label: 'Presentation — 1st',      desc: 'First Prize Presentation out of 120 students' },
+    ]
+  },
+];
 
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    const fontSize = 11;
-    cols = Math.floor(canvas.width / 68);
-    drops = Array.from({ length: cols }, () => Math.random() * -canvas.height / fontSize);
-    values = Array.from({ length: cols }, () => randomCoord());
-  }
+// ── State ─────────────────────────────────────────────────────────────────────
+let catIdx = 0, subIdx = 0;
 
-  function randomCoord() {
-    const a = Math.floor(Math.random() * 2500);
-    const b = Math.floor(Math.random() * 2000);
-    const c = Math.floor(Math.random() * 500);
-    return `${a},${b},${c}`;
-  }
-
-  function draw() {
-    ctx.fillStyle = 'rgba(0,0,0,0.06)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.font = '11px "Helvetica Neue", Helvetica, monospace';
-
-    for (let i = 0; i < cols; i++) {
-      ctx.fillStyle = colors[i % colors.length];
-      const x = i * 68 + 8;
-      const y = drops[i] * 14;
-      ctx.fillText(values[i], x, y);
-
-      if (Math.random() < 0.03) values[i] = randomCoord();
-      drops[i] += 0.35;
-      if (drops[i] * 14 > canvas.height && Math.random() < 0.02) {
-        drops[i] = 0;
-      }
-    }
-  }
-
-  resize();
-  window.addEventListener('resize', resize);
-  setInterval(draw, 50);
-})();
-
-// ── Menu navigation ───────────────────────────────────────────────────────────
-(function () {
-  const buttons = Array.from(document.querySelectorAll('nav button'));
-  const sections = Array.from(document.querySelectorAll('.section'));
-  let current = 0;
-
-  function activate(idx) {
-    buttons[current].classList.remove('active');
-    sections[current].classList.remove('visible');
-    current = (idx + buttons.length) % buttons.length;
-    buttons[current].classList.add('active');
-    // Re-trigger animation
-    const s = sections[current];
-    s.classList.remove('visible');
-    void s.offsetWidth;
-    s.classList.add('visible');
-    document.getElementById('content-area').scrollTop = 0;
-  }
-
-  buttons.forEach((btn, i) => {
-    btn.addEventListener('click', () => activate(i));
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowDown') { e.preventDefault(); activate(current + 1); }
-    if (e.key === 'ArrowUp')   { e.preventDefault(); activate(current - 1); }
-    if (e.key === 'Enter')     { buttons[current].click(); }
-  });
-})();
-
-// ── Project group toggle ──────────────────────────────────────────────────────
-function toggleGroup(btn) {
-  const list = btn.nextElementSibling;
-  const isOpen = list.classList.toggle('open');
-  btn.classList.toggle('open', isOpen);
+// ── Clock ─────────────────────────────────────────────────────────────────────
+function tickClock() {
+  const d = new Date();
+  const h = d.getHours().toString().padStart(2,'0');
+  const m = d.getMinutes().toString().padStart(2,'0');
+  document.getElementById('clock-display').textContent = `${h}:${m}`;
 }
-</script>
+tickClock();
+setInterval(tickClock, 15000);
 
+// ── XMB Render ────────────────────────────────────────────────────────────────
+const track   = document.getElementById('cat-track');
+const subEl   = document.getElementById('submenu');
+const descEl  = document.getElementById('desc');
+
+function renderCats() {
+  track.innerHTML = '';
+  const W = window.innerWidth;
+  const cx = W / 2;
+  const spacing = Math.min(120, W / 7.5);
+
+  DATA.forEach((cat, i) => {
+    const el = document.createElement('div');
+    el.className = 'cat-item';
+
+    const offset = i - catIdx;
+    const abs = Math.abs(offset);
+    const iconSz = abs === 0 ? 56 : abs === 1 ? 38 : 28;
+    const opacity = abs === 0 ? 1 : abs === 1 ? 0.48 : 0.18;
+    const color   = abs === 0 ? '#ffffff' : 'rgba(255,255,255,0.5)';
+    const glow    = abs === 0 ? 'drop-shadow(0 0 10px rgba(255,0,128,0.7)) drop-shadow(0 0 22px rgba(255,0,128,0.35))' : 'none';
+
+    el.innerHTML = `
+      <div class="cat-icon" style="width:${iconSz}px;height:${iconSz}px;color:${color};filter:${glow}">
+        ${cat.icon.replace('viewBox', `width="${iconSz}" height="${iconSz}" viewBox`)}
+      </div>
+      <div class="cat-label" style="color:${abs===0?'var(--pink)':'rgba(255,255,255,0.25)'};opacity:${abs===0?1:0}">
+        ${cat.label.toUpperCase()}
+      </div>`;
+
+    el.style.left    = (cx + offset * spacing) + 'px';
+    el.style.transform = 'translateX(-50%) translateY(-50%)';
+    el.style.opacity = opacity;
+    el.addEventListener('click', () => { catIdx = i; subIdx = 0; render(); });
+    track.appendChild(el);
+  });
+}
+
+function renderSub() {
+  subEl.innerHTML = '';
+  const items = DATA[catIdx].items;
+  items.forEach((item, i) => {
+    const el = document.createElement('div');
+    el.className = 'sub-item' + (i === subIdx ? ' active' : '');
+    el.innerHTML = `<span class="arr">▶</span><span>${item.label.toUpperCase()}</span>`;
+    el.addEventListener('click', () => {
+      subIdx = i; renderSub(); renderDesc();
+      if (item.link) window.open(item.link, '_blank');
+    });
+    subEl.appendChild(el);
+  });
+}
+
+function renderDesc() {
+  const item = DATA[catIdx].items[subIdx];
+  descEl.style.opacity = '0';
+  setTimeout(() => { descEl.textContent = item.desc; descEl.style.opacity = '1'; }, 100);
+}
+
+function render() { renderCats(); renderSub(); renderDesc(); }
+render();
+window.addEventListener('resize', renderCats);
+
+// ── Keyboard ──────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  const n = DATA.length;
+  const m = DATA[catIdx].items.length;
+  if (e.key === 'ArrowRight') { e.preventDefault(); catIdx = (catIdx+1)%n; subIdx=0; render(); }
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); catIdx = (catIdx-1+n)%n; subIdx=0; render(); }
+  if (e.key === 'ArrowDown')  { e.preventDefault(); subIdx = (subIdx+1)%m; renderSub(); renderDesc(); }
+  if (e.key === 'ArrowUp')    { e.preventDefault(); subIdx = (subIdx-1+m)%m; renderSub(); renderDesc(); }
+  if (e.key === 'Enter') {
+    const item = DATA[catIdx].items[subIdx];
+    if (item.link) window.open(item.link, '_blank');
+  }
+});
+
+// ── Canvas background ─────────────────────────────────────────────────────────
+(function () {
+  const cv  = document.getElementById('bg');
+  const ctx = cv.getContext('2d');
+  let W, H, t = 0;
+
+  // stars
+  let stars = [];
+  // pixel buildings
+  let bldgs = [];
+  // matrix columns (right side)
+  let mCols = [];
+  // film strip segments (center-right boundary)
+  const MATX_START = 0.61; // fraction of W where matrix starts
+  const FILM_X     = 0.595;
+
+  const MCOLORS = ['#ff3333','#3388ff','#33ff88','#ffffff','#ff8833'];
+
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+  function rndInt(a, b) { return Math.floor(rnd(a, b+1)); }
+
+  function coord() {
+    return `${rndInt(0,2500)},${rndInt(0,2000)},${rndInt(0,600)}`;
+  }
+
+  function hexRgba(hex, a) {
+    const r = parseInt(hex.slice(1,3),16);
+    const g = parseInt(hex.slice(3,5),16);
+    const b_= parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b_},${a})`;
+  }
+
+  function init() {
+    W = cv.width  = window.innerWidth;
+    H = cv.height = window.innerHeight;
+
+    // Stars in sky (left pixel zone)
+    stars = Array.from({length:140}, () => ({
+      x: rnd(0, W * MATX_START),
+      y: rnd(0, H * 0.55),
+      r: rnd(0.3, 1.4),
+      phase: rnd(0, Math.PI * 2),
+      speed: rnd(0.006, 0.02)
+    }));
+
+    // 8-bit buildings
+    bldgs = [];
+    const px = 4;
+    const groundY = H * 0.70;
+    const maxBldgW = W * FILM_X;
+    let bx = 0;
+    while (bx < maxBldgW) {
+      const bw = rndInt(3,7) * px * 3;
+      const bh = rndInt(5,14) * px * 3;
+      const hue = [200,240,280,180,320,350][rndInt(0,5)];
+      bldgs.push({ x: bx, w: bw, h: bh, hue,
+        windows: Array.from({length: rndInt(6,20)}, () => ({
+          lit: Math.random() > 0.38,
+          lastFlip: 0,
+          flipRate: rnd(3000, 12000)
+        }))
+      });
+      bx += bw + rndInt(0,2) * px;
+    }
+
+    // Matrix columns
+    const colW = 74;
+    const colCount = Math.floor(W * (1 - MATX_START) / colW);
+    mCols = Array.from({length: colCount}, (_, i) => ({
+      x: W * MATX_START + i * colW + 6,
+      y: rnd(-H, 0),
+      val: coord(),
+      color: MCOLORS[i % MCOLORS.length],
+      speed: rnd(0.4, 1.0)
+    }));
+  }
+
+  function drawBg() {
+    const g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,   '#04040c');
+    g.addColorStop(0.6, '#060612');
+    g.addColorStop(1,   '#030308');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  function drawStars() {
+    stars.forEach(s => {
+      const a = (Math.sin(t * s.speed + s.phase) + 1) / 2 * 0.75;
+      ctx.fillStyle = `rgba(255,255,255,${a})`;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fill();
+    });
+  }
+
+  function drawBuildings() {
+    const px = 4;
+    const groundY = H * 0.70;
+    const now = performance.now();
+
+    bldgs.forEach(b => {
+      // silhouette
+      ctx.fillStyle = `hsla(${b.hue},35%,7%,0.92)`;
+      ctx.fillRect(b.x, groundY - b.h, b.w, b.h);
+
+      // windows
+      const winS  = px * 2;
+      const gap   = px;
+      const cols  = Math.max(1, Math.floor((b.w - gap) / (winS + gap)));
+      const rows  = Math.max(1, Math.floor((b.h - gap) / (winS + gap * 2)));
+      let wi = 0;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const win = b.windows[wi % b.windows.length];
+          if (now - win.lastFlip > win.flipRate) {
+            win.lit = !win.lit; win.lastFlip = now;
+          }
+          const wx = b.x + gap + c * (winS + gap);
+          const wy = groundY - b.h + gap + r * (winS + gap * 2);
+          ctx.fillStyle = win.lit
+            ? `hsla(${b.hue+15},80%,72%,0.88)`
+            : `hsla(${b.hue},15%,4%,0.5)`;
+          ctx.fillRect(wx, wy, winS, winS);
+          wi++;
+        }
+      }
+    });
+
+    // ground glow
+    const gg = ctx.createLinearGradient(0, groundY - 2, 0, groundY + 28);
+    gg.addColorStop(0, 'rgba(255,0,128,0.25)');
+    gg.addColorStop(1, 'transparent');
+    ctx.fillStyle = gg;
+    ctx.fillRect(0, groundY - 2, W * FILM_X, 30);
+  }
+
+  // Simple pixel art trees at ground level
+  function drawTrees() {
+    const px = 3;
+    const groundY = H * 0.70;
+    const pattern = [[0,0,1,0,0],[0,1,1,1,0],[1,1,1,1,1],[0,0,1,0,0],[0,0,1,0,0]];
+    [W*0.07, W*0.19, W*0.31, W*0.43, W*0.53].forEach(tx => {
+      pattern.forEach((row, r) => {
+        row.forEach((on, c) => {
+          if (!on) return;
+          ctx.fillStyle = r < 3 ? 'rgba(50,190,80,0.55)' : 'rgba(110,60,20,0.45)';
+          ctx.fillRect(tx + c*px - px*2, groundY - (5-r)*px*2 - px, px, px);
+        });
+      });
+    });
+  }
+
+  // PS3-style wave
+  function drawWave() {
+    const waves = [
+      { y: H*0.56, amp: H*0.055, freq: 0.007,  phase: t*0.009,  color:'rgba(255,0,128,0.065)' },
+      { y: H*0.62, amp: H*0.048, freq: 0.0055, phase: t*0.007,  color:'rgba(0,110,255,0.055)' },
+      { y: H*0.50, amp: H*0.042, freq: 0.011,  phase: t*0.012,  color:'rgba(255,0,128,0.04)'  },
+    ];
+    waves.forEach(w => {
+      ctx.beginPath();
+      ctx.moveTo(0, w.y);
+      for (let x = 0; x <= W * MATX_START; x += 4) {
+        ctx.lineTo(x, w.y + Math.sin(x * w.freq + w.phase) * w.amp);
+      }
+      ctx.lineTo(W * MATX_START, H);
+      ctx.lineTo(0, H);
+      ctx.closePath();
+      ctx.fillStyle = w.color;
+      ctx.fill();
+    });
+  }
+
+  // Film strip along the boundary
+  function drawFilmStrip() {
+    const fx = W * FILM_X;
+    const fw = W * (MATX_START - FILM_X);
+
+    ctx.fillStyle = 'rgba(0,0,0,0.88)';
+    ctx.fillRect(fx, 0, fw, H);
+
+    const ph = 9, pw = 6, pGap = 18, margin = 3;
+    for (let y = 4; y < H; y += pGap) {
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.fillRect(fx + margin, y, pw, ph);
+      ctx.fillRect(fx + fw - margin - pw, y, pw, ph);
+    }
+
+    // Pink edge glow on film strip
+    const eg = ctx.createLinearGradient(fx, 0, fx + fw, 0);
+    eg.addColorStop(0,   'rgba(255,0,128,0.18)');
+    eg.addColorStop(0.5, 'transparent');
+    eg.addColorStop(1,   'rgba(255,0,128,0.12)');
+    ctx.fillStyle = eg;
+    ctx.fillRect(fx, 0, fw, H);
+  }
+
+  // Matrix number columns
+  function drawMatrix() {
+    ctx.font = '10px "Helvetica Neue", Helvetica, monospace';
+    mCols.forEach(col => {
+      ctx.fillStyle = hexRgba(col.color, 0.20);
+      ctx.fillText(col.val, col.x, col.y);
+      if (Math.random() < 0.018) col.val = coord();
+      col.y += col.speed;
+      if (col.y > H + 20 && Math.random() < 0.025) col.y = -14;
+    });
+  }
+
+  function frame(ts) {
+    t = ts * 0.001;
+    drawBg();
+    drawStars();
+    drawBuildings();
+    drawTrees();
+    drawWave();
+    drawFilmStrip();
+    drawMatrix();
+    requestAnimationFrame(frame);
+  }
+
+  init();
+  window.addEventListener('resize', init);
+  requestAnimationFrame(frame);
+})();
+</script>
 </body>
 </html>
