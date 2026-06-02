@@ -44,7 +44,7 @@ body::after {
 /* Persistent breadcrumb (depth 1+) */
 #nav-crumb {
   position: absolute;
-  top: 18px; left: 50%;
+  top: 18px; left: 40%;
   transform: translateX(-50%);
   font-size: 9px; letter-spacing: 0.20em; text-transform: uppercase;
   color: rgba(255,255,255,0.32); font-weight: 700;
@@ -52,10 +52,10 @@ body::after {
   opacity: 0; transition: opacity 0.3s;
 }
 
-/* ── L1 horizontal carousel ── */
+/* ── L1 horizontal carousel — fixed anchor at left: 40% ── */
 #cat-carousel { position: absolute; inset: 0; transition: opacity 0.38s ease; }
 .cat-btn {
-  position: absolute; top: 50%; left: 50%;
+  position: absolute; top: 50%; left: 40%;
   background: none; border: none; cursor: pointer;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700;
   color: #e8e8e8; line-height: 1; padding: 0; white-space: nowrap;
@@ -65,15 +65,16 @@ body::after {
     transform 0.42s cubic-bezier(0.16,1,0.3,1);
   text-shadow: 0 2px 20px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.7);
 }
+/* Hint and arrow aligned to same anchor */
 #enter-hint {
-  position: absolute; top: calc(50% + 58px); left: 50%;
+  position: absolute; top: calc(50% + 58px); left: 40%;
   transform: translateX(-50%);
   font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase;
   color: rgba(255,255,255,0.3); font-weight: 700;
   pointer-events: none; transition: opacity 0.3s;
 }
 #down-hint {
-  position: absolute; top: calc(50% + 80px); left: 50%;
+  position: absolute; top: calc(50% + 80px); left: 40%;
   transform: translateX(-50%);
   width: 0; height: 0;
   border-left: 8px solid transparent;
@@ -87,18 +88,18 @@ body::after {
   50%       { transform: translateX(-50%) translateY(7px); opacity: 0.8; }
 }
 
-/* ── L2 vertical sub-nav ── */
+/* ── L2 vertical sub-nav — same anchor left: 40% ── */
 #sub-nav { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity 0.38s ease; }
 #sub-nav.active { opacity: 1; pointer-events: auto; }
 #parent-label {
-  position: absolute; top: 22%; left: 33%;
-  transform: translate(-50%, -50%);
+  position: absolute; top: calc(50% - 115px); left: 40%;
+  transform: translateX(-50%);
   font-size: 22px; font-weight: 700;
-  color: rgba(232,232,232,0.25); white-space: nowrap;
+  color: rgba(232,232,232,0.22); white-space: nowrap;
   pointer-events: none; letter-spacing: -0.01em;
 }
 .sub-btn {
-  position: absolute; top: 50%; left: 33%;
+  position: absolute; top: 50%; left: 40%;
   background: none; border: none; cursor: pointer;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700;
   color: #e8e8e8; line-height: 1; padding: 0; white-space: nowrap;
@@ -109,7 +110,7 @@ body::after {
     transform 0.38s cubic-bezier(0.16,1,0.3,1);
 }
 #desc-preview {
-  position: absolute; top: 50%; left: 52%; right: 2%;
+  position: absolute; top: 50%; left: 62%; right: 2%;
   transform: translateY(-50%);
   font-size: 19px; font-weight: 700; color: #e8e8e8;
   overflow: hidden; white-space: nowrap;
@@ -360,33 +361,46 @@ const CAT = [
 ];
 
 // ── Navigation state ──────────────────────────────────────────────────────────
-let catIdx    = 0;
-let depth     = 0;   // 0=L1 categories  1=L2 sub-items  2=L3 content
-let subIdx    = 0;
-let childIdx  = 0;   // index within current item's children (depth=2, has children)
-let subBtns   = [];
+let catIdx   = 0;
+let depth    = 0;   // 0=L1 categories  1=L2 sub-items  2=L3 content
+let subIdx   = 0;
+let childIdx = 0;
+let subBtns  = [];
 
-// ── Camera state (8-bit world panning) ───────────────────────────────────────
-const TS      = 8;   // tile size in pixels
-const SEC_W   = 52;  // tiles wide per category section
-const LEV_H   = 130; // tiles tall per depth level
+// ── Camera state ──────────────────────────────────────────────────────────────
+const TS    = 8;    // tile size px
+const SEC_W = 100;  // tiles per L1 zone (large = big zone jumps)
+const LEV_H = 150;  // tiles per depth level (tall = dramatic dives)
 
-let camTX = 0, camTY = 0;   // current camera (tile coords, sub-pixel)
-let tgtTX = 0, tgtTY = 0;   // target camera
+let camTX = 0, camTY = 0;
+let tgtTX = 0, tgtTY = 0;
 
 function updateCamTarget() {
-  const nSubs    = CAT[catIdx].items.length;
-  const subFrac  = nSubs > 1 ? subIdx / (nSubs - 1) : 0;
-  const visH     = window.innerHeight / TS;
+  const nSubs   = CAT[catIdx].items.length;
+  const subFrac = nSubs > 1 ? subIdx / (nSubs - 1) : 0;
+  const visH    = window.innerHeight / TS;
 
-  tgtTX = catIdx * SEC_W + subFrac * SEC_W * 0.45;
-  tgtTY = depth * LEV_H + LEV_H / 2 - visH / 2 + subFrac * LEV_H * 0.25;
+  // ── Horizontal: L1 category = BIG zone jump; sub adds small lateral drift ──
+  tgtTX = catIdx * SEC_W;
+  if (depth >= 1) tgtTX += subFrac * 38;
 
-  if (depth === 2 && CAT[catIdx].items[subIdx] && CAT[catIdx].items[subIdx].children) {
-    const nc = CAT[catIdx].items[subIdx].children.length;
-    const cf = nc > 1 ? childIdx / (nc - 1) : 0;
-    tgtTX += cf * SEC_W * 0.30;
-    tgtTY += cf * LEV_H * 0.08;
+  // ── Vertical: tiered depth progression ──────────────────────────────────────
+  // L1 (depth=0): top of overworld, calm palette
+  // L2 (depth=1): each sub-item dives deeper → palette progresses
+  // L3 (depth=2): even deeper, children push further into madness
+  if (depth === 0) {
+    tgtTY = LEV_H * 0.3 - visH * 0.5;
+  } else if (depth === 1) {
+    tgtTY = LEV_H * 1.4 + subFrac * LEV_H * 1.05 - visH * 0.5;
+  } else {
+    tgtTY = LEV_H * 2.85 + subFrac * LEV_H * 0.7 - visH * 0.5;
+    const item = CAT[catIdx].items[subIdx];
+    if (item && item.children) {
+      const nc = item.children.length;
+      const cf = nc > 1 ? childIdx / (nc - 1) : 0;
+      tgtTX += cf * 32;
+      tgtTY += cf * LEV_H * 0.85;
+    }
   }
 }
 
@@ -464,7 +478,7 @@ function buildSubBtns() {
 }
 
 function selFontSize(text) {
-  const maxW = window.innerWidth * 0.40;
+  const maxW = window.innerWidth * 0.38;
   return Math.min(76, Math.max(28, Math.floor(maxW / (text.length * 0.54))));
 }
 
@@ -509,7 +523,6 @@ function renderChildView() {
   const item  = cat.items[subIdx];
   const child = item.children[childIdx];
   const total = item.children.length;
-
   childCrumb.textContent = cat.label + ' / ' + item.label;
   childCounter.innerHTML =
     `<span class="arr">←</span><span>${childIdx + 1} / ${total}</span><span class="arr">→</span>`;
@@ -526,19 +539,15 @@ function hasChildren() {
 
 function goTo(newDepth) {
   depth = newDepth;
-
   catCarousel.style.opacity       = depth === 0 ? '1' : '0';
   catCarousel.style.pointerEvents = depth === 0 ? 'auto' : 'none';
   enterHint.style.opacity         = depth === 0 ? '1' : '0';
   downHint.style.opacity          = depth === 0 ? '1' : '0';
-
   subNavEl.classList.toggle('active', depth === 1);
   descFullEl.classList.toggle('active', depth === 2 && !hasChildren());
   childViewEl.classList.toggle('active', depth === 2 && hasChildren());
-
   if (depth === 2 && !hasChildren()) renderFullDesc();
   if (depth === 2 && hasChildren())  renderChildView();
-
   updateCrumb();
   updateCamTarget();
   updateFooter();
@@ -569,7 +578,6 @@ function updateFooter() {
 // ── Keyboard ──────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   const n = CAT.length;
-
   if (depth === 0) {
     if (e.key === 'ArrowRight') {
       e.preventDefault(); catIdx = (catIdx + 1) % n; updateCats(); updateCamTarget();
@@ -639,37 +647,45 @@ window.addEventListener('resize', () => {
   const cv  = document.getElementById('bg');
   const ctx = cv.getContext('2d');
   let W, H, matRows = [];
+  let t = 0;  // frame counter for tile animation
 
-  const Z_FILM = 0.40;
+  const Z_FILM = 0.40;  // film strip starts at 40% width
 
-  // ── 8-bit tile world (left zone, 0 to Z_FILM * W) ─────────────────────────
-  // 3 depth levels × 5 category sections, each a distinct game room
-
+  // ── 5 depth palettes ── calm → forest → dungeon → hellfire → boss void ─────
   const PALETTES = [
-    // Level 0 — Overworld (greens, warm earth)
-    {
-      wall: '#5a3818', wallB: '#7a5028',
+    // 0 — Overworld: green grass, warm earth, blue water
+    { wall: '#5a3818', wallB: '#7a5028',
       fA: '#2d6018',   fB: '#3a7020',
       acc: '#f0c820',  wat: '#1858c8',
-      o1: '#c04018',   o2: '#20a0c0',  sp: '#ffff40',
-    },
-    // Level 1 — Dungeon (cool blues, stone, torch orange)
-    {
-      wall: '#3a3a52', wallB: '#4a4a68',
-      fA: '#22223a',   fB: '#282848',
-      acc: '#f06820',  wat: '#0010c0',
-      o1: '#b03010',   o2: '#1840a0',  sp: '#ff8020',
-    },
-    // Level 2 — Boss (deep purples, crimson, black)
-    {
-      wall: '#380018', wallB: '#580028',
-      fA: '#1e0012',   fB: '#280020',
-      acc: '#ff0040',  wat: '#600080',
-      o1: '#ff2000',   o2: '#8000c0',  sp: '#ff00ff',
-    },
+      o1:  '#c04018',  o2:  '#20a0c0',
+      sp:  '#ffff40',  cCol: '#ffffff' },
+    // 1 — Forest Shadows: dark green, deep blue, amber torch
+    { wall: '#1e3810', wallB: '#2c4c1a',
+      fA: '#112208',   fB: '#182e0e',
+      acc: '#d89030',  wat: '#0e2860',
+      o1:  '#7a3010',  o2:  '#102a70',
+      sp:  '#e8be20',  cCol: '#aaff88' },
+    // 2 — Stone Dungeon: grey-blue stone, orange torches
+    { wall: '#3a3a52', wallB: '#4a4a68',
+      fA: '#1a1a2e',   fB: '#222238',
+      acc: '#f06820',  wat: '#0808a0',
+      o1:  '#a02808',  o2:  '#103878',
+      sp:  '#ff7010',  cCol: '#aaaaff' },
+    // 3 — Hellfire: deep red, lava cracks, charcoal floor
+    { wall: '#580010', wallB: '#780020',
+      fA: '#1e0008',   fB: '#280010',
+      acc: '#ff4000',  wat: '#880000',
+      o1:  '#ff6000',  o2:  '#660000',
+      sp:  '#ffaa00',  cCol: '#ff8844' },
+    // 4 — Boss Void: pure black, neon magenta, electric purple
+    { wall: '#38001a', wallB: '#500028',
+      fA: '#150010',   fB: '#1e0018',
+      acc: '#ff0040',  wat: '#500060',
+      o1:  '#ff1000',  o2:  '#700090',
+      sp:  '#ff00ff',  cCol: '#ff44ff' },
   ];
 
-  // Fast deterministic hash (integer domain)
+  // Fast deterministic tile hash
   function th(x, y) {
     let v = (Math.imul(x, 1664525) + Math.imul(y, 22695477) + 1013904223) | 0;
     v ^= v >>> 16; v = Math.imul(v, 0x45d9f3b) | 0; v ^= v >>> 16;
@@ -678,53 +694,111 @@ window.addEventListener('resize', () => {
 
   function getTileColor(tx, ty) {
     const section = Math.max(0, Math.floor(tx / SEC_W));
-    const level   = Math.min(2, Math.max(0, Math.floor(ty / LEV_H)));
+    const level   = Math.min(4, Math.max(0, Math.floor(ty / LEV_H)));
     const lx      = ((tx % SEC_W) + SEC_W) % SEC_W;
-    const ly      = ((ty % LEV_H) + LEV_H) % LEV_H;
+    const ly      = ((ty % LEV_H)  + LEV_H)  % LEV_H;
     const pal     = PALETTES[level];
 
-    // Room border walls
-    const WT = 3, WS = 2;
+    // Room border walls (thicker for dramatic effect at higher levels)
+    const WT = 2 + Math.min(2, level);
+    const WS = 2;
     if (ly < WT || ly >= LEV_H - WT) return (lx & 1) ? pal.wall : pal.wallB;
     if (lx < WS || lx >= SEC_W - WS) return (ly & 1) ? pal.wall : pal.wallB;
 
     const h  = th(tx, ty);
-    const h2 = th(tx >> 1, ty >> 1);  // 2×2 block grain
+    const h2 = th(tx >> 1, ty >> 1);
 
-    // Boss room (level 2): circular boss pattern
-    if (level === 2) {
+    // Boss room (level 4) — circular runic pattern
+    if (level === 4) {
       const cx = SEC_W / 2, cy = LEV_H / 2;
       const dx = lx - cx, dy = ly - cy;
-      const d = Math.sqrt(dx * dx + dy * dy);
-      if (d < 4)               return pal.sp;
-      if (d >= 5 && d < 7)     return pal.acc;
-      if (d >= 9 && d < 11)    return pal.wall;
+      const d  = Math.sqrt(dx * dx + dy * dy);
+      if (d < 4) return pal.sp;
+      if (d >= 5  && d < 7)  return pal.acc;
+      if (d >= 9  && d < 11) return pal.wall;
+      if (d >= 14 && d < 16) return pal.o2;
       const ang = (Math.atan2(dy, dx) * 4 / Math.PI + 8) % 2;
-      if (ang < 0.25 && d > 7 && d < 18) return pal.o1;
+      if (ang < 0.22 && d > 7 && d < 22) return pal.o1;
     }
 
-    // Pillars at level 1+
-    if (level >= 1) {
+    // Hellfire (level 3) — lava cracks (more dense, animated)
+    if (level === 3) {
+      if (h < 0.10) {
+        const pulse = Math.sin(t * 0.09 + tx * 0.8 + ty * 1.2) > 0;
+        return pulse ? pal.acc : pal.o1;
+      }
+      if (h < 0.14) return pal.o2;
+    }
+
+    // Pillars for dungeon levels
+    if (level >= 2) {
       const px = lx % 10, py = ly % 12;
-      if (px < 2 && py < 2 && lx > 4 && ly > 4 && lx < SEC_W-4 && ly < LEV_H-4 && h2 < 0.35)
-        return pal.wall;
+      if (px < 2 && py < 2 && lx > 4 && ly > 4 && lx < SEC_W - 4 && ly < LEV_H - 4 && h2 < 0.38)
+        return pal.wallB;
     }
 
-    // Sparse objects
-    if (h < 0.022) return pal.o1;
-    if (h < 0.040) return pal.o2;
-    if (h < 0.052 && h2 < 0.5) return pal.acc;
-    if (h < 0.062 && level < 2) return pal.wat;
+    // Animated water (flicker between shades)
+    if (h < 0.055 && level < 3) {
+      const wave = Math.sin(t * 0.07 + tx * 0.4 + ty * 0.6) > 0;
+      return wave ? pal.wat : pal.fA;
+    }
 
-    // Floor pattern varies per section × level
+    // Animated torches / accent items (blink)
+    if (h < 0.020) {
+      const flicker = Math.sin(t * 0.14 + tx * 1.3 + ty * 0.9) > 0.2;
+      return flicker ? pal.o1 : pal.acc;
+    }
+    if (h < 0.038) return pal.o2;
+    if (h < 0.050 && h2 < 0.5) {
+      const pulse = (Math.sin(t * 0.06 + tx * 0.3) + 1) * 0.5 > 0.55;
+      return pulse ? pal.acc : pal.sp;
+    }
+
+    // Floor pattern varies per section × level for visual variety
     const pat = (section * 3 + level) % 4;
     switch (pat) {
-      case 0: return (Math.floor(tx/2) + Math.floor(ty/2)) % 2 ? pal.fA : pal.fB;
+      case 0: return (Math.floor(tx / 2) + Math.floor(ty / 2)) % 2 ? pal.fA : pal.fB;
       case 1: return h2 < 0.55 ? pal.fA : pal.fB;
       case 2: return (tx + ty) % 3 < 2 ? pal.fA : pal.fB;
-      case 3: return Math.floor(ty/4) % 2 ? pal.fA : pal.fB;
+      case 3: return Math.floor(ty / 4) % 2 ? pal.fA : pal.fB;
+      default: return pal.fA;
     }
-    return pal.fA;
+  }
+
+  // ── Moving game characters (drift through the world) ─────────────────────
+  const GC = Array.from({ length: 12 }, () => ({
+    x:  Math.random() * SEC_W * CAT.length,
+    y:  Math.random() * LEV_H * 6,
+    vx: (Math.random() - 0.5) * 0.06,
+    vy: (Math.random() - 0.5) * 0.045,
+  }));
+  const GC_WORLDW = SEC_W * CAT.length;
+  const GC_WORLDH = LEV_H * 6;
+
+  function drawGameChars(pw) {
+    GC.forEach(c => {
+      c.x += c.vx; c.y += c.vy;
+      if (c.x < 0)          c.x += GC_WORLDW;
+      if (c.x >= GC_WORLDW) c.x -= GC_WORLDW;
+      if (c.y < 0)          c.y += GC_WORLDH;
+      if (c.y >= GC_WORLDH) c.y -= GC_WORLDH;
+
+      const sx = (c.x - camTX) * TS;
+      const sy = (c.y - camTY) * TS;
+      if (sx < -TS * 2 || sx >= pw || sy < -TS * 2 || sy >= H) return;
+
+      const lev  = Math.min(4, Math.max(0, Math.floor(c.y / LEV_H)));
+      const col  = PALETTES[lev].cCol;
+      const blink = Math.sin(t * 0.22 + c.x * 2.1 + c.y * 1.5) > 0.1;
+      if (blink) {
+        ctx.fillStyle = col;
+        const sz = TS * 0.45;
+        ctx.fillRect(sx, sy, sz, sz);
+        // shadow dot for depth feel
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        ctx.fillRect(sx + sz * 0.35, sy + sz * 0.35, sz * 0.4, sz * 0.4);
+      }
+    });
   }
 
   function drawGameWorld(pw) {
@@ -745,8 +819,8 @@ window.addEventListener('resize', () => {
       }
     }
 
-    // Subtle grid lines to enhance the pixel-art feel
-    ctx.strokeStyle = 'rgba(0,0,0,0.30)';
+    // Pixel-art grid lines
+    ctx.strokeStyle = 'rgba(0,0,0,0.28)';
     ctx.lineWidth   = 0.5;
     for (let dx = 0; dx < visTX; dx++) {
       const sx = offX + dx * TS;
@@ -757,10 +831,13 @@ window.addEventListener('resize', () => {
       ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(pw, sy); ctx.stroke();
     }
 
-    // Light vignette over game world so text stays legible
-    const vg = ctx.createLinearGradient(pw * 0.5, 0, pw, 0);
+    // Moving characters on top of tiles
+    drawGameChars(pw);
+
+    // Vignette on right edge so text remains legible
+    const vg = ctx.createLinearGradient(pw * 0.55, 0, pw, 0);
     vg.addColorStop(0, 'transparent');
-    vg.addColorStop(1, 'rgba(0,0,0,0.65)');
+    vg.addColorStop(1, 'rgba(0,0,0,0.72)');
     ctx.fillStyle = vg; ctx.fillRect(0, 0, pw, H);
 
     ctx.restore();
@@ -768,19 +845,18 @@ window.addEventListener('resize', () => {
 
   // ── Film strip ─────────────────────────────────────────────────────────────
   function drawFilm() {
-    const fx = W * Z_FILM * (1 - (Z_FILM - 0.30)) ; // keep same proportions
     const filmX = W * 0.30, filmW = W * (Z_FILM - 0.30);
     ctx.fillStyle = 'rgba(0,0,0,0.95)';
     ctx.fillRect(filmX, 0, filmW, H);
     const ph = 10, pw2 = 7, gap = 20, mg = 4;
+    ctx.fillStyle = 'rgba(255,255,255,0.88)';
     for (let py = 6; py < H - ph; py += gap) {
-      ctx.fillStyle = 'rgba(255,255,255,0.88)';
-      ctx.fillRect(filmX + mg, py, pw2, ph);
+      ctx.fillRect(filmX + mg,            py, pw2, ph);
       ctx.fillRect(filmX + filmW - mg - pw2, py, pw2, ph);
     }
   }
 
-  // ── Matrix zone (whirlpool holes, neural net, sprites) ─────────────────────
+  // ── Matrix zone (whirlpool holes, neural net, pixel sprites) ───────────────
   function initMatrix() {
     const lh = 14, count = Math.ceil(H / lh) + 2;
     matRows = Array.from({ length: count }, (_, i) => ({
@@ -789,7 +865,7 @@ window.addEventListener('resize', () => {
     }));
   }
 
-  const HOLES = Array.from({length: 3}, () => ({
+  const HOLES = Array.from({ length: 3 }, () => ({
     cx: 0.15 + Math.random() * 0.70, cy: 0.15 + Math.random() * 0.70,
     oR: 0.06  + Math.random() * 0.10,
     angle: Math.random() * Math.PI * 2,
@@ -803,11 +879,11 @@ window.addEventListener('resize', () => {
       const hx2 = mx + (h.cx + Math.cos(h.angle) * h.oR) * mw;
       const hy2 =       (h.cy + Math.sin(h.angle) * h.oR * 0.5) * H;
       const dx = cx - hx2, dy = cy - hy2;
-      const d  = Math.sqrt(dx*dx + dy*dy);
+      const d  = Math.sqrt(dx * dx + dy * dy);
       const outerR = h.r * 1.9;
       if (d < outerR) {
         const ang   = Math.atan2(dy, dx);
-        const phase = ((ang - h.angle * 4) % (Math.PI*2) + Math.PI*2) % (Math.PI*2);
+        const phase = ((ang - h.angle * 4) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
         const swirl = 0.2 + (Math.cos(phase) + 1) * 0.40;
         const dFrac = d / outerR;
         const mult  = dFrac < 0.18 ? 0 : dFrac * swirl;
@@ -817,7 +893,7 @@ window.addEventListener('resize', () => {
     return mn;
   }
 
-  const NN = Array.from({length: 28}, () => ({
+  const NN = Array.from({ length: 28 }, () => ({
     nx: 0.25 + Math.random() * 0.72, ny: 0.04 + Math.random() * 0.92,
     pulse: Math.random() * 200, pMax: 90 + Math.floor(Math.random() * 140),
     x: 0, y: 0,
@@ -831,9 +907,9 @@ window.addEventListener('resize', () => {
     for (let i = 0; i < NN.length; i++) {
       for (let j = i + 1; j < NN.length; j++) {
         const dx = NN[i].x - NN[j].x, dy = NN[i].y - NN[j].y;
-        const d  = Math.sqrt(dx*dx + dy*dy);
+        const d  = Math.sqrt(dx * dx + dy * dy);
         if (d < 195) {
-          ctx.strokeStyle = `rgba(155,195,255,${0.10 * (1 - d/195)})`;
+          ctx.strokeStyle = `rgba(155,195,255,${0.10 * (1 - d / 195)})`;
           ctx.lineWidth = 0.5;
           ctx.beginPath(); ctx.moveTo(NN[i].x, NN[i].y);
           ctx.lineTo(NN[j].x, NN[j].y); ctx.stroke();
@@ -842,10 +918,10 @@ window.addEventListener('resize', () => {
     }
     NN.forEach(n => {
       n.pulse = (n.pulse + 1) % n.pMax;
-      const t    = n.pulse / n.pMax;
-      const glow = t < 0.25 ? t / 0.25 : t > 0.55 ? 0 : (0.55 - t) / 0.30;
+      const tN   = n.pulse / n.pMax;
+      const glow = tN < 0.25 ? tN / 0.25 : tN > 0.55 ? 0 : (0.55 - tN) / 0.30;
       ctx.fillStyle = `rgba(155,210,255,${0.14 + glow * 0.55})`;
-      ctx.beginPath(); ctx.arc(n.x, n.y, 1.2 + glow * 2.2, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(n.x, n.y, 1.2 + glow * 2.2, 0, Math.PI * 2); ctx.fill();
     });
   }
 
@@ -853,8 +929,7 @@ window.addEventListener('resize', () => {
   const SHIP = [[0,0,1,0,0],[0,1,1,1,0],[1,1,1,1,1],[0,1,0,1,0]];
   const GHST = [[0,1,1,1,1,0],[1,0,1,0,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,0,1,0,1,1]];
   const PATS = [INV, SHIP, GHST, SHIP, INV];
-
-  const SPRITES = Array.from({length: 5}, (_, i) => ({
+  const SPRITES = Array.from({ length: 5 }, (_, i) => ({
     nx: 0.05 + Math.random() * 0.90, ny: 0.05 + Math.random() * 0.90,
     vx: (Math.random() > 0.5 ? 1 : -1) * (0.00025 + Math.random() * 0.0003),
     vy: (Math.random() > 0.5 ? 1 : -1) * (0.00015 + Math.random() * 0.0002),
@@ -872,7 +947,7 @@ window.addEventListener('resize', () => {
       const ox = -(cols * s.sc) / 2, oy = -(rows * s.sc) / 2;
       s.pat.forEach((row, ri) =>
         row.forEach((cell, ci) => {
-          if (cell) ctx.fillRect(px + ox + ci*s.sc, py + oy + ri*s.sc, s.sc, s.sc);
+          if (cell) ctx.fillRect(px + ox + ci * s.sc, py + oy + ri * s.sc, s.sc, s.sc);
         })
       );
     });
@@ -890,7 +965,7 @@ window.addEventListener('resize', () => {
     ctx.font = '10px "Helvetica Neue", Helvetica, monospace';
     HOLES.forEach(h => { h.angle += h.spd; });
     matRows.forEach(row => {
-      if (Math.random() < 0.002) row.vals = Array.from({length:22}, () => Math.floor(Math.random()*2500));
+      if (Math.random() < 0.002) row.vals = Array.from({ length: 22 }, () => Math.floor(Math.random() * 2500));
       let x = mx + 6;
       row.vals.forEach((v, vi) => {
         const str   = v + ',';
@@ -917,9 +992,10 @@ window.addEventListener('resize', () => {
 
   // ── Frame loop ─────────────────────────────────────────────────────────────
   function frame() {
-    // Smooth camera pan
-    camTX += (tgtTX - camTX) * 0.065;
-    camTY += (tgtTY - camTY) * 0.065;
+    t++;
+    // Smooth camera pan — slightly slower for more dramatic big-zone pans
+    camTX += (tgtTX - camTX) * 0.055;
+    camTY += (tgtTY - camTY) * 0.055;
 
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, W, H);
