@@ -9,14 +9,12 @@
 
 :root {
   --cobalt:     #005BFF;
-  --cobalt-dim: rgba(0, 91, 255, 0.18);
-  --h:   #d4d4d4;
-  --mid: #888888;
-  --dim: #444444;
+  --h:   #d8d8d8;
+  --mid: #999999;
+  --dim: #4a4a4a;
   --bg:  #0d0d0d;
-  --rule: rgba(255,255,255,0.07);
+  --rule: rgba(255,255,255,0.09);
   --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -56,7 +54,7 @@ body::after {
   color: var(--dim); font-weight: 400;
   flex-shrink: 0;
 }
-#topbar a { color: var(--dim); text-decoration: none; transition: color .2s var(--ease); }
+#topbar a { color: var(--dim); text-decoration: none; transition: color .2s cubic-bezier(0.16, 1, 0.3, 1); }
 #topbar a:hover { color: var(--cobalt); }
 
 /* ─── Main ───────────────────────────────────────────────── */
@@ -90,33 +88,29 @@ body::after {
   position: absolute; top: 50%;
   display: flex; flex-direction: column; align-items: center; gap: 5px;
   cursor: pointer;
-  transition: left .38s var(--ease), opacity .38s var(--ease), transform .38s var(--ease);
+  transition: left .38s cubic-bezier(0.16, 1, 0.3, 1), opacity .38s cubic-bezier(0.16, 1, 0.3, 1), transform .38s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .cat-icon svg {
   display: block; fill: none;
   stroke: currentColor; stroke-width: 1.5;
   stroke-linecap: round; stroke-linejoin: round;
-  transition: width .3s var(--ease), height .3s var(--ease), filter .3s var(--ease);
+  transition: width .3s cubic-bezier(0.16, 1, 0.3, 1), height .3s cubic-bezier(0.16, 1, 0.3, 1), filter .3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Selected category name */
 #cat-name {
-  font-size: clamp(36px, 4.5vw, 60px);
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: clamp(52px, 6vw, 80px);
+  font-weight: 300;
+  letter-spacing: -0.02em;
   color: var(--h);
   line-height: 1;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   flex-shrink: 0;
   overflow: hidden;
 }
 #cat-name-inner {
   display: block;
-  animation: nameIn .45s var(--ease) both;
-}
-@keyframes nameIn {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+  will-change: opacity, transform;
 }
 
 /* Divider */
@@ -138,60 +132,52 @@ body::after {
 /* L2 items */
 .l2-item {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 18px 0;
+  padding: 20px 0;
   border-bottom: 1px solid var(--rule);
   cursor: pointer;
-  transition: color .2s var(--ease), padding-left .25s var(--ease);
-  opacity: 0;
-  animation: itemIn .5s var(--ease) both;
-}
-@keyframes itemIn {
-  from { opacity: 0; transform: translateX(-16px); }
-  to   { opacity: 1; transform: translateX(0); }
+  transition: color .2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .l2-name {
-  font-size: clamp(22px, 2.8vw, 40px);
+  font-size: clamp(28px, 3.8vw, 54px);
   font-weight: 300;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   color: var(--mid);
   line-height: 1;
-  transition: color .2s var(--ease);
+  transition: color .2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .l2-arrow {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--cobalt);
   opacity: 0;
-  transform: translateX(-6px);
-  transition: opacity .2s var(--ease), transform .2s var(--ease);
+  transform: translateX(-5px);
+  transition: opacity .2s cubic-bezier(0.16, 1, 0.3, 1), transform .2s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
 .l2-item:hover .l2-name,
 .l2-item.active .l2-name { color: var(--h); }
-.l2-item.active { padding-left: 8px; }
 .l2-item.active .l2-arrow { opacity: 1; transform: translateX(0); }
 .l2-item:hover .l2-arrow  { opacity: 0.5; transform: translateX(0); }
 
 /* L3 items (when drilled in) */
 .l3-item {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 0;
+  padding: 16px 0;
   border-bottom: 1px solid var(--rule);
   cursor: pointer;
-  opacity: 0;
-  animation: itemIn .45s var(--ease) both;
+  transition: color .2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .l3-name {
-  font-size: clamp(14px, 1.8vw, 26px);
+  font-size: clamp(18px, 2.2vw, 32px);
   font-weight: 300;
-  letter-spacing: -0.005em;
+  letter-spacing: -0.01em;
   color: var(--mid);
   line-height: 1.1;
-  transition: color .2s var(--ease);
+  transition: color .2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .l3-arrow {
   font-size: 10px; color: var(--cobalt);
   opacity: 0; transform: translateX(-4px);
-  transition: opacity .2s var(--ease), transform .2s var(--ease);
+  transition: opacity .2s cubic-bezier(0.16, 1, 0.3, 1), transform .2s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
 .l3-item:hover .l3-name,
@@ -206,7 +192,7 @@ body::after {
   font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
   color: var(--dim); font-weight: 400;
   cursor: pointer;
-  transition: color .2s var(--ease);
+  transition: color .2s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
 #breadcrumb.visible { display: flex; }
@@ -232,7 +218,7 @@ body::after {
 #right::-webkit-scrollbar { width: 2px; }
 #right::-webkit-scrollbar-thumb { background: var(--cobalt); opacity: 0.3; }
 
-#detail-wrap { transition: opacity .22s var(--ease); }
+#detail-wrap { transition: opacity .22s cubic-bezier(0.16, 1, 0.3, 1); }
 #detail-label {
   font-size: clamp(11px, 1.1vw, 13px);
   letter-spacing: 0.22em; text-transform: uppercase;
@@ -254,7 +240,7 @@ body::after {
   font-size: clamp(12px, 1.05vw, 14px);
   color: var(--dim); font-weight: 300;
   font-style: italic;
-  transition: opacity .22s var(--ease);
+  transition: opacity .22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ─── Footer ─────────────────────────────────────────────── */
@@ -370,7 +356,7 @@ const CAT = [
           { label: "Boeing's Demise · An Essay",       desc: "Analysis of Boeing's decline from engineering-driven excellence to PR-first short-termism.\n\nKey events: Lion Air 610, Ethiopian Airlines 302, Alaska Flight 1282, Starliner.\n$2.5B fraud settlement · $200M investor deception fine.\n\nRecommendations: Return to engineering leadership · Reinstate transparency · Eliminate toxic culture from McDonnell Douglas merger." },
           { label: 'Cars24 · Turnaround Strategy',     desc: "Strategic business case for Cars24. Market positioning analysis, operational audit, and recommendations for India's leading used-car marketplace." },
           { label: 'Diversity, Equity & Inclusion',    desc: 'Academic essay examining DEI frameworks in modern organisations — systemic barriers, measurable interventions, and equitable workplace design.' },
-          { label: 'Digital Fabrication · Market',     desc: 'Market analysis of global digital fabrication: $38.2B in 2023 → $239.8B by 2030 (CAGR 30%). Focus on India's infrastructure push: $170B in airport funding, 80 new airports by 2030.' },
+          { label: 'Digital Fabrication · Market',     desc: "Market analysis of global digital fabrication: $38.2B in 2023 → $239.8B by 2030 (CAGR 30%). Focus on India's infrastructure push: $170B in airport funding, 80 new airports by 2030." },
         ]
       },
       {
@@ -507,39 +493,51 @@ function renderCats() {
 }
 
 function renderName() {
-  // Swap out with animation re-trigger
   const el = document.getElementById('cat-name-inner');
-  el.style.animation = 'none';
+  el.style.transition = 'none';
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(12px)';
   el.textContent = cat().label;
-  void el.offsetWidth;
-  el.style.animation = '';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    el.style.transition = 'opacity 0.38s cubic-bezier(0.16,1,0.3,1), transform 0.38s cubic-bezier(0.16,1,0.3,1)';
+    el.style.opacity = '1';
+    el.style.transform = 'translateY(0)';
+  }));
+}
+
+function animIn(el, delay) {
+  el.style.opacity = '0';
+  el.style.transform = 'translateX(-12px)';
+  el.style.transition = 'none';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    el.style.transition = `opacity 0.42s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.42s cubic-bezier(0.16,1,0.3,1) ${delay}ms`;
+    el.style.opacity = '1';
+    el.style.transform = 'translateX(0)';
+  }));
 }
 
 function renderList() {
   listEl.innerHTML = '';
 
-  // Breadcrumb (L3 mode)
   if (depth === 3) {
     bcEl.classList.add('visible');
     bcLbl.textContent = curL2().label.toUpperCase();
-    // Render L3 children
     kids().forEach((child, i) => {
       const el = document.createElement('div');
       el.className = 'l3-item' + (i === l3Idx ? ' active' : '');
       el.innerHTML = `<span class="l3-name">${child.label}</span><span class="l3-arrow">→</span>`;
-      el.style.animationDelay = `${i * 40}ms`;
+      animIn(el, i * 38);
       el.addEventListener('click', () => { l3Idx=i; renderList(); renderDetail(); });
       listEl.appendChild(el);
     });
   } else {
     bcEl.classList.remove('visible');
-    // Render L2 items
     l2list().forEach((item, i) => {
       const el = document.createElement('div');
       el.className = 'l2-item' + (i === l2Idx ? ' active' : '');
       const hasC = !!(item.children && item.children.length);
       el.innerHTML = `<span class="l2-name">${item.label}</span><span class="l2-arrow">${hasC ? '→' : ''}</span>`;
-      el.style.animationDelay = `${i * 45}ms`;
+      animIn(el, i * 44);
       el.addEventListener('click', () => {
         l2Idx = i;
         if (hasC) { l3Idx=0; depth=3; }
@@ -549,7 +547,7 @@ function renderList() {
     });
   }
 
-  focInd.style.background = depth === 3 ? 'rgba(0,91,255,0.5)' : 'var(--cobalt)';
+  focInd.style.background = depth === 3 ? 'rgba(0,91,255,0.5)' : '#005BFF';
 }
 
 function renderDetail() {
@@ -599,18 +597,26 @@ document.addEventListener('keydown', e => {
   const nL2  = l2list().length;
   const nL3  = kids().length;
 
-  if (e.key === 'ArrowLeft' || e.key === 'Escape') {
+  if (e.key === 'ArrowLeft') {
     e.preventDefault();
     if (depth === 3) { goBack(); return; }
     catIdx = (catIdx - 1 + nCat) % nCat;
     l2Idx = 0; l3Idx = 0; depth = 2; render();
   }
-  else if (e.key === 'ArrowRight' || e.key === 'Enter') {
+  else if (e.key === 'ArrowRight') {
     e.preventDefault();
-    if (depth === 2 && hasKids()) { depth = 3; l3Idx = 0; renderList(); renderDetail(); return; }
-    if (depth === 2) { /* leaf — no action */ return; }
+    if (depth === 3) { catIdx = (catIdx + 1) % nCat; l2Idx=0; l3Idx=0; depth=2; render(); return; }
     catIdx = (catIdx + 1) % nCat;
     l2Idx = 0; l3Idx = 0; depth = 2; render();
+  }
+  else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (depth === 2 && hasKids()) { depth = 3; l3Idx = 0; renderList(); renderDetail(); }
+    else if (curL2().link) window.open(curL2().link, '_blank');
+  }
+  else if (e.key === 'Escape') {
+    e.preventDefault();
+    if (depth === 3) { goBack(); }
   }
   else if (e.key === 'ArrowDown') {
     e.preventDefault();
@@ -691,8 +697,8 @@ document.addEventListener('keydown', e => {
       ctx.quadraticCurveTo(cx2, cy2 + r * 0.6, cx2 + r * 1.4, cy2 + r * 2.2);
       ctx.stroke();
       // "PHOTO" hint
-      ctx.font = `700 9px var(--font, "Helvetica Neue")`;
-      ctx.fillStyle = 'rgba(0,91,255,0.18)';
+      ctx.font = '700 9px "Helvetica Neue", Helvetica, sans-serif';
+      ctx.fillStyle = 'rgba(0,91,255,0.22)';
       ctx.textAlign = 'center';
       ctx.fillText('ADD PHOTO', cx2, cy2 + r * 3.2);
       ctx.textAlign = 'left';
