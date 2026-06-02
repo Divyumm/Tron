@@ -25,10 +25,8 @@ body::after {
   pointer-events: none; z-index: 999;
 }
 
-/* ── UI ── */
+/* ── UI shell ── */
 #ui { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; }
-
-/* ── Topbar ── */
 #topbar {
   display: flex; justify-content: space-between; align-items: center;
   padding: 20px 36px 0;
@@ -37,25 +35,31 @@ body::after {
 }
 #topbar a { color: #e8e8e8; text-decoration: none; }
 #topbar a:hover { opacity: 0.65; }
-
-/* ── Stage ── */
 #stage { flex: 1; position: relative; overflow: hidden; }
 
-/* Persistent breadcrumb (depth 1+) */
-#nav-crumb {
-  position: absolute;
-  top: 18px; left: 40%;
-  transform: translateX(-50%);
-  font-size: 9px; letter-spacing: 0.20em; text-transform: uppercase;
-  color: rgba(255,255,255,0.32); font-weight: 700;
-  white-space: nowrap; pointer-events: none;
-  opacity: 0; transition: opacity 0.3s;
+/* ── Directional navigation arrows ── */
+.nav-arr {
+  position: fixed; z-index: 50;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.28);
+  color: rgba(255,255,255,0.90);
+  font-size: 13px; font-weight: 700;
+  padding: 7px 13px; cursor: pointer;
+  transition: opacity 0.25s, background 0.2s;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.05em;
 }
+.nav-arr:hover { background: rgba(255,255,255,0.14); }
+.nav-arr.dim { opacity: 0.22; pointer-events: none; }
+#arr-up    { top: 58px;    left: 50%; transform: translateX(-50%); }
+#arr-down  { bottom: 58px; left: 50%; transform: translateX(-50%); }
+#arr-left  { top: 50%;     left: 6px; transform: translateY(-50%); }
+#arr-right { top: 50%;     right: 6px; transform: translateY(-50%); }
 
-/* ── L1 horizontal carousel — fixed anchor at left: 40% ── */
+/* ── L1 horizontal carousel — anchor: top-left ── */
 #cat-carousel { position: absolute; inset: 0; transition: opacity 0.38s ease; }
 .cat-btn {
-  position: absolute; top: 50%; left: 40%;
+  position: absolute; top: 34%; left: 6%;
   background: none; border: none; cursor: pointer;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700;
   color: #e8e8e8; line-height: 1; padding: 0; white-space: nowrap;
@@ -65,17 +69,14 @@ body::after {
     transform 0.42s cubic-bezier(0.16,1,0.3,1);
   text-shadow: 0 2px 20px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.7);
 }
-/* Hint and arrow aligned to same anchor */
 #enter-hint {
-  position: absolute; top: calc(50% + 58px); left: 40%;
-  transform: translateX(-50%);
+  position: absolute; top: calc(34% + 62px); left: 6%;
   font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase;
   color: rgba(255,255,255,0.3); font-weight: 700;
   pointer-events: none; transition: opacity 0.3s;
 }
 #down-hint {
-  position: absolute; top: calc(50% + 80px); left: 40%;
-  transform: translateX(-50%);
+  position: absolute; top: calc(34% + 84px); left: 6%;
   width: 0; height: 0;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
@@ -84,45 +85,48 @@ body::after {
   animation: hintFloat 2.1s cubic-bezier(0.45,0,0.55,1) infinite;
 }
 @keyframes hintFloat {
-  0%, 100% { transform: translateX(-50%) translateY(0);   opacity: 0.3; }
-  50%       { transform: translateX(-50%) translateY(7px); opacity: 0.8; }
+  0%, 100% { transform: translateY(0);   opacity: 0.3; }
+  50%       { transform: translateY(7px); opacity: 0.8; }
 }
 
-/* ── L2 vertical sub-nav — same anchor left: 40% ── */
+/* ── L2 vertical sub-nav — anchor: top-left ── */
 #sub-nav { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity 0.38s ease; }
 #sub-nav.active { opacity: 1; pointer-events: auto; }
+/* Category name shown above sub-items as breadcrumb */
 #parent-label {
-  position: absolute; top: calc(50% - 115px); left: 40%;
-  transform: translateX(-50%);
-  font-size: 22px; font-weight: 700;
-  color: rgba(232,232,232,0.22); white-space: nowrap;
-  pointer-events: none; letter-spacing: -0.01em;
+  position: absolute; top: 14%; left: 6%;
+  font-size: 14px; font-weight: 700;
+  color: rgba(232,232,232,0.28); white-space: nowrap;
+  pointer-events: none; letter-spacing: 0.03em; text-transform: uppercase;
 }
+/* Sub-item buttons all anchored to top: 26%, left: 6% */
 .sub-btn {
-  position: absolute; top: 50%; left: 40%;
+  position: absolute; top: 26%; left: 6%;
   background: none; border: none; cursor: pointer;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700;
   color: #e8e8e8; line-height: 1; padding: 0; white-space: nowrap;
   text-shadow: 0 2px 24px rgba(0,0,0,0.95);
   transition:
-    font-size 0.38s cubic-bezier(0.16,1,0.3,1),
-    opacity   0.38s cubic-bezier(0.16,1,0.3,1),
-    transform 0.38s cubic-bezier(0.16,1,0.3,1);
+    font-size   0.38s cubic-bezier(0.16,1,0.3,1),
+    opacity     0.38s cubic-bezier(0.16,1,0.3,1),
+    transform   0.38s cubic-bezier(0.16,1,0.3,1);
 }
+/* Preview of sub-item desc on the right side */
 #desc-preview {
-  position: absolute; top: 50%; left: 62%; right: 2%;
+  position: absolute; top: 50%; left: 54%; right: 2%;
   transform: translateY(-50%);
-  font-size: 19px; font-weight: 700; color: #e8e8e8;
+  font-size: 18px; font-weight: 700; color: #e8e8e8;
   overflow: hidden; white-space: nowrap;
-  -webkit-mask-image: linear-gradient(to right, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.35) 50%, transparent 88%);
-  mask-image: linear-gradient(to right, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.35) 50%, transparent 88%);
+  -webkit-mask-image: linear-gradient(to right, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.3) 55%, transparent 88%);
+  mask-image: linear-gradient(to right, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.3) 55%, transparent 88%);
   pointer-events: none; letter-spacing: -0.01em;
+  transition: opacity 0.3s;
 }
 
-/* ── L3a: full text (no children) ── */
+/* ── L3a full desc (no children) — starts below header ── */
 #desc-full {
   position: absolute; inset: 0;
-  padding: 50px 52px 160px;
+  padding: 34vh 52px 180px 6%;
   opacity: 0; pointer-events: none; transition: opacity 0.38s ease;
   overflow-y: auto;
   scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
@@ -130,20 +134,16 @@ body::after {
 #desc-full::-webkit-scrollbar { width: 2px; }
 #desc-full::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
 #desc-full.active { opacity: 1; pointer-events: auto; }
-.panel-crumb {
-  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
-  color: rgba(232,232,232,0.3); margin-bottom: 24px; font-weight: 700;
-}
 #desc-full-body {
   font-size: 23px; font-weight: 700;
   line-height: 1.62; color: #e8e8e8;
-  white-space: pre-line; max-width: 820px;
+  white-space: pre-line; max-width: 740px;
 }
 
-/* ── L3b: child item view (has children) ── */
+/* ── L3b child item view — starts below header ── */
 #child-view {
   position: absolute; inset: 0;
-  padding: 50px 52px 160px;
+  padding: 34vh 52px 200px 6%;
   opacity: 0; pointer-events: none; transition: opacity 0.38s ease;
   overflow-y: auto;
   scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
@@ -151,7 +151,6 @@ body::after {
 #child-view::-webkit-scrollbar { width: 2px; }
 #child-view::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
 #child-view.active { opacity: 1; pointer-events: auto; }
-
 #child-counter {
   font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
   color: rgba(232,232,232,0.38); margin-bottom: 22px;
@@ -167,22 +166,29 @@ body::after {
   line-height: 1.68; color: rgba(232,232,232,0.72);
   white-space: pre-line; max-width: 680px;
 }
+/* Next item peek */
+#child-next {
+  margin-top: 52px;
+  font-size: 17px; font-weight: 700; letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.22);
+  transition: opacity 0.3s;
+}
 
-/* ── Work preview (TV placeholder) ── */
+/* ── Work preview (TV placeholder) ── 4× area (2× each dimension) ── */
 .work-preview {
   position: absolute; bottom: 44px; right: 52px;
   pointer-events: none;
 }
 .tv-outer {
-  width: 148px;
+  width: 296px;
   border: 2px solid rgba(255,255,255,0.14);
-  border-radius: 6px; padding: 6px;
+  border-radius: 8px; padding: 8px;
   background: rgba(0,0,0,0.55);
 }
 .tv-screen {
-  width: 100%; height: 88px;
+  width: 100%; height: 176px;
   background: #020208;
-  border-radius: 3px;
+  border-radius: 4px;
   display: flex; align-items: center; justify-content: center;
   position: relative; overflow: hidden;
 }
@@ -191,11 +197,11 @@ body::after {
   position: absolute; inset: 0;
   background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.04) 2px, rgba(255,255,255,0.04) 4px);
 }
-.tv-play { font-size: 22px; color: rgba(255,255,255,0.38); z-index: 1; }
+.tv-play { font-size: 42px; color: rgba(255,255,255,0.38); z-index: 1; }
 .tv-label {
-  font-size: 7px; letter-spacing: 0.14em; text-transform: uppercase;
+  font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
   color: rgba(255,255,255,0.16); text-align: center;
-  margin-top: 6px; font-weight: 700;
+  margin-top: 8px; font-weight: 700;
 }
 
 /* ── Footer ── */
@@ -217,6 +223,13 @@ body::after {
 </head>
 <body>
 <canvas id="bg"></canvas>
+
+<!-- Persistent directional arrows -->
+<button class="nav-arr" id="arr-up"    aria-label="Up">↑</button>
+<button class="nav-arr" id="arr-down"  aria-label="Down">↓</button>
+<button class="nav-arr" id="arr-left"  aria-label="Left">←</button>
+<button class="nav-arr" id="arr-right" aria-label="Right">→</button>
+
 <div id="ui">
   <div id="topbar">
     <span>Divyum Maheshwari</span>
@@ -224,7 +237,6 @@ body::after {
     <span id="clk"></span>
   </div>
   <div id="stage">
-    <div id="nav-crumb"></div>
     <div id="cat-carousel"></div>
     <div id="enter-hint">↓ &nbsp;ENTER</div>
     <div id="down-hint"></div>
@@ -233,7 +245,6 @@ body::after {
       <div id="desc-preview"></div>
     </div>
     <div id="desc-full">
-      <div class="panel-crumb" id="desc-full-crumb"></div>
       <div id="desc-full-body"></div>
       <div class="work-preview">
         <div class="tv-outer">
@@ -243,10 +254,10 @@ body::after {
       </div>
     </div>
     <div id="child-view">
-      <div class="panel-crumb" id="child-crumb"></div>
       <div id="child-counter"></div>
       <div id="child-title"></div>
       <div id="child-body"></div>
+      <div id="child-next"></div>
       <div class="work-preview">
         <div class="tv-outer">
           <div class="tv-screen"><span class="tv-play">▶</span></div>
@@ -362,32 +373,23 @@ const CAT = [
 
 // ── Navigation state ──────────────────────────────────────────────────────────
 let catIdx   = 0;
-let depth    = 0;   // 0=L1 categories  1=L2 sub-items  2=L3 content
+let depth    = 0;
 let subIdx   = 0;
 let childIdx = 0;
 let subBtns  = [];
 
 // ── Camera state ──────────────────────────────────────────────────────────────
-const TS    = 8;    // tile size px
-const SEC_W = 100;  // tiles per L1 zone (large = big zone jumps)
-const LEV_H = 150;  // tiles per depth level (tall = dramatic dives)
-
-let camTX = 0, camTY = 0;
-let tgtTX = 0, tgtTY = 0;
+const TS    = 8;
+const SEC_W = 100;
+const LEV_H = 150;
+let camTX = 0, camTY = 0, tgtTX = 0, tgtTY = 0;
 
 function updateCamTarget() {
   const nSubs   = CAT[catIdx].items.length;
   const subFrac = nSubs > 1 ? subIdx / (nSubs - 1) : 0;
   const visH    = window.innerHeight / TS;
-
-  // ── Horizontal: L1 category = BIG zone jump; sub adds small lateral drift ──
   tgtTX = catIdx * SEC_W;
   if (depth >= 1) tgtTX += subFrac * 38;
-
-  // ── Vertical: tiered depth progression ──────────────────────────────────────
-  // L1 (depth=0): top of overworld, calm palette
-  // L2 (depth=1): each sub-item dives deeper → palette progresses
-  // L3 (depth=2): even deeper, children push further into madness
   if (depth === 0) {
     tgtTY = LEV_H * 0.3 - visH * 0.5;
   } else if (depth === 1) {
@@ -405,22 +407,24 @@ function updateCamTarget() {
 }
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
-const catCarousel   = document.getElementById('cat-carousel');
-const enterHint     = document.getElementById('enter-hint');
-const downHint      = document.getElementById('down-hint');
-const subNavEl      = document.getElementById('sub-nav');
-const parentLabel   = document.getElementById('parent-label');
-const descPreview   = document.getElementById('desc-preview');
-const descFullEl    = document.getElementById('desc-full');
-const descFullCrumb = document.getElementById('desc-full-crumb');
-const descFullBody  = document.getElementById('desc-full-body');
-const childViewEl   = document.getElementById('child-view');
-const childCrumb    = document.getElementById('child-crumb');
-const childCounter  = document.getElementById('child-counter');
-const childTitle    = document.getElementById('child-title');
-const childBody     = document.getElementById('child-body');
-const navCrumb      = document.getElementById('nav-crumb');
-const footerEl      = document.getElementById('footer');
+const catCarousel = document.getElementById('cat-carousel');
+const enterHint   = document.getElementById('enter-hint');
+const downHint    = document.getElementById('down-hint');
+const subNavEl    = document.getElementById('sub-nav');
+const parentLabel = document.getElementById('parent-label');
+const descPreview = document.getElementById('desc-preview');
+const descFullEl  = document.getElementById('desc-full');
+const descFullBody= document.getElementById('desc-full-body');
+const childViewEl = document.getElementById('child-view');
+const childCounter= document.getElementById('child-counter');
+const childTitle  = document.getElementById('child-title');
+const childBody   = document.getElementById('child-body');
+const childNext   = document.getElementById('child-next');
+const footerEl    = document.getElementById('footer');
+const arrUp       = document.getElementById('arr-up');
+const arrDown     = document.getElementById('arr-down');
+const arrLeft     = document.getElementById('arr-left');
+const arrRight    = document.getElementById('arr-right');
 
 // ── Clock ─────────────────────────────────────────────────────────────────────
 (function tick() {
@@ -430,7 +434,7 @@ const footerEl      = document.getElementById('footer');
   setTimeout(tick, 20000);
 })();
 
-// ── L1 carousel ───────────────────────────────────────────────────────────────
+// ── L1 carousel (spread RIGHT from top-left anchor) ──────────────────────────
 CAT.forEach((cat, i) => {
   const btn = document.createElement('button');
   btn.className = 'cat-btn';
@@ -445,18 +449,19 @@ CAT.forEach((cat, i) => {
 
 function updateCats() {
   const W  = window.innerWidth;
-  const SP = Math.min(330, W / 3.8);
+  const SP = Math.min(280, W / 4.5);
   Array.from(catCarousel.querySelectorAll('.cat-btn')).forEach((btn, i) => {
     const off = i - catIdx, abs = Math.abs(off);
-    btn.style.transform    = `translate(calc(-50% + ${off * SP}px), -50%)`;
-    btn.style.fontSize     = abs === 0 ? '76px' : abs === 1 ? '28px' : '18px';
-    btn.style.opacity      = abs === 0 ? '1' : abs === 1 ? '0.75' : abs === 2 ? '0.42' : '0';
+    // Spread to the right; active at left: 6% (no X shift), others shift right
+    btn.style.transform    = `translate(${off > 0 ? off * SP : off * SP * 0.6}px, -50%)`;
+    btn.style.fontSize     = abs === 0 ? '72px' : abs === 1 ? '26px' : '17px';
+    btn.style.opacity      = abs === 0 ? '1' : abs === 1 ? '0.72' : abs === 2 ? '0.40' : '0';
     btn.style.pointerEvents = abs <= 2 ? 'auto' : 'none';
     btn.style.zIndex       = String(10 - abs);
   });
 }
 
-// ── L2 sub-nav ────────────────────────────────────────────────────────────────
+// ── L2 sub-nav (spread DOWN from top-left anchor) ────────────────────────────
 function buildSubBtns() {
   subBtns.forEach(b => b.remove());
   subBtns = [];
@@ -478,57 +483,73 @@ function buildSubBtns() {
 }
 
 function selFontSize(text) {
-  const maxW = window.innerWidth * 0.38;
-  return Math.min(76, Math.max(28, Math.floor(maxW / (text.length * 0.54))));
+  const maxW = window.innerWidth * 0.42;
+  return Math.min(52, Math.max(26, Math.floor(maxW / (text.length * 0.56))));
 }
 
 function positionAllSubBtns() {
-  const YGAP = 95;
+  if (depth === 2) { applyHeaderMode(); return; }
+  const YGAP = 80;
   subBtns.forEach((btn, i) => {
     const off = i - subIdx, abs = Math.abs(off);
     let size, opacity, yOff;
-    if      (abs === 0) { size = selFontSize(btn.textContent); opacity = 1.0; yOff = 0; }
-    else if (abs === 1) { size = 32; opacity = 0.78; yOff = off * YGAP; }
-    else if (abs === 2) { size = 20; opacity = 0.50; yOff = off > 0 ? YGAP*1.55 : -YGAP*1.55; }
-    else if (abs === 3) { size = 14; opacity = 0.25; yOff = off > 0 ? YGAP*2.1  : -YGAP*2.1;  }
-    else                { size = 11; opacity = 0;    yOff = off > 0 ? YGAP*2.6  : -YGAP*2.6;  }
+    if      (abs === 0) { size = selFontSize(btn.textContent); opacity = 1.00; yOff = 0; }
+    else if (abs === 1) { size = 26; opacity = 0.72; yOff = off * YGAP; }
+    else if (abs === 2) { size = 17; opacity = 0.44; yOff = off > 0 ? YGAP*1.55 : -YGAP*1.55; }
+    else if (abs === 3) { size = 13; opacity = 0.22; yOff = off > 0 ? YGAP*2.1  : -YGAP*2.1;  }
+    else                { size = 11; opacity = 0;    yOff = off > 0 ? YGAP*2.55 : -YGAP*2.55; }
     btn.style.fontSize  = size + 'px';
     btn.style.opacity   = String(opacity);
-    btn.style.transform = `translate(-50%, calc(-50% + ${yOff}px))`;
+    btn.style.transform = `translate(0, calc(-50% + ${yOff}px))`;
+  });
+}
+
+// Header mode: shrink to top-left label, same font at same position
+function applyHeaderMode() {
+  subBtns.forEach((btn, i) => {
+    if (i === subIdx) {
+      btn.style.fontSize  = selFontSize(btn.textContent) + 'px';
+      btn.style.opacity   = '0.88';
+      btn.style.transform = 'translate(0, -50%)';
+    } else {
+      btn.style.opacity = '0';
+    }
   });
 }
 
 function updateDescPreview() {
   const item = CAT[catIdx].items[subIdx];
   let text = '';
-  if (item.desc) {
-    text = item.desc.split('\n').filter(l => l.trim()).join(' · ');
-  } else if (item.children) {
-    text = item.children.map(c => c.label).join(' · ');
-  }
+  if (item.desc)      text = item.desc.split('\n').filter(l => l.trim()).join(' · ');
+  else if (item.children) text = item.children.map(c => c.label).join(' · ');
   descPreview.textContent = text;
 }
 
 // ── L3 renders ────────────────────────────────────────────────────────────────
 function renderFullDesc() {
-  const cat  = CAT[catIdx];
-  const item = cat.items[subIdx];
-  descFullCrumb.textContent = cat.label + ' / ' + item.label;
-  descFullBody.textContent  = item.desc || '';
+  const item = CAT[catIdx].items[subIdx];
+  descFullBody.textContent = item.desc || '';
   descFullEl.scrollTop = 0;
 }
 
 function renderChildView() {
-  const cat   = CAT[catIdx];
-  const item  = cat.items[subIdx];
+  const item  = CAT[catIdx].items[subIdx];
   const child = item.children[childIdx];
   const total = item.children.length;
-  childCrumb.textContent = cat.label + ' / ' + item.label;
   childCounter.innerHTML =
     `<span class="arr">←</span><span>${childIdx + 1} / ${total}</span><span class="arr">→</span>`;
   childTitle.textContent = child.label;
   childBody.textContent  = child.desc || '';
   childViewEl.scrollTop  = 0;
+  // Next item peek
+  const next = item.children[childIdx + 1];
+  if (next) {
+    childNext.textContent = '→  ' + next.label;
+    childNext.style.opacity = '1';
+  } else {
+    childNext.textContent = '';
+    childNext.style.opacity = '0';
+  }
 }
 
 // ── Navigation core ───────────────────────────────────────────────────────────
@@ -539,106 +560,151 @@ function hasChildren() {
 
 function goTo(newDepth) {
   depth = newDepth;
-  catCarousel.style.opacity       = depth === 0 ? '1' : '0';
-  catCarousel.style.pointerEvents = depth === 0 ? 'auto' : 'none';
-  enterHint.style.opacity         = depth === 0 ? '1' : '0';
-  downHint.style.opacity          = depth === 0 ? '1' : '0';
-  subNavEl.classList.toggle('active', depth === 1);
+
+  const showL1 = depth === 0;
+  catCarousel.style.opacity       = showL1 ? '1' : '0';
+  catCarousel.style.pointerEvents = showL1 ? 'auto' : 'none';
+  enterHint.style.opacity         = showL1 ? '1' : '0';
+  downHint.style.opacity          = showL1 ? '1' : '0';
+
+  // L2 and L3: keep sub-nav visible; L3 collapses to header mode
+  subNavEl.classList.toggle('active', depth >= 1);
+  if (depth === 1) {
+    positionAllSubBtns();
+    descPreview.style.opacity = '1';
+    parentLabel.style.opacity = '1';
+  } else if (depth === 2) {
+    applyHeaderMode();
+    descPreview.style.opacity = '0';
+    parentLabel.style.opacity = '0.55';
+  }
+
   descFullEl.classList.toggle('active', depth === 2 && !hasChildren());
   childViewEl.classList.toggle('active', depth === 2 && hasChildren());
+
   if (depth === 2 && !hasChildren()) renderFullDesc();
   if (depth === 2 && hasChildren())  renderChildView();
-  updateCrumb();
+
   updateCamTarget();
+  updateNavArrows();
   updateFooter();
 }
 
-function updateCrumb() {
-  if (depth === 0) { navCrumb.style.opacity = '0'; navCrumb.textContent = ''; return; }
-  const cat  = CAT[catIdx];
-  let text   = cat.label;
-  if (depth >= 1) text += '  /  ' + cat.items[subIdx].label;
-  if (depth === 2 && hasChildren()) text += '  /  ' + cat.items[subIdx].children[childIdx].label;
-  navCrumb.textContent = text;
-  navCrumb.style.opacity = '1';
+// ── Nav arrows: show/dim based on available moves ────────────────────────────
+function updateNavArrows() {
+  const n     = CAT.length;
+  const count = CAT[catIdx].items.length;
+  const hc    = hasChildren();
+  const nc    = hc ? CAT[catIdx].items[subIdx].children.length : 0;
+
+  function set(el, active) {
+    el.classList.toggle('dim', !active);
+  }
+
+  if (depth === 0) {
+    set(arrLeft,  true);
+    set(arrRight, true);
+    set(arrUp,    false);
+    set(arrDown,  true);
+  } else if (depth === 1) {
+    set(arrLeft,  true);
+    set(arrRight, true);
+    set(arrUp,    subIdx > 0);
+    set(arrDown,  subIdx < count - 1);
+  } else {
+    if (hc) {
+      set(arrLeft,  true);
+      set(arrRight, childIdx < nc - 1);
+      set(arrUp,    true);
+      set(arrDown,  true);
+    } else {
+      set(arrLeft,  true);
+      set(arrRight, false);
+      set(arrUp,    true);
+      set(arrDown,  true);
+    }
+  }
 }
 
 function updateFooter() {
   const hc = hasChildren();
   const hints = {
-    0:  `<span><span class="key">←</span><span class="key">→</span> CATEGORY</span><span><span class="key">↓</span> ENTER</span>`,
-    1:  `<span><span class="key">↑</span><span class="key">↓</span> NAVIGATE</span><span><span class="key">→</span> OPEN</span><span><span class="key">←</span> BACK</span>`,
-    2:  hc
-        ? `<span><span class="key">←</span><span class="key">→</span> ITEM</span><span><span class="key">↑</span><span class="key">↓</span> SCROLL</span><span><span class="key">ESC</span> BACK</span>`
-        : `<span><span class="key">↑</span><span class="key">↓</span> SCROLL</span><span><span class="key">←</span> BACK</span>`,
+    0: `<span><span class="key">←</span><span class="key">→</span> CATEGORY</span><span><span class="key">↓</span> ENTER</span>`,
+    1: `<span><span class="key">↑</span><span class="key">↓</span> NAVIGATE</span><span><span class="key">→</span> OPEN</span><span><span class="key">←</span> BACK</span>`,
+    2: hc
+      ? `<span><span class="key">←</span><span class="key">→</span> ITEM</span><span><span class="key">↑</span><span class="key">↓</span> SCROLL</span><span><span class="key">ESC</span> BACK</span>`
+      : `<span><span class="key">↑</span><span class="key">↓</span> SCROLL</span><span><span class="key">←</span> BACK</span>`,
   };
   footerEl.innerHTML = hints[depth];
 }
 
-// ── Keyboard ──────────────────────────────────────────────────────────────────
-document.addEventListener('keydown', e => {
+// ── Keyboard + arrow-button handler ──────────────────────────────────────────
+function handleNav(key) {
   const n = CAT.length;
+
   if (depth === 0) {
-    if (e.key === 'ArrowRight') {
-      e.preventDefault(); catIdx = (catIdx + 1) % n; updateCats(); updateCamTarget();
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault(); catIdx = (catIdx - 1 + n) % n; updateCats(); updateCamTarget();
-    } else if (e.key === 'ArrowDown' || e.key === 'Enter') {
-      e.preventDefault(); subIdx = 0; childIdx = 0; buildSubBtns(); goTo(1);
-    }
+    if (key === 'ArrowRight') { catIdx = (catIdx + 1) % n; updateCats(); updateCamTarget(); updateNavArrows(); }
+    else if (key === 'ArrowLeft')  { catIdx = (catIdx - 1 + n) % n; updateCats(); updateCamTarget(); updateNavArrows(); }
+    else if (key === 'ArrowDown' || key === 'Enter') { subIdx = 0; childIdx = 0; buildSubBtns(); goTo(1); }
   }
   else if (depth === 1) {
     const count = CAT[catIdx].items.length;
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (subIdx < count - 1) { subIdx++; positionAllSubBtns(); updateDescPreview(); updateCamTarget(); }
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (subIdx > 0) { subIdx--; positionAllSubBtns(); updateDescPreview(); updateCamTarget(); }
+    if (key === 'ArrowDown') {
+      if (subIdx < count - 1) { subIdx++; positionAllSubBtns(); updateDescPreview(); updateCamTarget(); updateNavArrows(); }
+    } else if (key === 'ArrowUp') {
+      if (subIdx > 0) { subIdx--; positionAllSubBtns(); updateDescPreview(); updateCamTarget(); updateNavArrows(); }
       else { goTo(0); }
-    } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
-      e.preventDefault(); childIdx = 0; goTo(2);
-    } else if (e.key === 'ArrowLeft' || e.key === 'Escape') {
-      e.preventDefault(); goTo(0);
+    } else if (key === 'ArrowRight' || key === 'Enter') {
+      childIdx = 0; goTo(2);
+    } else if (key === 'ArrowLeft' || key === 'Escape') {
+      goTo(0);
     }
   }
   else if (depth === 2) {
     if (hasChildren()) {
       const nc = CAT[catIdx].items[subIdx].children.length;
-      if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        if (childIdx < nc - 1) { childIdx++; renderChildView(); updateCamTarget(); updateCrumb(); }
-      } else if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        if (childIdx > 0) { childIdx--; renderChildView(); updateCamTarget(); updateCrumb(); }
-        else { depth = 1; childViewEl.classList.remove('active'); subNavEl.classList.add('active'); updateCrumb(); updateFooter(); }
-      } else if (e.key === 'Escape') {
-        e.preventDefault();
-        depth = 1; childViewEl.classList.remove('active'); subNavEl.classList.add('active'); updateCrumb(); updateFooter();
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault(); childViewEl.scrollBy({ top: 80, behavior: 'smooth' });
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault(); childViewEl.scrollBy({ top: -80, behavior: 'smooth' });
+      if (key === 'ArrowRight') {
+        if (childIdx < nc - 1) { childIdx++; renderChildView(); updateCamTarget(); updateNavArrows(); }
+      } else if (key === 'ArrowLeft') {
+        if (childIdx > 0) { childIdx--; renderChildView(); updateCamTarget(); updateNavArrows(); }
+        else { depth = 1; childViewEl.classList.remove('active'); subNavEl.classList.add('active'); positionAllSubBtns(); descPreview.style.opacity='1'; parentLabel.style.opacity='1'; updateNavArrows(); updateFooter(); }
+      } else if (key === 'Escape') {
+        depth = 1; childViewEl.classList.remove('active'); subNavEl.classList.add('active'); positionAllSubBtns(); descPreview.style.opacity='1'; parentLabel.style.opacity='1'; updateNavArrows(); updateFooter();
+      } else if (key === 'ArrowDown') {
+        childViewEl.scrollBy({ top: 80, behavior: 'smooth' });
+      } else if (key === 'ArrowUp') {
+        childViewEl.scrollBy({ top: -80, behavior: 'smooth' });
       }
     } else {
-      if (e.key === 'ArrowLeft' || e.key === 'Escape') {
-        e.preventDefault();
-        depth = 1; descFullEl.classList.remove('active'); subNavEl.classList.add('active'); updateCrumb(); updateFooter();
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault(); descFullEl.scrollBy({ top: 80, behavior: 'smooth' });
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault(); descFullEl.scrollBy({ top: -80, behavior: 'smooth' });
+      if (key === 'ArrowLeft' || key === 'Escape') {
+        depth = 1; descFullEl.classList.remove('active'); subNavEl.classList.add('active'); positionAllSubBtns(); descPreview.style.opacity='1'; parentLabel.style.opacity='1'; updateNavArrows(); updateFooter();
+      } else if (key === 'ArrowDown') {
+        descFullEl.scrollBy({ top: 80, behavior: 'smooth' });
+      } else if (key === 'ArrowUp') {
+        descFullEl.scrollBy({ top: -80, behavior: 'smooth' });
       }
     }
   }
+}
+
+document.addEventListener('keydown', e => {
+  const keys = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','Escape'];
+  if (keys.includes(e.key)) { e.preventDefault(); handleNav(e.key); }
 });
+
+arrUp.addEventListener('click',    () => handleNav('ArrowUp'));
+arrDown.addEventListener('click',  () => handleNav('ArrowDown'));
+arrLeft.addEventListener('click',  () => handleNav('ArrowLeft'));
+arrRight.addEventListener('click', () => handleNav('ArrowRight'));
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 updateCats();
 updateFooter();
+updateNavArrows();
 window.addEventListener('resize', () => {
   updateCats();
   if (depth === 1) positionAllSubBtns();
+  if (depth === 2) applyHeaderMode();
   updateCamTarget();
 });
 
@@ -647,368 +713,229 @@ window.addEventListener('resize', () => {
   const cv  = document.getElementById('bg');
   const ctx = cv.getContext('2d');
   let W, H, matRows = [];
-  let t = 0;  // frame counter for tile animation
+  let t = 0;
 
-  const Z_FILM = 0.40;  // film strip starts at 40% width
+  const Z_FILM = 0.40;
 
-  // ── 5 depth palettes ── calm → forest → dungeon → hellfire → boss void ─────
   const PALETTES = [
-    // 0 — Overworld: green grass, warm earth, blue water
-    { wall: '#5a3818', wallB: '#7a5028',
-      fA: '#2d6018',   fB: '#3a7020',
-      acc: '#f0c820',  wat: '#1858c8',
-      o1:  '#c04018',  o2:  '#20a0c0',
-      sp:  '#ffff40',  cCol: '#ffffff' },
-    // 1 — Forest Shadows: dark green, deep blue, amber torch
-    { wall: '#1e3810', wallB: '#2c4c1a',
-      fA: '#112208',   fB: '#182e0e',
-      acc: '#d89030',  wat: '#0e2860',
-      o1:  '#7a3010',  o2:  '#102a70',
-      sp:  '#e8be20',  cCol: '#aaff88' },
-    // 2 — Stone Dungeon: grey-blue stone, orange torches
-    { wall: '#3a3a52', wallB: '#4a4a68',
-      fA: '#1a1a2e',   fB: '#222238',
-      acc: '#f06820',  wat: '#0808a0',
-      o1:  '#a02808',  o2:  '#103878',
-      sp:  '#ff7010',  cCol: '#aaaaff' },
-    // 3 — Hellfire: deep red, lava cracks, charcoal floor
-    { wall: '#580010', wallB: '#780020',
-      fA: '#1e0008',   fB: '#280010',
-      acc: '#ff4000',  wat: '#880000',
-      o1:  '#ff6000',  o2:  '#660000',
-      sp:  '#ffaa00',  cCol: '#ff8844' },
-    // 4 — Boss Void: pure black, neon magenta, electric purple
-    { wall: '#38001a', wallB: '#500028',
-      fA: '#150010',   fB: '#1e0018',
-      acc: '#ff0040',  wat: '#500060',
-      o1:  '#ff1000',  o2:  '#700090',
-      sp:  '#ff00ff',  cCol: '#ff44ff' },
+    { wall:'#5a3818',wallB:'#7a5028',fA:'#2d6018',fB:'#3a7020',acc:'#f0c820',wat:'#1858c8',o1:'#c04018',o2:'#20a0c0',sp:'#ffff40',cCol:'#ffffff' },
+    { wall:'#1e3810',wallB:'#2c4c1a',fA:'#112208',fB:'#182e0e',acc:'#d89030',wat:'#0e2860',o1:'#7a3010',o2:'#102a70',sp:'#e8be20',cCol:'#aaff88' },
+    { wall:'#3a3a52',wallB:'#4a4a68',fA:'#1a1a2e',fB:'#222238',acc:'#f06820',wat:'#0808a0',o1:'#a02808',o2:'#103878',sp:'#ff7010',cCol:'#aaaaff' },
+    { wall:'#580010',wallB:'#780020',fA:'#1e0008',fB:'#280010',acc:'#ff4000',wat:'#880000',o1:'#ff6000',o2:'#660000',sp:'#ffaa00',cCol:'#ff8844' },
+    { wall:'#38001a',wallB:'#500028',fA:'#150010',fB:'#1e0018',acc:'#ff0040',wat:'#500060',o1:'#ff1000',o2:'#700090',sp:'#ff00ff',cCol:'#ff44ff' },
   ];
 
-  // Fast deterministic tile hash
   function th(x, y) {
-    let v = (Math.imul(x, 1664525) + Math.imul(y, 22695477) + 1013904223) | 0;
-    v ^= v >>> 16; v = Math.imul(v, 0x45d9f3b) | 0; v ^= v >>> 16;
-    return (v >>> 0) / 0xffffffff;
+    let v = (Math.imul(x,1664525)+Math.imul(y,22695477)+1013904223)|0;
+    v ^= v>>>16; v = Math.imul(v,0x45d9f3b)|0; v ^= v>>>16;
+    return (v>>>0)/0xffffffff;
   }
 
   function getTileColor(tx, ty) {
     const section = Math.max(0, Math.floor(tx / SEC_W));
     const level   = Math.min(4, Math.max(0, Math.floor(ty / LEV_H)));
-    const lx      = ((tx % SEC_W) + SEC_W) % SEC_W;
-    const ly      = ((ty % LEV_H)  + LEV_H)  % LEV_H;
-    const pal     = PALETTES[level];
-
-    // Room border walls (thicker for dramatic effect at higher levels)
+    const lx = ((tx % SEC_W) + SEC_W) % SEC_W;
+    const ly = ((ty % LEV_H) + LEV_H) % LEV_H;
+    const pal = PALETTES[level];
     const WT = 2 + Math.min(2, level);
-    const WS = 2;
     if (ly < WT || ly >= LEV_H - WT) return (lx & 1) ? pal.wall : pal.wallB;
-    if (lx < WS || lx >= SEC_W - WS) return (ly & 1) ? pal.wall : pal.wallB;
-
-    const h  = th(tx, ty);
-    const h2 = th(tx >> 1, ty >> 1);
-
-    // Boss room (level 4) — circular runic pattern
+    if (lx < 2  || lx >= SEC_W - 2)  return (ly & 1) ? pal.wall : pal.wallB;
+    const h = th(tx, ty), h2 = th(tx>>1, ty>>1);
     if (level === 4) {
-      const cx = SEC_W / 2, cy = LEV_H / 2;
-      const dx = lx - cx, dy = ly - cy;
-      const d  = Math.sqrt(dx * dx + dy * dy);
-      if (d < 4) return pal.sp;
-      if (d >= 5  && d < 7)  return pal.acc;
-      if (d >= 9  && d < 11) return pal.wall;
-      if (d >= 14 && d < 16) return pal.o2;
-      const ang = (Math.atan2(dy, dx) * 4 / Math.PI + 8) % 2;
-      if (ang < 0.22 && d > 7 && d < 22) return pal.o1;
+      const cx=SEC_W/2,cy=LEV_H/2,dx=lx-cx,dy=ly-cy,d=Math.sqrt(dx*dx+dy*dy);
+      if (d<4) return pal.sp;
+      if (d>=5&&d<7) return pal.acc;
+      if (d>=9&&d<11) return pal.wall;
+      if (d>=14&&d<16) return pal.o2;
+      const ang=(Math.atan2(dy,dx)*4/Math.PI+8)%2;
+      if (ang<0.22&&d>7&&d<22) return pal.o1;
     }
-
-    // Hellfire (level 3) — lava cracks (more dense, animated)
-    if (level === 3) {
-      if (h < 0.10) {
-        const pulse = Math.sin(t * 0.09 + tx * 0.8 + ty * 1.2) > 0;
-        return pulse ? pal.acc : pal.o1;
-      }
-      if (h < 0.14) return pal.o2;
+    if (level===3) {
+      if (h<0.10) { return Math.sin(t*0.09+tx*0.8+ty*1.2)>0?pal.acc:pal.o1; }
+      if (h<0.14) return pal.o2;
     }
-
-    // Pillars for dungeon levels
-    if (level >= 2) {
-      const px = lx % 10, py = ly % 12;
-      if (px < 2 && py < 2 && lx > 4 && ly > 4 && lx < SEC_W - 4 && ly < LEV_H - 4 && h2 < 0.38)
-        return pal.wallB;
+    if (level>=2) {
+      const px=lx%10,py=ly%12;
+      if (px<2&&py<2&&lx>4&&ly>4&&lx<SEC_W-4&&ly<LEV_H-4&&h2<0.38) return pal.wallB;
     }
-
-    // Animated water (flicker between shades)
-    if (h < 0.055 && level < 3) {
-      const wave = Math.sin(t * 0.07 + tx * 0.4 + ty * 0.6) > 0;
-      return wave ? pal.wat : pal.fA;
-    }
-
-    // Animated torches / accent items (blink)
-    if (h < 0.020) {
-      const flicker = Math.sin(t * 0.14 + tx * 1.3 + ty * 0.9) > 0.2;
-      return flicker ? pal.o1 : pal.acc;
-    }
-    if (h < 0.038) return pal.o2;
-    if (h < 0.050 && h2 < 0.5) {
-      const pulse = (Math.sin(t * 0.06 + tx * 0.3) + 1) * 0.5 > 0.55;
-      return pulse ? pal.acc : pal.sp;
-    }
-
-    // Floor pattern varies per section × level for visual variety
-    const pat = (section * 3 + level) % 4;
-    switch (pat) {
-      case 0: return (Math.floor(tx / 2) + Math.floor(ty / 2)) % 2 ? pal.fA : pal.fB;
-      case 1: return h2 < 0.55 ? pal.fA : pal.fB;
-      case 2: return (tx + ty) % 3 < 2 ? pal.fA : pal.fB;
-      case 3: return Math.floor(ty / 4) % 2 ? pal.fA : pal.fB;
-      default: return pal.fA;
+    if (h<0.055&&level<3) return Math.sin(t*0.07+tx*0.4+ty*0.6)>0?pal.wat:pal.fA;
+    if (h<0.020) return Math.sin(t*0.14+tx*1.3+ty*0.9)>0.2?pal.o1:pal.acc;
+    if (h<0.038) return pal.o2;
+    if (h<0.050&&h2<0.5) return (Math.sin(t*0.06+tx*0.3)+1)*0.5>0.55?pal.acc:pal.sp;
+    const pat=(section*3+level)%4;
+    switch(pat){
+      case 0: return (Math.floor(tx/2)+Math.floor(ty/2))%2?pal.fA:pal.fB;
+      case 1: return h2<0.55?pal.fA:pal.fB;
+      case 2: return (tx+ty)%3<2?pal.fA:pal.fB;
+      default: return Math.floor(ty/4)%2?pal.fA:pal.fB;
     }
   }
 
-  // ── Moving game characters (drift through the world) ─────────────────────
-  const GC = Array.from({ length: 12 }, () => ({
-    x:  Math.random() * SEC_W * CAT.length,
-    y:  Math.random() * LEV_H * 6,
-    vx: (Math.random() - 0.5) * 0.06,
-    vy: (Math.random() - 0.5) * 0.045,
+  const GC = Array.from({length:12},()=>({
+    x:Math.random()*SEC_W*CAT.length,y:Math.random()*LEV_H*6,
+    vx:(Math.random()-0.5)*0.06,vy:(Math.random()-0.5)*0.045,
   }));
-  const GC_WORLDW = SEC_W * CAT.length;
-  const GC_WORLDH = LEV_H * 6;
+  const GCW=SEC_W*CAT.length, GCH=LEV_H*6;
 
   function drawGameChars(pw) {
-    GC.forEach(c => {
-      c.x += c.vx; c.y += c.vy;
-      if (c.x < 0)          c.x += GC_WORLDW;
-      if (c.x >= GC_WORLDW) c.x -= GC_WORLDW;
-      if (c.y < 0)          c.y += GC_WORLDH;
-      if (c.y >= GC_WORLDH) c.y -= GC_WORLDH;
-
-      const sx = (c.x - camTX) * TS;
-      const sy = (c.y - camTY) * TS;
-      if (sx < -TS * 2 || sx >= pw || sy < -TS * 2 || sy >= H) return;
-
-      const lev  = Math.min(4, Math.max(0, Math.floor(c.y / LEV_H)));
-      const col  = PALETTES[lev].cCol;
-      const blink = Math.sin(t * 0.22 + c.x * 2.1 + c.y * 1.5) > 0.1;
-      if (blink) {
-        ctx.fillStyle = col;
-        const sz = TS * 0.45;
-        ctx.fillRect(sx, sy, sz, sz);
-        // shadow dot for depth feel
-        ctx.fillStyle = 'rgba(0,0,0,0.4)';
-        ctx.fillRect(sx + sz * 0.35, sy + sz * 0.35, sz * 0.4, sz * 0.4);
+    GC.forEach(c=>{
+      c.x+=c.vx; c.y+=c.vy;
+      if(c.x<0)c.x+=GCW; if(c.x>=GCW)c.x-=GCW;
+      if(c.y<0)c.y+=GCH; if(c.y>=GCH)c.y-=GCH;
+      const sx=(c.x-camTX)*TS, sy=(c.y-camTY)*TS;
+      if(sx<-TS*2||sx>=pw||sy<-TS*2||sy>=H) return;
+      const lev=Math.min(4,Math.max(0,Math.floor(c.y/LEV_H)));
+      if(Math.sin(t*0.22+c.x*2.1+c.y*1.5)>0.1){
+        ctx.fillStyle=PALETTES[lev].cCol;
+        const sz=TS*0.45;
+        ctx.fillRect(sx,sy,sz,sz);
+        ctx.fillStyle='rgba(0,0,0,0.4)';
+        ctx.fillRect(sx+sz*0.35,sy+sz*0.35,sz*0.4,sz*0.4);
       }
     });
   }
 
   function drawGameWorld(pw) {
     ctx.save();
-    ctx.beginPath(); ctx.rect(0, 0, pw, H); ctx.clip();
-
-    const visTX = Math.ceil(pw / TS) + 2;
-    const visTY = Math.ceil(H  / TS) + 2;
-    const stX   = Math.floor(camTX);
-    const stY   = Math.floor(camTY);
-    const offX  = -(camTX - stX) * TS;
-    const offY  = -(camTY - stY) * TS;
-
-    for (let dy = 0; dy < visTY; dy++) {
-      for (let dx = 0; dx < visTX; dx++) {
-        ctx.fillStyle = getTileColor(stX + dx, stY + dy);
-        ctx.fillRect(offX + dx * TS, offY + dy * TS, TS, TS);
-      }
+    ctx.beginPath(); ctx.rect(0,0,pw,H); ctx.clip();
+    const visTX=Math.ceil(pw/TS)+2, visTY=Math.ceil(H/TS)+2;
+    const stX=Math.floor(camTX), stY=Math.floor(camTY);
+    const offX=-(camTX-stX)*TS, offY=-(camTY-stY)*TS;
+    for(let dy=0;dy<visTY;dy++) for(let dx=0;dx<visTX;dx++){
+      ctx.fillStyle=getTileColor(stX+dx,stY+dy);
+      ctx.fillRect(offX+dx*TS,offY+dy*TS,TS,TS);
     }
-
-    // Pixel-art grid lines
-    ctx.strokeStyle = 'rgba(0,0,0,0.28)';
-    ctx.lineWidth   = 0.5;
-    for (let dx = 0; dx < visTX; dx++) {
-      const sx = offX + dx * TS;
-      ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H); ctx.stroke();
-    }
-    for (let dy = 0; dy < visTY; dy++) {
-      const sy = offY + dy * TS;
-      ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(pw, sy); ctx.stroke();
-    }
-
-    // Moving characters on top of tiles
+    ctx.strokeStyle='rgba(0,0,0,0.28)'; ctx.lineWidth=0.5;
+    for(let dx=0;dx<visTX;dx++){const sx=offX+dx*TS;ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx,H);ctx.stroke();}
+    for(let dy=0;dy<visTY;dy++){const sy=offY+dy*TS;ctx.beginPath();ctx.moveTo(0,sy);ctx.lineTo(pw,sy);ctx.stroke();}
     drawGameChars(pw);
-
-    // Vignette on right edge so text remains legible
-    const vg = ctx.createLinearGradient(pw * 0.55, 0, pw, 0);
-    vg.addColorStop(0, 'transparent');
-    vg.addColorStop(1, 'rgba(0,0,0,0.72)');
-    ctx.fillStyle = vg; ctx.fillRect(0, 0, pw, H);
-
+    const vg=ctx.createLinearGradient(pw*0.55,0,pw,0);
+    vg.addColorStop(0,'transparent'); vg.addColorStop(1,'rgba(0,0,0,0.72)');
+    ctx.fillStyle=vg; ctx.fillRect(0,0,pw,H);
     ctx.restore();
   }
 
-  // ── Film strip ─────────────────────────────────────────────────────────────
   function drawFilm() {
-    const filmX = W * 0.30, filmW = W * (Z_FILM - 0.30);
-    ctx.fillStyle = 'rgba(0,0,0,0.95)';
-    ctx.fillRect(filmX, 0, filmW, H);
-    const ph = 10, pw2 = 7, gap = 20, mg = 4;
-    ctx.fillStyle = 'rgba(255,255,255,0.88)';
-    for (let py = 6; py < H - ph; py += gap) {
-      ctx.fillRect(filmX + mg,            py, pw2, ph);
-      ctx.fillRect(filmX + filmW - mg - pw2, py, pw2, ph);
+    const filmX=W*0.30, filmW=W*(Z_FILM-0.30);
+    ctx.fillStyle='rgba(0,0,0,0.95)'; ctx.fillRect(filmX,0,filmW,H);
+    const ph=10,pw2=7,gap=20,mg=4;
+    ctx.fillStyle='rgba(255,255,255,0.88)';
+    for(let py=6;py<H-ph;py+=gap){
+      ctx.fillRect(filmX+mg,py,pw2,ph);
+      ctx.fillRect(filmX+filmW-mg-pw2,py,pw2,ph);
     }
   }
 
-  // ── Matrix zone (whirlpool holes, neural net, pixel sprites) ───────────────
   function initMatrix() {
-    const lh = 14, count = Math.ceil(H / lh) + 2;
-    matRows = Array.from({ length: count }, (_, i) => ({
-      y: i * lh,
-      vals: Array.from({ length: 22 }, () => Math.floor(Math.random() * 2500))
-    }));
+    const lh=14, count=Math.ceil(H/lh)+2;
+    matRows=Array.from({length:count},(_,i)=>({y:i*lh,vals:Array.from({length:22},()=>Math.floor(Math.random()*2500))}));
   }
 
-  const HOLES = Array.from({ length: 3 }, () => ({
-    cx: 0.15 + Math.random() * 0.70, cy: 0.15 + Math.random() * 0.70,
-    oR: 0.06  + Math.random() * 0.10,
-    angle: Math.random() * Math.PI * 2,
-    spd:   0.004 + Math.random() * 0.004,
-    r:     55 + Math.random() * 55,
+  const HOLES=Array.from({length:3},()=>({
+    cx:0.15+Math.random()*0.70,cy:0.15+Math.random()*0.70,
+    oR:0.06+Math.random()*0.10,angle:Math.random()*Math.PI*2,
+    spd:0.004+Math.random()*0.004,r:55+Math.random()*55,
   }));
 
-  function holeAlpha(cx, cy, mx, mw) {
-    let mn = 1;
-    for (const h of HOLES) {
-      const hx2 = mx + (h.cx + Math.cos(h.angle) * h.oR) * mw;
-      const hy2 =       (h.cy + Math.sin(h.angle) * h.oR * 0.5) * H;
-      const dx = cx - hx2, dy = cy - hy2;
-      const d  = Math.sqrt(dx * dx + dy * dy);
-      const outerR = h.r * 1.9;
-      if (d < outerR) {
-        const ang   = Math.atan2(dy, dx);
-        const phase = ((ang - h.angle * 4) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
-        const swirl = 0.2 + (Math.cos(phase) + 1) * 0.40;
-        const dFrac = d / outerR;
-        const mult  = dFrac < 0.18 ? 0 : dFrac * swirl;
-        if (mult < mn) mn = mult;
+  function holeAlpha(cx,cy,mx,mw){
+    let mn=1;
+    for(const h of HOLES){
+      const hx2=mx+(h.cx+Math.cos(h.angle)*h.oR)*mw;
+      const hy2=(h.cy+Math.sin(h.angle)*h.oR*0.5)*H;
+      const dx=cx-hx2,dy=cy-hy2,d=Math.sqrt(dx*dx+dy*dy);
+      const outerR=h.r*1.9;
+      if(d<outerR){
+        const ang=Math.atan2(dy,dx);
+        const phase=((ang-h.angle*4)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+        const swirl=0.2+(Math.cos(phase)+1)*0.40;
+        const dFrac=d/outerR;
+        const mult=dFrac<0.18?0:dFrac*swirl;
+        if(mult<mn)mn=mult;
       }
     }
     return mn;
   }
 
-  const NN = Array.from({ length: 28 }, () => ({
-    nx: 0.25 + Math.random() * 0.72, ny: 0.04 + Math.random() * 0.92,
-    pulse: Math.random() * 200, pMax: 90 + Math.floor(Math.random() * 140),
-    x: 0, y: 0,
+  const NN=Array.from({length:28},()=>({
+    nx:0.25+Math.random()*0.72,ny:0.04+Math.random()*0.92,
+    pulse:Math.random()*200,pMax:90+Math.floor(Math.random()*140),x:0,y:0,
   }));
-
-  function initNN(mx, mw) {
-    NN.forEach(n => { n.x = mx + n.nx * mw; n.y = n.ny * H; });
-  }
-
-  function drawNN() {
-    for (let i = 0; i < NN.length; i++) {
-      for (let j = i + 1; j < NN.length; j++) {
-        const dx = NN[i].x - NN[j].x, dy = NN[i].y - NN[j].y;
-        const d  = Math.sqrt(dx * dx + dy * dy);
-        if (d < 195) {
-          ctx.strokeStyle = `rgba(155,195,255,${0.10 * (1 - d / 195)})`;
-          ctx.lineWidth = 0.5;
-          ctx.beginPath(); ctx.moveTo(NN[i].x, NN[i].y);
-          ctx.lineTo(NN[j].x, NN[j].y); ctx.stroke();
-        }
-      }
+  function initNN(mx,mw){NN.forEach(n=>{n.x=mx+n.nx*mw;n.y=n.ny*H;});}
+  function drawNN(){
+    for(let i=0;i<NN.length;i++) for(let j=i+1;j<NN.length;j++){
+      const dx=NN[i].x-NN[j].x,dy=NN[i].y-NN[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<195){ctx.strokeStyle=`rgba(155,195,255,${0.10*(1-d/195)})`;ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(NN[i].x,NN[i].y);ctx.lineTo(NN[j].x,NN[j].y);ctx.stroke();}
     }
-    NN.forEach(n => {
-      n.pulse = (n.pulse + 1) % n.pMax;
-      const tN   = n.pulse / n.pMax;
-      const glow = tN < 0.25 ? tN / 0.25 : tN > 0.55 ? 0 : (0.55 - tN) / 0.30;
-      ctx.fillStyle = `rgba(155,210,255,${0.14 + glow * 0.55})`;
-      ctx.beginPath(); ctx.arc(n.x, n.y, 1.2 + glow * 2.2, 0, Math.PI * 2); ctx.fill();
+    NN.forEach(n=>{
+      n.pulse=(n.pulse+1)%n.pMax;
+      const tN=n.pulse/n.pMax,glow=tN<0.25?tN/0.25:tN>0.55?0:(0.55-tN)/0.30;
+      ctx.fillStyle=`rgba(155,210,255,${0.14+glow*0.55})`;
+      ctx.beginPath();ctx.arc(n.x,n.y,1.2+glow*2.2,0,Math.PI*2);ctx.fill();
     });
   }
 
-  const INV  = [[0,1,0,0,0,0,1,0],[0,0,1,0,0,1,0,0],[0,1,1,1,1,1,1,0],[1,1,0,1,1,0,1,1],[1,1,1,1,1,1,1,1],[0,1,0,1,1,0,1,0],[1,0,0,0,0,0,0,1]];
-  const SHIP = [[0,0,1,0,0],[0,1,1,1,0],[1,1,1,1,1],[0,1,0,1,0]];
-  const GHST = [[0,1,1,1,1,0],[1,0,1,0,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,0,1,0,1,1]];
-  const PATS = [INV, SHIP, GHST, SHIP, INV];
-  const SPRITES = Array.from({ length: 5 }, (_, i) => ({
-    nx: 0.05 + Math.random() * 0.90, ny: 0.05 + Math.random() * 0.90,
-    vx: (Math.random() > 0.5 ? 1 : -1) * (0.00025 + Math.random() * 0.0003),
-    vy: (Math.random() > 0.5 ? 1 : -1) * (0.00015 + Math.random() * 0.0002),
-    pat: PATS[i % PATS.length], sc: 2,
+  const INV=[[0,1,0,0,0,0,1,0],[0,0,1,0,0,1,0,0],[0,1,1,1,1,1,1,0],[1,1,0,1,1,0,1,1],[1,1,1,1,1,1,1,1],[0,1,0,1,1,0,1,0],[1,0,0,0,0,0,0,1]];
+  const SHIP=[[0,0,1,0,0],[0,1,1,1,0],[1,1,1,1,1],[0,1,0,1,0]];
+  const GHST=[[0,1,1,1,1,0],[1,0,1,0,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,0,1,0,1,1]];
+  const PATS=[INV,SHIP,GHST,SHIP,INV];
+  const SPRITES=Array.from({length:5},(_,i)=>({
+    nx:0.05+Math.random()*0.90,ny:0.05+Math.random()*0.90,
+    vx:(Math.random()>0.5?1:-1)*(0.00025+Math.random()*0.0003),
+    vy:(Math.random()>0.5?1:-1)*(0.00015+Math.random()*0.0002),
+    pat:PATS[i%PATS.length],sc:2,
   }));
-
-  function drawSprites(mx, mw) {
-    ctx.fillStyle = 'rgba(255,255,255,0.13)';
-    SPRITES.forEach(s => {
-      s.nx += s.vx; s.ny += s.vy;
-      if (s.nx < 0.02 || s.nx > 0.96) s.vx *= -1;
-      if (s.ny < 0.02 || s.ny > 0.96) s.vy *= -1;
-      const px = mx + s.nx * mw, py = s.ny * H;
-      const rows = s.pat.length, cols = s.pat[0].length;
-      const ox = -(cols * s.sc) / 2, oy = -(rows * s.sc) / 2;
-      s.pat.forEach((row, ri) =>
-        row.forEach((cell, ci) => {
-          if (cell) ctx.fillRect(px + ox + ci * s.sc, py + oy + ri * s.sc, s.sc, s.sc);
-        })
-      );
+  function drawSprites(mx,mw){
+    ctx.fillStyle='rgba(255,255,255,0.13)';
+    SPRITES.forEach(s=>{
+      s.nx+=s.vx;s.ny+=s.vy;
+      if(s.nx<0.02||s.nx>0.96)s.vx*=-1;
+      if(s.ny<0.02||s.ny>0.96)s.vy*=-1;
+      const px=mx+s.nx*mw,py=s.ny*H;
+      const rows=s.pat.length,cols=s.pat[0].length;
+      const ox=-(cols*s.sc)/2,oy=-(rows*s.sc)/2;
+      s.pat.forEach((row,ri)=>row.forEach((cell,ci)=>{if(cell)ctx.fillRect(px+ox+ci*s.sc,py+oy+ri*s.sc,s.sc,s.sc);}));
     });
   }
 
-  const MC = ['#ff4444','#4488ff','#44ff88','#ffffff','#ff9944','#ffffff'];
-  function hx(hex, a) {
-    const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-    return `rgba(${r},${g},${b},${a})`;
-  }
+  const MC=['#ff4444','#4488ff','#44ff88','#ffffff','#ff9944','#ffffff'];
+  function hx(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
 
-  function drawMatrix() {
-    const mx = W * Z_FILM, mw = W * (1 - Z_FILM);
-    ctx.fillStyle = 'rgba(0,0,0,0.82)'; ctx.fillRect(mx, 0, mw, H);
-    ctx.font = '10px "Helvetica Neue", Helvetica, monospace';
-    HOLES.forEach(h => { h.angle += h.spd; });
-    matRows.forEach(row => {
-      if (Math.random() < 0.002) row.vals = Array.from({ length: 22 }, () => Math.floor(Math.random() * 2500));
-      let x = mx + 6;
-      row.vals.forEach((v, vi) => {
-        const str   = v + ',';
-        const alpha = holeAlpha(x, row.y, mx, mw);
-        if (alpha > 0.04) {
-          ctx.fillStyle = hx(MC[vi % MC.length], 0.55 * alpha);
-          ctx.fillText(str, x, row.y);
-        }
-        x += ctx.measureText(str).width;
-        if (x > mx + mw - 12) return;
+  function drawMatrix(){
+    const mx=W*Z_FILM,mw=W*(1-Z_FILM);
+    ctx.fillStyle='rgba(0,0,0,0.82)';ctx.fillRect(mx,0,mw,H);
+    ctx.font='10px "Helvetica Neue",Helvetica,monospace';
+    HOLES.forEach(h=>{h.angle+=h.spd;});
+    matRows.forEach(row=>{
+      if(Math.random()<0.002)row.vals=Array.from({length:22},()=>Math.floor(Math.random()*2500));
+      let x=mx+6;
+      row.vals.forEach((v,vi)=>{
+        const str=v+',',alpha=holeAlpha(x,row.y,mx,mw);
+        if(alpha>0.04){ctx.fillStyle=hx(MC[vi%MC.length],0.55*alpha);ctx.fillText(str,x,row.y);}
+        x+=ctx.measureText(str).width;
+        if(x>mx+mw-12)return;
       });
     });
     drawNN();
-    drawSprites(mx, mw);
+    drawSprites(mx,mw);
   }
 
-  // ── Resize ─────────────────────────────────────────────────────────────────
-  function resize() {
-    W = cv.width  = window.innerWidth;
-    H = cv.height = window.innerHeight;
-    initMatrix();
-    initNN(W * Z_FILM, W * (1 - Z_FILM));
+  function resize(){
+    W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;
+    initMatrix();initNN(W*Z_FILM,W*(1-Z_FILM));
   }
 
-  // ── Frame loop ─────────────────────────────────────────────────────────────
-  function frame() {
+  function frame(){
     t++;
-    // Smooth camera pan — slightly slower for more dramatic big-zone pans
-    camTX += (tgtTX - camTX) * 0.055;
-    camTY += (tgtTY - camTY) * 0.055;
-
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, W, H);
-
-    drawGameWorld(W * 0.30);
+    camTX+=(tgtTX-camTX)*0.055;camTY+=(tgtTY-camTY)*0.055;
+    ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+    drawGameWorld(W*0.30);
     drawFilm();
     drawMatrix();
-
     requestAnimationFrame(frame);
   }
 
   resize();
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize',resize);
   requestAnimationFrame(frame);
 })();
 </script>
