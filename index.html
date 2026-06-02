@@ -5,114 +5,289 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Divyum Maheshwari</title>
 <style>
-:root {
-  --pink:   #ff0080;
-  --h:      #e0e0e0;
-  --body:   #888888;
-  --dim:    #555555;
-  --bg:     #0d0d0d;
-  --line:   rgba(255,255,255,0.08);
-  --font:   "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width:100%; height:100%; background:var(--bg); color:var(--h);
-  font-family:var(--font); font-weight:700; overflow:hidden; user-select:none; }
+/* ─── To add your photo: set PHOTO_SRC in the <script> below ─── */
 
-canvas#bg { position:fixed; inset:0; width:100%; height:100%; z-index:0; }
+:root {
+  --cobalt:     #005BFF;
+  --cobalt-dim: rgba(0, 91, 255, 0.18);
+  --h:   #d4d4d4;
+  --mid: #888888;
+  --dim: #444444;
+  --bg:  #0d0d0d;
+  --rule: rgba(255,255,255,0.07);
+  --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: var(--h);
+  font-family: var(--font);
+  overflow: hidden;
+  user-select: none;
+}
+
+canvas#bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
 
 /* scanlines */
-body::after { content:''; position:fixed; inset:0;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.10) 2px,rgba(0,0,0,0.10) 4px);
-  pointer-events:none; z-index:999; }
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg,
+    transparent, transparent 2px,
+    rgba(0,0,0,0.09) 2px, rgba(0,0,0,0.09) 4px);
+  pointer-events: none; z-index: 999;
+}
 
-/* dark centre vignette */
-#vig { position:fixed; inset:0; z-index:1; pointer-events:none;
-  background:radial-gradient(ellipse 65% 85% at 50% 55%, rgba(13,13,13,0.78) 0%, rgba(13,13,13,0.25) 100%); }
+/* ─── UI shell ────────────────────────────────────────────── */
+#ui {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; flex-direction: column;
+}
 
-/* ── UI shell ─────────────────────────────────────────────── */
-#ui { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column; }
+/* ─── Topbar ─────────────────────────────────────────────── */
+#topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 22px 40px 0;
+  font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--dim); font-weight: 400;
+  flex-shrink: 0;
+}
+#topbar a { color: var(--dim); text-decoration: none; transition: color .2s var(--ease); }
+#topbar a:hover { color: var(--cobalt); }
 
-#topbar { display:flex; justify-content:space-between; align-items:center;
-  padding:18px 32px 0; font-size:10px; letter-spacing:0.22em; text-transform:uppercase;
-  color:var(--dim); }
-#topbar a { color:var(--dim); text-decoration:none; transition:color .15s; }
-#topbar a:hover { color:var(--pink); }
+/* ─── Main ───────────────────────────────────────────────── */
+#main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1.1fr);
+  gap: 0;
+  padding: 0 40px;
+  overflow: hidden;
+  align-items: stretch;
+}
 
-/* ── XMB ──────────────────────────────────────────────────── */
-#xmb { flex:1; display:flex; flex-direction:column; align-items:center;
-  justify-content:center; padding-bottom:52px; }
+/* ─── Left column ────────────────────────────────────────── */
+#left {
+  display: flex; flex-direction: column;
+  justify-content: center;
+  padding: 32px 40px 32px 0;
+  overflow: hidden;
+}
 
-/* category icon track */
-#cat-track { position:relative; width:100%; height:96px; }
-.cat-item { position:absolute; top:50%; display:flex; flex-direction:column;
-  align-items:center; gap:7px; cursor:pointer;
-  transition:left .32s cubic-bezier(.25,.46,.45,.94), opacity .32s; }
-.cat-icon svg { display:block; fill:none; stroke:currentColor;
-  stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;
-  transition:width .28s,height .28s,filter .28s,color .28s; }
-.cat-lbl { font-size:9px; letter-spacing:0.28em; text-transform:uppercase; white-space:nowrap; }
+/* XMB icon bar */
+#cat-track {
+  position: relative;
+  width: 100%;
+  height: 56px;
+  margin-bottom: 28px;
+  flex-shrink: 0;
+}
+.cat-item {
+  position: absolute; top: 50%;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  cursor: pointer;
+  transition: left .38s var(--ease), opacity .38s var(--ease), transform .38s var(--ease);
+}
+.cat-icon svg {
+  display: block; fill: none;
+  stroke: currentColor; stroke-width: 1.5;
+  stroke-linecap: round; stroke-linejoin: round;
+  transition: width .3s var(--ease), height .3s var(--ease), filter .3s var(--ease);
+}
 
-/* category divider */
-#xmb-divider { width:240px; height:1px; flex-shrink:0; margin:2px 0 16px;
-  background:linear-gradient(90deg,transparent,rgba(255,0,128,0.45),transparent); }
+/* Selected category name */
+#cat-name {
+  font-size: clamp(36px, 4.5vw, 60px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--h);
+  line-height: 1;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+#cat-name-inner {
+  display: block;
+  animation: nameIn .45s var(--ease) both;
+}
+@keyframes nameIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-/* ── Panels (L2 list | rule | L3 detail) ─────────────────── */
-#panels { display:grid; grid-template-columns:220px 1px 1fr;
-  gap:0 0; width:min(820px,88vw); min-height:200px; align-items:start; }
+/* Divider */
+.h-rule {
+  width: 100%; height: 1px;
+  background: var(--rule);
+  flex-shrink: 0;
+}
 
-#l2-list { display:flex; flex-direction:column; padding-right:20px; }
-.l2-item { display:flex; align-items:center; gap:8px; padding:8px 10px;
-  cursor:pointer; font-size:12px; letter-spacing:0.1em; text-transform:uppercase;
-  color:var(--dim); border-left:2px solid transparent; transition:color .1s,background .1s; }
-.l2-item .arr { font-size:7px; color:var(--pink); opacity:0; flex-shrink:0; width:8px; }
-.l2-item.active { color:var(--h); border-left-color:var(--pink); background:rgba(255,0,128,0.05); }
-.l2-item.active .arr { opacity:1; }
-.l2-item:hover:not(.active) { color:#aaa; }
+/* Items list */
+#items-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+#items-list::-webkit-scrollbar { display: none; }
 
-#v-rule { background:var(--line); width:1px; margin:0 20px; align-self:stretch; }
+/* L2 items */
+.l2-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  transition: color .2s var(--ease), padding-left .25s var(--ease);
+  opacity: 0;
+  animation: itemIn .5s var(--ease) both;
+}
+@keyframes itemIn {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.l2-name {
+  font-size: clamp(22px, 2.8vw, 40px);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  color: var(--mid);
+  line-height: 1;
+  transition: color .2s var(--ease);
+}
+.l2-arrow {
+  font-size: 12px;
+  color: var(--cobalt);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity .2s var(--ease), transform .2s var(--ease);
+  flex-shrink: 0;
+}
+.l2-item:hover .l2-name,
+.l2-item.active .l2-name { color: var(--h); }
+.l2-item.active { padding-left: 8px; }
+.l2-item.active .l2-arrow { opacity: 1; transform: translateX(0); }
+.l2-item:hover .l2-arrow  { opacity: 0.5; transform: translateX(0); }
 
-#r-panel { padding-left:4px; min-height:180px; }
+/* L3 items (when drilled in) */
+.l3-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  opacity: 0;
+  animation: itemIn .45s var(--ease) both;
+}
+.l3-name {
+  font-size: clamp(14px, 1.8vw, 26px);
+  font-weight: 300;
+  letter-spacing: -0.005em;
+  color: var(--mid);
+  line-height: 1.1;
+  transition: color .2s var(--ease);
+}
+.l3-arrow {
+  font-size: 10px; color: var(--cobalt);
+  opacity: 0; transform: translateX(-4px);
+  transition: opacity .2s var(--ease), transform .2s var(--ease);
+  flex-shrink: 0;
+}
+.l3-item:hover .l3-name,
+.l3-item.active .l3-name { color: var(--h); }
+.l3-item.active .l3-arrow,
+.l3-item:hover .l3-arrow  { opacity: 1; transform: translateX(0); }
 
-/* L3 sub-list (when L2 has children) */
-#l3-list { display:flex; flex-direction:column; gap:0; margin-bottom:16px; }
-.l3-item { display:flex; align-items:center; gap:8px; padding:7px 10px;
-  cursor:pointer; font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
-  color:var(--dim); border-left:2px solid transparent; transition:color .1s,background .1s; }
-.l3-item .arr { font-size:6px; color:var(--pink); opacity:0; flex-shrink:0; width:8px; }
-.l3-item.active { color:var(--h); border-left-color:rgba(255,0,128,0.55); background:rgba(255,0,128,0.04); }
-.l3-item.active .arr { opacity:1; }
-.l3-item:hover:not(.active) { color:#999; }
+/* Back breadcrumb */
+#breadcrumb {
+  display: none; align-items: center; gap: 8px;
+  padding-bottom: 14px; margin-bottom: 4px;
+  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--dim); font-weight: 400;
+  cursor: pointer;
+  transition: color .2s var(--ease);
+  flex-shrink: 0;
+}
+#breadcrumb.visible { display: flex; }
+#breadcrumb:hover { color: var(--cobalt); }
+#breadcrumb .bc-arrow { font-size: 10px; }
 
-/* Detail text */
-#detail { font-size:11px; letter-spacing:0.05em; line-height:1.9;
-  color:var(--body); font-weight:400; transition:opacity .18s; max-width:480px;
-  white-space:pre-line; }
-#detail strong { color:var(--h); font-weight:700; }
+/* ─── V-rule ──────────────────────────────────────────────── */
+#v-rule {
+  background: var(--rule);
+  margin: 48px 0;
+  align-self: stretch;
+}
 
-/* breadcrumb */
-#breadcrumb { font-size:9px; letter-spacing:0.2em; text-transform:uppercase;
-  color:var(--dim); margin-bottom:14px; }
-#breadcrumb span { color:var(--pink); }
+/* ─── Right column (detail) ──────────────────────────────── */
+#right {
+  padding: 32px 0 32px 40px;
+  display: flex; flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,91,255,0.3) transparent;
+}
+#right::-webkit-scrollbar { width: 2px; }
+#right::-webkit-scrollbar-thumb { background: var(--cobalt); opacity: 0.3; }
 
-/* ── Footer ──────────────────────────────────────────────── */
-#footer { padding:0 32px 18px; display:flex; justify-content:center; gap:36px;
-  font-size:9px; letter-spacing:0.22em; text-transform:uppercase; color:var(--dim); flex-shrink:0; }
+#detail-wrap { transition: opacity .22s var(--ease); }
+#detail-label {
+  font-size: clamp(11px, 1.1vw, 13px);
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--cobalt); font-weight: 400;
+  margin-bottom: 16px;
+}
+#detail-body {
+  font-size: clamp(12px, 1.1vw, 14px);
+  font-weight: 400;
+  line-height: 1.85;
+  color: var(--mid);
+  white-space: pre-line;
+  max-width: 420px;
+}
+#detail-body strong { color: var(--h); font-weight: 700; }
 
-/* ── Mobile ───────────────────────────────────────────────── */
-@media (max-width:640px) {
-  #panels { grid-template-columns:1fr; }
-  #v-rule { display:none; }
-  #r-panel { padding-left:0; padding-top:16px; }
-  html,body { overflow-y:auto; height:auto; }
-  #ui,canvas#bg { position:relative; }
-  #xmb { padding-bottom:24px; }
+/* empty state */
+#detail-hint {
+  font-size: clamp(12px, 1.05vw, 14px);
+  color: var(--dim); font-weight: 300;
+  font-style: italic;
+  transition: opacity .22s var(--ease);
+}
+
+/* ─── Footer ─────────────────────────────────────────────── */
+#footer {
+  padding: 0 40px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--dim); font-weight: 400;
+  flex-shrink: 0;
+}
+#focus-indicator {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--cobalt);
+  box-shadow: 0 0 8px var(--cobalt);
+  transition: background .2s;
+}
+
+/* ─── Mobile ─────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  html, body { overflow-y: auto; height: auto; }
+  #ui, canvas#bg { position: relative; }
+  #main { grid-template-columns: 1fr; padding: 0 20px; }
+  #v-rule { display: none; }
+  #left { padding: 24px 0; }
+  #right { padding: 0 0 32px; }
+  #topbar { padding: 18px 20px 0; }
+  #footer { padding: 0 20px 18px; }
 }
 </style>
 </head>
 <body>
 
 <canvas id="bg"></canvas>
-<div id="vig"></div>
 
 <div id="ui">
   <div id="topbar">
@@ -121,130 +296,147 @@ body::after { content:''; position:fixed; inset:0;
     <span id="clk"></span>
   </div>
 
-  <div id="xmb">
-    <div id="cat-track"></div>
-    <div id="xmb-divider"></div>
+  <div id="main">
 
-    <div id="panels">
-      <div id="l2-list"></div>
-      <div id="v-rule"></div>
-      <div id="r-panel">
-        <div id="breadcrumb"></div>
-        <div id="l3-list"></div>
-        <div id="detail"></div>
+    <!-- LEFT: Navigation -->
+    <div id="left">
+      <div id="cat-track"></div>
+
+      <div id="cat-name"><span id="cat-name-inner"></span></div>
+      <div class="h-rule" style="margin-bottom:0"></div>
+
+      <div id="breadcrumb" onclick="goBack()">
+        <span class="bc-arrow">←</span>
+        <span id="bc-label"></span>
       </div>
+
+      <div id="items-list"></div>
     </div>
+
+    <div id="v-rule"></div>
+
+    <!-- RIGHT: Detail -->
+    <div id="right">
+      <div id="detail-wrap">
+        <div id="detail-label"></div>
+        <div id="detail-body"></div>
+      </div>
+      <div id="detail-hint">← Select an item</div>
+    </div>
+
   </div>
 
   <div id="footer">
-    <span>← → category</span>
-    <span>↑ ↓ navigate</span>
-    <span>→ / enter  drill in</span>
-    <span>← / esc  back</span>
+    <span>← → &nbsp; category &nbsp;&nbsp; ↑ ↓ &nbsp; navigate &nbsp;&nbsp; → / enter &nbsp; drill in &nbsp;&nbsp; ← / esc &nbsp; back</span>
+    <div id="focus-indicator"></div>
   </div>
 </div>
 
 <script>
-// ── Content tree ──────────────────────────────────────────────────────────────
+// ─── To add your photo: paste the file path or URL here ──────────────────────
+const PHOTO_SRC = ''; // e.g. './divyum.jpg' or a https:// URL
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Content ───────────────────────────────────────────────────────────────────
 const CAT = [
   {
-    key:'about', label:'About',
-    icon:`<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-5 3.6-8 8-8s8 3 8 8"/></svg>`,
-    items:[
-      { label:'Profile', desc:'AI Design Engineer · 25 · London, GB\nProduct Practitioner educated in Business, Design and Engineering. Capable of articulating novelty and aggregate limits to define scope. Creating value by combining concepts into exciting new applications in equitable tech.' },
-      { label:'Values', desc:'Tenacity · Altruism · Audacity · Orchestration · Signposting' },
-      { label:'Competencies', desc:'Writing and storytelling · Product thinking · Design thinking · Prompt engineering · Sketching and drawing · Pitching to market · Selling products · User testing · Outlining and curating exhaustive knowledge · Data communication and presentation.' },
-      { label:'Contact', desc:'divyummaheshwari@gmail.com\nlinkedin.com/in/divyum-maheshwari', link:'https://www.linkedin.com/in/divyum-maheshwari/' },
+    key: 'about', label: 'About',
+    icon: `<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-5 3.6-8 8-8s8 3 8 8"/></svg>`,
+    items: [
+      { label: 'Profile',       desc: 'AI Design Engineer · 25 · London, GB\n\nProduct Practitioner educated in Business, Design and Engineering. Capable of articulating novelty and aggregate limits to define scope. Creating value by combining concepts into exciting new applications in equitable tech.' },
+      { label: 'Values',        desc: 'Tenacity · Altruism · Audacity · Orchestration · Signposting' },
+      { label: 'Competencies',  desc: 'Writing and storytelling · Product thinking · Design thinking · Prompt engineering · Sketching and drawing · Pitching to market · Selling products · User testing · Outlining and curating exhaustive knowledge · Data communication and presentation.' },
+      { label: 'Contact',       desc: 'divyummaheshwari@gmail.com\nlinkedin.com/in/divyum-maheshwari', link: 'https://www.linkedin.com/in/divyum-maheshwari/' },
     ]
   },
   {
-    key:'projects', label:'Projects',
-    icon:`<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`,
-    items:[
+    key: 'projects', label: 'Projects',
+    icon: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`,
+    items: [
       {
-        label:'Tech + Data',
-        children:[
-          { label:'Inventory System · Informal Stores', desc:'Group Project · Role: Ideation, Coding, Pitching\n\nFormalising and optimising part-sourcing and repair workflows of informal electronic vendors in urban and semi-urban Mumbai. Human-centred design addressing inventory overload, part traceability, and customer retention.\n\nMethodology: Semi-structured interviews, POEMS framework, Empathy Maps, Persona Clustering, Stakeholder Mapping, Role Plays, QR-based inventory sharing, CSV digital traceability.' },
-          { label:'OURoute · Safety Match Making', desc:'Group Project · Role: Ideation, User Testing, Documentation, System Structuring\n\nA mobility and safety platform transforming the experience of walking alone at night on university campuses. Enables students to proactively coordinate shared routes with verified peers.\n\nStats: 93% of students regularly walk at night. 56% report feeling unsafe.\n\nFeatures: Route-based companion matching · Institutional verification (.ac.uk) · Real-time tracking · Route optimisation via safe, lit paths.\n\nKey Insight: Safety is achieved through presence, not alerts.' },
-          { label:'Scaling Design Education · Licensure Exams', desc:'Research and data project exploring the systemic challenges of scaling design education through formal licensure frameworks in India. Analysis of policy, pedagogy, and institutional barriers.' },
-          { label:'Systemic Biases in Agent Based AI', desc:'Investigation into how systemic biases propagate within agent-based AI systems deployed for design decision-making in the Indian context. Tech + data methodology.' },
-          { label:'Traffic Optimisation · Kurla Mumbai', desc:'Data-driven traffic flow analysis and optimisation system for the Kurla district of Mumbai. Models congestion patterns and proposes intervention strategies.' },
-          { label:'Full Stack Social Media Platform', desc:'End-to-end social media platform built with Flask, SQL, JavaScript, CSS, and Python. Full stack development from database schema to frontend interface.' },
+        label: 'Tech + Data',
+        children: [
+          { label: 'Inventory System · Informal Stores',   desc: 'Group Project · Role: Ideation, Coding, Pitching\n\nFormalising and optimising part-sourcing and repair workflows of informal electronic vendors in urban and semi-urban Mumbai. Human-centred design addressing inventory overload, part traceability, and customer retention.\n\nMethodology: Semi-structured interviews, POEMS framework, Empathy Maps, Persona Clustering, Stakeholder Mapping, QR-based inventory sharing, CSV digital traceability.' },
+          { label: 'OURoute · Safety Match Making',        desc: 'Group Project · Role: Ideation, User Testing, Documentation\n\nA mobility and safety platform transforming the experience of walking alone at night on university campuses. Enables students to proactively coordinate shared routes with verified peers.\n\n93% of students regularly walk at night. 56% report feeling unsafe.\n\nKey Insight: Safety is achieved through presence, not alerts.' },
+          { label: 'Scaling Design Education · India',     desc: 'Research project exploring the systemic challenges of scaling design education through formal licensure frameworks in India. Analysis of policy, pedagogy, and institutional barriers.' },
+          { label: 'Systemic Biases in Agent Based AI',    desc: 'Investigation into how systemic biases propagate within agent-based AI systems deployed for design decision-making in the Indian context.' },
+          { label: 'Traffic Optimisation · Kurla Mumbai',  desc: 'Data-driven traffic flow analysis and optimisation system for the Kurla district of Mumbai. Models congestion patterns and proposes intervention strategies.' },
+          { label: 'Full Stack Social Media Platform',     desc: 'End-to-end social media platform built with Flask, SQL, JavaScript, CSS, and Python. Full stack development from database schema to frontend interface.' },
         ]
       },
       {
-        label:'Business',
-        children:[
-          { label:"Boeing's Demise · An Essay", desc:"Analysis of Boeing's decline from engineering-driven excellence to PR-first short-termism.\n\nKey events: Lion Air 610, Ethiopian Airlines 302, Alaska Flight 1282, Starliner incident.\nConsequences: $2.5B fraud settlement · $200M investor deception fine · Deferred safety fixes · Repeated delays in 777X delivery.\n\nRecommendations: Return to engineering-driven leadership · Reinstate transparency and long-term planning · Eliminate toxic culture inherited from McDonnell Douglas merger." },
-          { label:'Cars24 · A Turnaround Strategy', desc:'Strategic business case for Cars24. Market positioning analysis, operational audit, and forward-looking recommendations for India\'s leading used-car marketplace.' },
-          { label:'Diversity, Equity and Inclusion', desc:'Academic essay examining DEI frameworks in modern organisations — systemic barriers, measurable interventions, and equitable workplace design principles.' },
-          { label:'Digital Fabrication · Market Opportunity', desc:'Market analysis of the global digital fabrication sector ($38.2B in 2023 → $239.8B by 2030, CAGR 30%). Focus on India\'s infrastructure push: $170B in airport funding, 80 new airports planned by 2030.' },
+        label: 'Business',
+        children: [
+          { label: "Boeing's Demise · An Essay",       desc: "Analysis of Boeing's decline from engineering-driven excellence to PR-first short-termism.\n\nKey events: Lion Air 610, Ethiopian Airlines 302, Alaska Flight 1282, Starliner.\n$2.5B fraud settlement · $200M investor deception fine.\n\nRecommendations: Return to engineering leadership · Reinstate transparency · Eliminate toxic culture from McDonnell Douglas merger." },
+          { label: 'Cars24 · Turnaround Strategy',     desc: "Strategic business case for Cars24. Market positioning analysis, operational audit, and recommendations for India's leading used-car marketplace." },
+          { label: 'Diversity, Equity & Inclusion',    desc: 'Academic essay examining DEI frameworks in modern organisations — systemic barriers, measurable interventions, and equitable workplace design.' },
+          { label: 'Digital Fabrication · Market',     desc: 'Market analysis of global digital fabrication: $38.2B in 2023 → $239.8B by 2030 (CAGR 30%). Focus on India's infrastructure push: $170B in airport funding, 80 new airports by 2030.' },
         ]
       },
       {
-        label:'Design',
-        children:[
-          { label:'Jam Jong · Memory Based Fugue', desc:'Group Project · Role: Ideation, User Testing, Documentation\n\nMulti-sensory cognitive game for senior citizens at risk of dementia and cognitive decline. Integrates music, tactile interaction, and social gameplay — inspired by Mahjong rituals and record player interfaces.\n\nCreates a low-pressure, therapeutic co-creation experience promoting memory, coordination, and social engagement.' },
-          { label:'Ercon · Rebranding Exercise', desc:'Working with the Ercon Composites team to convince a new customer with a different product lineup. Required pitching, correspondence, specifications, estimated quotations, sketching, hundreds of design iterations, certification, fabrication, and finishing — all within tight timeframes.\n\nProducts qualified for supply to NEOM City, KSA.' },
-          { label:'Indigenous House Bricks · Coolings', desc:'Design exploration into indigenous materials and traditional construction techniques for passive cooling in residential architecture.' },
-          { label:'Mycelium Agriculture Facilitator', desc:'System design for a mycelium-based agricultural facilitation platform, exploring circular bioeconomy principles and sustainable farming infrastructure.' },
-          { label:'Cycle Battery Parametric Lock', desc:'Parametric product design for a cycle battery locking mechanism — form exploration through computational design methods.' },
-          { label:'IP68 Lighting Fixtures', desc:'Design and fabrication of dozens of lighting fixtures certified to IP68 waterproofing standard. From concept through to manufacture.' },
-          { label:'Parametric Installation Curation', desc:'Curation and execution of a large-scale parametric installation — structural logic, material selection, and spatial composition.' },
+        label: 'Design',
+        children: [
+          { label: 'Jam Jong · Memory Based Fugue',          desc: 'Group Project · Role: Ideation, User Testing, Documentation\n\nMulti-sensory cognitive game for senior citizens at risk of dementia. Integrates music, tactile interaction, and social gameplay — inspired by Mahjong rituals and record player interfaces.\n\nPromotes memory, coordination, and social engagement.' },
+          { label: 'Ercon · Rebranding Exercise',            desc: 'Pitching, correspondence, specifications, hundreds of design iterations, certification, fabrication, and finishing — all within tight timeframes. Products qualified for supply to NEOM City, KSA.' },
+          { label: 'Indigenous House Bricks · Coolings',     desc: 'Design exploration into indigenous materials and traditional construction techniques for passive cooling in residential architecture.' },
+          { label: 'Mycelium Agriculture Facilitator',       desc: 'System design for a mycelium-based agricultural facilitation platform — circular bioeconomy principles and sustainable farming infrastructure.' },
+          { label: 'Cycle Battery Parametric Lock',          desc: 'Parametric product design for a cycle battery locking mechanism — form exploration through computational design methods.' },
+          { label: 'IP68 Lighting Fixtures',                 desc: 'Design and fabrication of dozens of lighting fixtures certified to IP68 waterproofing standard. From concept through to manufacture.' },
+          { label: 'Parametric Installation Curation',       desc: 'Curation and execution of a large-scale parametric installation — structural logic, material selection, and spatial composition.' },
         ]
       },
     ]
   },
   {
-    key:'education', label:'Alma Matters',
-    icon:`<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="12" y1="6" x2="16" y2="6"/><line x1="12" y1="10" x2="16" y2="10"/></svg>`,
-    items:[
-      { label:'Imperial College London', desc:'MSc. Design Engineering\nSpecialisation in Design Engineering · London, UK' },
-      { label:'Atlas SkillTech University', desc:'Bachelor\'s in Administration\nSpecialisation in Strategic Design · Minor in Programming · Mumbai, India' },
-      { label:'IIT Madras', desc:'Diploma in Programming\nFirst in Jodhpur batch · Subject Topper · Qualifier · Chennai, India' },
-      { label:'Two Year Sabbatical', desc:'Self-directed learning through travel.\nAudit Semester in Foundational Pre-Design · Charter in Product Management · Science Stream with Fine Arts · Know Hindi and English as core languages.' },
+    key: 'education', label: 'Alma Matters',
+    icon: `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
+    items: [
+      { label: 'Imperial College London',   desc: 'MSc. Design Engineering\nSpecialisation in Design Engineering · London, UK' },
+      { label: 'Atlas SkillTech University',desc: "Bachelor's in Administration\nSpecialisation in Strategic Design · Minor in Programming · Mumbai, India" },
+      { label: 'IIT Madras',               desc: 'Diploma in Programming\nFirst in Jodhpur batch · Subject Topper · Qualifier · Chennai, India' },
+      { label: 'Two Year Sabbatical',       desc: 'Self-directed learning through travel.\nAudit Semester in Foundational Pre-Design · Charter in Product Management · Science Stream with Fine Arts' },
     ]
   },
   {
-    key:'experience', label:'Experience',
-    icon:`<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="2" y1="13" x2="22" y2="13"/></svg>`,
-    items:[
-      { label:'Ercon Composites', desc:'Product Design Intern · Aug 2023 — Apr 2024 · Mumbai, India\n\nDeveloped product lines, created specifications, managed fabrication workflows, and qualified products for international clients. Products supplied to NEOM City, KSA.' },
+    key: 'experience', label: 'Experience',
+    icon: `<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="2" y1="13" x2="22" y2="13"/></svg>`,
+    items: [
+      { label: 'Ercon Composites', desc: 'Product Design Intern · Aug 2023 — Apr 2024 · Mumbai, India\n\nDeveloped product lines, created specifications, managed fabrication workflows. Products supplied to NEOM City, KSA.' },
     ]
   },
   {
-    key:'other', label:'Other Work',
-    icon:`<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
-    items:[
+    key: 'other', label: 'Other Work',
+    icon: `<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+    items: [
       {
-        label:'Product Pitches',
-        children:[
-          { label:'Jupyter Neo Bank', desc:'Product management pitch for a neo-banking product built around the Jupyter ecosystem — financial infrastructure for data scientists and researchers.' },
-          { label:'Drone / UAV Surveillance ML', desc:'Machine learning presentation on drone and UAV-based surveillance systems — technical architecture, use cases, and ethical considerations.' },
-          { label:'Pharmeasy Marketing', desc:'Marketing intervention strategy for Pharmeasy — customer acquisition, retention mechanics, and brand positioning in India\'s online pharmacy market.' },
-          { label:'Wakefit · Sale Intervention', desc:'Sales intervention design for Wakefit — conversion funnel analysis and tactical recommendations for the D2C sleep products brand.' },
-          { label:'Netflix Kids · Content Curation', desc:'Content strategy and curation system design for Netflix Kids — taxonomy, recommendation logic, and parental control UX.' },
-          { label:"Meta's VR Problem", desc:"Analysis of Meta's strategic challenges in the VR/AR consumer space — adoption barriers, platform economics, and path to mainstream viability." },
+        label: 'Product Pitches',
+        children: [
+          { label: 'Jupyter Neo Bank',           desc: 'Product management pitch for a neo-banking product built around the Jupyter ecosystem — financial infrastructure for data scientists.' },
+          { label: 'Drone / UAV Surveillance',   desc: 'Machine learning presentation on drone and UAV-based surveillance systems — technical architecture, use cases, and ethical considerations.' },
+          { label: 'Pharmeasy · Marketing',      desc: "Marketing intervention strategy for Pharmeasy — customer acquisition, retention mechanics, and brand positioning in India's online pharmacy market." },
+          { label: 'Wakefit · Sale Intervention',desc: 'Sales intervention design for Wakefit — conversion funnel analysis and tactical recommendations for the D2C sleep products brand.' },
+          { label: "Netflix Kids · Curation",    desc: 'Content strategy and curation system design for Netflix Kids — taxonomy, recommendation logic, and parental control UX.' },
+          { label: "Meta's VR Problem",          desc: "Analysis of Meta's strategic challenges in VR/AR — adoption barriers, platform economics, and path to mainstream viability." },
         ]
       },
       {
-        label:'Drawing & Imaging',
-        children:[
-          { label:'Human Anatomy Exploration', desc:'Extended series of anatomical studies exploring the human form through ink-based sketching and structural observation.' },
-          { label:'Geometrical Exploration in 2D', desc:'Visual and structural exploration of geometric forms — pattern, symmetry, rhythm, and compositional relationships in two dimensions.' },
-          { label:'Structure Sketching', desc:'Architectural and product structure sketching practice — rapid ideation through drawing, form development, and spatial reasoning.' },
-          { label:'Ethnographic · Maharashtran Village', desc:'Visual ethnography of a Maharashtran village — documentary drawing and image-making capturing culture, space, and daily life.' },
+        label: 'Drawing & Imaging',
+        children: [
+          { label: 'Human Anatomy Exploration',  desc: 'Extended series of anatomical studies exploring the human form through ink-based sketching and structural observation.' },
+          { label: 'Geometrical Exploration 2D', desc: 'Visual and structural exploration of geometric forms — pattern, symmetry, rhythm, and compositional relationships.' },
+          { label: 'Structure Sketching',        desc: 'Architectural and product structure sketching — rapid ideation, form development, and spatial reasoning.' },
+          { label: 'Maharashtran Village · Ethnography', desc: 'Visual ethnography of a Maharashtran village — documentary drawing and image-making capturing culture, space, and daily life.' },
         ]
       },
       {
-        label:'Achievements',
-        children:[
-          { label:'Hackathon · Top 8 / 375 Teams', desc:'Top 8 finalist out of 375 competing teams in a hackathon with technical pitching component.' },
-          { label:'Hackathon · 2nd Place / 1500 Teams', desc:'Second Place out of 1500 teams in hackathon with technical pitching.' },
-          { label:'Data Narrative · 3rd Place', desc:'Third Place in Data Narrative Contest out of 30+ competing teams.' },
-          { label:'IIT Madras · Subject Topper', desc:'First in Jodhpur batch to complete Programming diploma out of 30 students. IIT Madras Qualifier Subject Topper.' },
-          { label:'UN SDG Scholarship', desc:'Selected for the Makers Asylum Goa UN SDG Scholarship.' },
-          { label:'Presentation Prize · 120 Students', desc:'First Prize Presentation out of 120 students.' },
+        label: 'Achievements',
+        children: [
+          { label: 'Hackathon · Top 8 / 375',    desc: 'Top 8 finalist out of 375 competing teams — Hackathon with Technical Pitching.' },
+          { label: 'Hackathon · 2nd / 1500',     desc: 'Second Place out of 1500 teams — Hackathon with Technical Pitching.' },
+          { label: 'Data Narrative · 3rd / 30+', desc: 'Third Place in Data Narrative Contest out of 30+ teams.' },
+          { label: 'IIT Madras · Subject Topper',desc: 'First in Jodhpur batch to complete Programming diploma out of 30 students. IIT Madras Qualifier Subject Topper.' },
+          { label: 'UN SDG Scholarship',         desc: 'Selected for the Makers Asylum Goa UN SDG Scholarship.' },
+          { label: 'Presentation Prize · 120',   desc: 'First Prize Presentation out of 120 students.' },
         ]
       },
     ]
@@ -255,374 +447,332 @@ const CAT = [
 let catIdx = 0;
 let l2Idx  = 0;
 let l3Idx  = 0;
-let focus  = 'l2'; // 'l2' | 'l3'
+let depth  = 2; // 2 = showing L2 items, 3 = drilled into L3
+// depth naming: level 2 = the list under a category (always visible)
+//               level 3 = children of an L2 item (drill-in)
 
-function l2Items() { return CAT[catIdx].items; }
-function curL2()   { return l2Items()[l2Idx]; }
-function hasL3()   { return !!(curL2().children && curL2().children.length); }
-function l3Items() { return hasL3() ? curL2().children : []; }
+function cat()      { return CAT[catIdx]; }
+function l2list()   { return cat().items; }
+function curL2()    { return l2list()[l2Idx]; }
+function hasKids()  { return !!(curL2().children && curL2().children.length); }
+function kids()     { return hasKids() ? curL2().children : []; }
 
 // ── Clock ─────────────────────────────────────────────────────────────────────
 function tick() {
   const d = new Date();
   document.getElementById('clk').textContent =
-    d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+    d.getHours().toString().padStart(2,'0') + ':' +
+    d.getMinutes().toString().padStart(2,'0');
 }
 tick(); setInterval(tick, 20000);
 
 // ── Render ────────────────────────────────────────────────────────────────────
-const trackEl = document.getElementById('cat-track');
-const l2El    = document.getElementById('l2-list');
-const l3El    = document.getElementById('l3-list');
-const detEl   = document.getElementById('detail');
-const bcEl    = document.getElementById('breadcrumb');
+const trackEl   = document.getElementById('cat-track');
+const nameEl    = document.getElementById('cat-name-inner');
+const listEl    = document.getElementById('items-list');
+const bcEl      = document.getElementById('breadcrumb');
+const bcLbl     = document.getElementById('bc-label');
+const detWrap   = document.getElementById('detail-wrap');
+const detLabel  = document.getElementById('detail-label');
+const detBody   = document.getElementById('detail-body');
+const detHint   = document.getElementById('detail-hint');
+const focInd    = document.getElementById('focus-indicator');
 
 function renderCats() {
   trackEl.innerHTML = '';
-  const W = window.innerWidth;
-  const cx = W / 2;
-  const spc = Math.min(130, W / 6.5);
+  const W   = window.innerWidth;
+  const cx  = Math.min(W * 0.22, 200);
+  const spc = Math.min(80, W / 8);
 
-  CAT.forEach((cat, i) => {
+  CAT.forEach((c, i) => {
     const el  = document.createElement('div');
     el.className = 'cat-item';
     const off = i - catIdx;
     const abs = Math.abs(off);
-    const sz  = abs === 0 ? 54 : abs === 1 ? 38 : 28;
-    const col = abs === 0 ? 'var(--h)' : abs === 1 ? '#555' : '#333';
-    const glow= abs === 0 ? `drop-shadow(0 0 8px rgba(255,0,128,.65)) drop-shadow(0 0 20px rgba(255,0,128,.28))` : 'none';
-    const lop = abs === 0 ? 1 : 0;
+    const sz  = abs === 0 ? 28 : abs === 1 ? 20 : 15;
+    const col = abs === 0 ? 'var(--h)' : abs === 1 ? '#444' : '#2a2a2a';
+    const glow= abs === 0
+      ? `drop-shadow(0 0 6px rgba(0,91,255,.55)) drop-shadow(0 0 16px rgba(0,91,255,.22))`
+      : 'none';
 
-    el.innerHTML = `
-      <div class="cat-icon" style="color:${col};filter:${glow}">
-        ${cat.icon.replace('<svg','<svg width="'+sz+'" height="'+sz+'"')}
-      </div>
-      <div class="cat-lbl" style="color:${abs===0?'var(--pink)':'transparent'};opacity:${lop}">${cat.label.toUpperCase()}</div>`;
-
-    el.style.cssText = `left:${cx + off*spc}px;transform:translateX(-50%) translateY(-50%);opacity:${abs===0?1:abs===1?0.42:0.16}`;
-    el.addEventListener('click', () => { catIdx=i; l2Idx=0; l3Idx=0; focus='l2'; render(); });
+    el.innerHTML = `<div style="color:${col};filter:${glow}">
+      ${c.icon.replace('<svg', `<svg width="${sz}" height="${sz}"`)}</div>`;
+    el.style.cssText =
+      `left:${cx + off*spc}px;` +
+      `transform:translateX(-50%) translateY(-50%);` +
+      `opacity:${abs===0?1:abs===1?0.4:0.15};`;
+    el.addEventListener('click', () => { catIdx=i; l2Idx=0; l3Idx=0; depth=2; render(); });
     trackEl.appendChild(el);
   });
 }
 
-function renderL2() {
-  l2El.innerHTML = '';
-  l2Items().forEach((item, i) => {
-    const el = document.createElement('div');
-    el.className = 'l2-item' + (i===l2Idx && focus==='l2' ? ' active' : i===l2Idx ? ' active' : '');
-    el.innerHTML = `<span class="arr">▶</span><span>${item.label.toUpperCase()}</span>`;
-    el.addEventListener('click', () => { l2Idx=i; l3Idx=0; focus='l2'; renderL2(); renderRight(); });
-    l2El.appendChild(el);
-  });
+function renderName() {
+  // Swap out with animation re-trigger
+  const el = document.getElementById('cat-name-inner');
+  el.style.animation = 'none';
+  el.textContent = cat().label;
+  void el.offsetWidth;
+  el.style.animation = '';
 }
 
-function renderRight() {
-  const cat  = CAT[catIdx];
-  const item = curL2();
+function renderList() {
+  listEl.innerHTML = '';
 
-  // breadcrumb
-  if (hasL3()) {
-    bcEl.innerHTML = `${cat.label.toUpperCase()} &nbsp;/&nbsp; <span>${item.label.toUpperCase()}</span>`;
-  } else {
-    bcEl.innerHTML = `${cat.label.toUpperCase()} &nbsp;/&nbsp; <span>${item.label.toUpperCase()}</span>`;
-  }
-
-  // L3 list
-  l3El.innerHTML = '';
-  if (hasL3()) {
-    l3Items().forEach((child, i) => {
+  // Breadcrumb (L3 mode)
+  if (depth === 3) {
+    bcEl.classList.add('visible');
+    bcLbl.textContent = curL2().label.toUpperCase();
+    // Render L3 children
+    kids().forEach((child, i) => {
       const el = document.createElement('div');
-      el.className = 'l3-item' + (i===l3Idx ? ' active' : '');
-      el.innerHTML = `<span class="arr">▶</span><span>${child.label.toUpperCase()}</span>`;
-      el.addEventListener('click', () => { l3Idx=i; focus='l3'; renderL3Active(); renderDetail(); });
-      l3El.appendChild(el);
+      el.className = 'l3-item' + (i === l3Idx ? ' active' : '');
+      el.innerHTML = `<span class="l3-name">${child.label}</span><span class="l3-arrow">→</span>`;
+      el.style.animationDelay = `${i * 40}ms`;
+      el.addEventListener('click', () => { l3Idx=i; renderList(); renderDetail(); });
+      listEl.appendChild(el);
+    });
+  } else {
+    bcEl.classList.remove('visible');
+    // Render L2 items
+    l2list().forEach((item, i) => {
+      const el = document.createElement('div');
+      el.className = 'l2-item' + (i === l2Idx ? ' active' : '');
+      const hasC = !!(item.children && item.children.length);
+      el.innerHTML = `<span class="l2-name">${item.label}</span><span class="l2-arrow">${hasC ? '→' : ''}</span>`;
+      el.style.animationDelay = `${i * 45}ms`;
+      el.addEventListener('click', () => {
+        l2Idx = i;
+        if (hasC) { l3Idx=0; depth=3; }
+        renderList(); renderDetail();
+      });
+      listEl.appendChild(el);
     });
   }
 
-  renderDetail();
-}
-
-function renderL3Active() {
-  document.querySelectorAll('.l3-item').forEach((el,i) => {
-    el.classList.toggle('active', i===l3Idx);
-  });
+  focInd.style.background = depth === 3 ? 'rgba(0,91,255,0.5)' : 'var(--cobalt)';
 }
 
 function renderDetail() {
-  const item = curL2();
-  let text = '';
+  const item = depth === 3 ? kids()[l3Idx] : curL2();
 
-  if (hasL3()) {
-    const child = l3Items()[l3Idx];
-    text = child ? child.desc || '' : '';
-  } else {
-    text = item.desc || '';
-    if (item.link) {
-      detEl.innerHTML = `<a href="${item.link}" target="_blank" rel="noopener" style="color:var(--pink);text-decoration:none">${item.desc}</a>`;
-      detEl.style.opacity='1';
-      return;
-    }
+  if (!item || hasKids() && depth === 2) {
+    detWrap.style.opacity = '0';
+    detHint.style.opacity = '1';
+    return;
   }
-  detEl.style.opacity='0';
-  setTimeout(() => { detEl.textContent = text; detEl.style.opacity='1'; }, 90);
+  detHint.style.opacity = '0';
+
+  const label = depth === 3
+    ? `${cat().label} / ${curL2().label} / ${item.label}`
+    : `${cat().label} / ${item.label}`;
+
+  detWrap.style.opacity = '0';
+  setTimeout(() => {
+    detLabel.textContent = label.toUpperCase();
+    if (item.link) {
+      detBody.innerHTML = `<a href="${item.link}" target="_blank" rel="noopener"
+        style="color:var(--cobalt);text-decoration:none;font-size:inherit;line-height:inherit">
+        ${item.desc}</a>`;
+    } else {
+      detBody.textContent = item.desc || '';
+    }
+    detWrap.style.opacity = '1';
+  }, 100);
 }
 
 function render() {
   renderCats();
-  renderL2();
-  renderRight();
+  renderName();
+  renderList();
+  renderDetail();
 }
 render();
-window.addEventListener('resize', renderCats);
+window.addEventListener('resize', () => { renderCats(); });
 
 // ── Keyboard ──────────────────────────────────────────────────────────────────
+function goBack() {
+  depth = 2; l3Idx = 0; renderList(); renderDetail();
+}
+
 document.addEventListener('keydown', e => {
   const nCat = CAT.length;
-  const nL2  = l2Items().length;
-  const nL3  = hasL3() ? l3Items().length : 0;
+  const nL2  = l2list().length;
+  const nL3  = kids().length;
 
-  if (e.key === 'ArrowLeft') {
+  if (e.key === 'ArrowLeft' || e.key === 'Escape') {
     e.preventDefault();
-    if (focus === 'l3') { focus='l2'; renderL2(); return; }
-    catIdx = (catIdx - 1 + nCat) % nCat; l2Idx=0; l3Idx=0; focus='l2'; render();
+    if (depth === 3) { goBack(); return; }
+    catIdx = (catIdx - 1 + nCat) % nCat;
+    l2Idx = 0; l3Idx = 0; depth = 2; render();
   }
-  else if (e.key === 'ArrowRight') {
+  else if (e.key === 'ArrowRight' || e.key === 'Enter') {
     e.preventDefault();
-    if (focus === 'l2' && hasL3()) { focus='l3'; renderL2(); return; }
-    catIdx = (catIdx + 1) % nCat; l2Idx=0; l3Idx=0; focus='l2'; render();
+    if (depth === 2 && hasKids()) { depth = 3; l3Idx = 0; renderList(); renderDetail(); return; }
+    if (depth === 2) { /* leaf — no action */ return; }
+    catIdx = (catIdx + 1) % nCat;
+    l2Idx = 0; l3Idx = 0; depth = 2; render();
   }
   else if (e.key === 'ArrowDown') {
     e.preventDefault();
-    if (focus === 'l3' && nL3 > 0) { l3Idx=(l3Idx+1)%nL3; renderL3Active(); renderDetail(); }
-    else { l2Idx=(l2Idx+1)%nL2; l3Idx=0; renderL2(); renderRight(); }
+    if (depth === 3) { l3Idx = (l3Idx + 1) % Math.max(1, nL3); renderList(); renderDetail(); }
+    else             { l2Idx = (l2Idx + 1) % nL2; renderList(); renderDetail(); }
   }
   else if (e.key === 'ArrowUp') {
     e.preventDefault();
-    if (focus === 'l3' && nL3 > 0) { l3Idx=(l3Idx-1+nL3)%nL3; renderL3Active(); renderDetail(); }
-    else { l2Idx=(l2Idx-1+nL2)%nL2; l3Idx=0; renderL2(); renderRight(); }
-  }
-  else if (e.key === 'Enter') {
-    if (focus==='l2' && hasL3()) { focus='l3'; renderL2(); }
-    else if (curL2().link) window.open(curL2().link,'_blank');
-  }
-  else if (e.key === 'Escape') {
-    if (focus==='l3') { focus='l2'; renderL2(); }
+    if (depth === 3) { l3Idx = (l3Idx - 1 + Math.max(1, nL3)) % Math.max(1, nL3); renderList(); renderDetail(); }
+    else             { l2Idx = (l2Idx - 1 + nL2) % nL2; renderList(); renderDetail(); }
   }
 });
 
 // ── Canvas background ─────────────────────────────────────────────────────────
-(function(){
+(function () {
   const cv  = document.getElementById('bg');
   const ctx = cv.getContext('2d');
-  let W, H, t=0;
-  let matRows=[], filmPerfs=[];
+  let W, H, t = 0;
+  let matRows = [];
+  let photoImg = null;
 
-  // Zone boundaries (fraction of W)
-  const Z_ROOM  = 0.34; // 0 → Z_ROOM: pixel art rooms
-  const Z_FILM  = 0.44; // Z_ROOM → Z_FILM: film strip
-  const Z_MAT   = 0.97; // Z_FILM → Z_MAT: matrix numbers
-  // Z_MAT → 1.0: pink stripe
+  // Zone boundaries
+  const Z_PHOTO = 0.30; // 0 – Z_PHOTO: photo / placeholder
+  const Z_FILM  = 0.40; // Z_PHOTO – Z_FILM: film strip
+  const Z_MAT   = 0.97; // Z_FILM – Z_MAT: matrix
+  // Z_MAT – 1.0: cobalt stripe
 
-  function rnd(a,b){ return a+Math.random()*(b-a); }
-  function rndI(a,b){ return Math.floor(rnd(a,b+1)); }
-  function coord(){ return rndI(0,2500)+','+rndI(0,2000)+','+rndI(0,1500)+','+rndI(0,999); }
-
-  const ROOM_PALETTES = [
-    { wall:'#4a2e1a', floor1:'#8b5e3c', floor2:'#6b4422', accent:'#e8a040', trim:'#2a1a0a' },
-    { wall:'#1a2a4a', floor1:'#2a4060', floor2:'#1a3050', accent:'#40a0e0', trim:'#0a1525' },
-    { wall:'#2a1a3a', floor1:'#503060', floor2:'#3a2050', accent:'#c060e0', trim:'#150a20' },
-    { wall:'#1a3a2a', floor1:'#285040', floor2:'#1e3a2e', accent:'#50c080', trim:'#0a1e14' },
-  ];
-
-  function initMatrix(){
-    matRows=[];
-    const lineH = 14;
-    const count = Math.ceil(H/lineH)+2;
-    for(let i=0;i<count;i++){
-      matRows.push({ y: i*lineH, vals: Array.from({length:18},()=>rndI(0,2500)), age:rnd(0,1000) });
-    }
+  // Matrix row data
+  function rndI(a, b) { return Math.floor(a + Math.random() * (b - a + 1)); }
+  function makeRow(y) {
+    return { y, vals: Array.from({ length: 16 }, () => rndI(0, 2500)), age: Math.random() * 500 };
   }
 
-  function resize(){
+  function initMatrix() {
+    const lh = 14;
+    matRows = Array.from({ length: Math.ceil(H / lh) + 2 }, (_, i) => makeRow(i * lh));
+  }
+
+  function resize() {
     W = cv.width  = window.innerWidth;
     H = cv.height = window.innerHeight;
     initMatrix();
   }
 
-  // Draw a single pixel-art room
-  function drawRoom(x0,y0,rW,rH,pal){
-    const px=Math.max(2,Math.floor(rW/60));
-
-    // Background
-    ctx.fillStyle = pal.wall;
-    ctx.fillRect(x0,y0,rW,rH);
-
-    // Floor tiles (bottom 30%)
-    const floorY = y0 + rH*0.68;
-    for(let fx=x0;fx<x0+rW;fx+=px*4){
-      for(let fy=floorY;fy<y0+rH;fy+=px*2){
-        ctx.fillStyle = ((fx+fy)/px)%2===0 ? pal.floor1 : pal.floor2;
-        ctx.fillRect(fx,fy,px*4,px*2);
-      }
-    }
-
-    // Back wall darkened stripe
-    ctx.fillStyle='rgba(0,0,0,0.25)';
-    ctx.fillRect(x0,y0,rW,rH*0.12);
-
-    // Windows (back wall)
-    const winW=px*8, winH=px*10;
-    const winY=y0+rH*0.15;
-    const winCount=Math.floor(rW/(winW*3));
-    for(let wi=0;wi<winCount;wi++){
-      const wx=x0+(wi+0.5)*(rW/(winCount))-winW/2;
-      ctx.fillStyle='rgba(0,0,0,0.5)';
-      ctx.fillRect(wx-px,winY-px,winW+px*2,winH+px*2);
-      const lit=Math.random()>0.3;
-      ctx.fillStyle=lit?'rgba(255,220,140,0.75)':'rgba(40,60,100,0.5)';
-      ctx.fillRect(wx,winY,winW,winH);
-      // window cross
-      ctx.fillStyle='rgba(0,0,0,0.4)';
-      ctx.fillRect(wx+winW/2-px/2,winY,px,winH);
-      ctx.fillRect(wx,winY+winH/2-px/2,winW,px);
-    }
-
-    // Decorative columns / pillars
-    const colW=px*3;
-    for(let ci=0;ci<3;ci++){
-      const cx2=x0+(ci+1)*(rW/4)-colW/2;
-      ctx.fillStyle=pal.trim;
-      ctx.fillRect(cx2,y0+rH*0.1,colW,rH*0.6);
-      ctx.fillStyle=pal.accent+'44';
-      ctx.fillRect(cx2-px,y0+rH*0.1,px,rH*0.6);
-    }
-
-    // Pixel art "trees" / decorative blobs
-    [[0.1,0.55],[0.85,0.50]].forEach(([fx2,fy2])=>{
-      const tx=x0+rW*fx2, ty=y0+rH*fy2;
-      const tr=px*5;
-      // canopy
-      ctx.fillStyle=pal.accent+'88';
-      ctx.fillRect(tx-tr,ty-tr*2,tr*2,tr*2);
-      ctx.fillStyle=pal.accent+'55';
-      ctx.fillRect(tx-tr+px,ty-tr*3,tr*2-px*2,tr);
-      // trunk
-      ctx.fillStyle=pal.floor1;
-      ctx.fillRect(tx-px,ty,px*2,tr);
-    });
-
-    // Room border (blue highlight on selected room style)
-    if(Math.random()>0.65){
-      ctx.strokeStyle=pal.accent+'66';
-      ctx.lineWidth=2;
-      ctx.strokeRect(x0+1,y0+1,rW-2,rH-2);
-    }
-
-    // Subtle vignette inside room
-    const rv=ctx.createLinearGradient(x0,y0,x0,y0+rH);
-    rv.addColorStop(0,'rgba(0,0,0,0.35)');
-    rv.addColorStop(0.4,'transparent');
-    rv.addColorStop(1,'rgba(0,0,0,0.55)');
-    ctx.fillStyle=rv;
-    ctx.fillRect(x0,y0,rW,rH);
+  // Load user photo if set
+  if (PHOTO_SRC) {
+    photoImg = new Image();
+    photoImg.src = PHOTO_SRC;
   }
 
-  function drawRooms(){
-    const rW = W*Z_ROOM;
-    const rH = H/4;
-    ROOM_PALETTES.forEach((pal,i)=>{
-      drawRoom(0, i*rH, rW, rH, pal);
-    });
-    // thin separator lines between rooms
-    for(let i=1;i<4;i++){
-      ctx.fillStyle='rgba(0,0,0,0.6)';
-      ctx.fillRect(0,i*H/4-1,rW,2);
+  function drawPhotoZone() {
+    const pw = W * Z_PHOTO;
+    // Dark background
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, pw, H);
+
+    if (photoImg && photoImg.complete && photoImg.naturalWidth) {
+      // Cover-fit the photo
+      const iw = photoImg.naturalWidth, ih = photoImg.naturalHeight;
+      const scale = Math.max(pw / iw, H / ih);
+      const dw = iw * scale, dh = ih * scale;
+      const dx = (pw - dw) / 2, dy = (H - dh) / 2;
+      ctx.drawImage(photoImg, dx, dy, dw, dh);
+      // Subtle dark vignette over photo
+      const vg = ctx.createLinearGradient(pw - 60, 0, pw, 0);
+      vg.addColorStop(0, 'transparent');
+      vg.addColorStop(1, 'rgba(0,0,0,0.85)');
+      ctx.fillStyle = vg;
+      ctx.fillRect(0, 0, pw, H);
+    } else {
+      // Placeholder: silhouette outline
+      ctx.strokeStyle = 'rgba(0,91,255,0.12)';
+      ctx.lineWidth = 1;
+      const cx2 = pw / 2, cy2 = H * 0.38, r = Math.min(pw, H) * 0.1;
+      ctx.beginPath(); ctx.arc(cx2, cy2 - r * 0.3, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx2 - r * 1.4, cy2 + r * 2.2);
+      ctx.quadraticCurveTo(cx2, cy2 + r * 0.6, cx2 + r * 1.4, cy2 + r * 2.2);
+      ctx.stroke();
+      // "PHOTO" hint
+      ctx.font = `700 9px var(--font, "Helvetica Neue")`;
+      ctx.fillStyle = 'rgba(0,91,255,0.18)';
+      ctx.textAlign = 'center';
+      ctx.fillText('ADD PHOTO', cx2, cy2 + r * 3.2);
+      ctx.textAlign = 'left';
     }
   }
 
-  function drawFilmStrip(){
-    const fx = W*Z_ROOM;
-    const fw = W*(Z_FILM-Z_ROOM);
-    ctx.fillStyle='rgba(0,0,0,0.92)';
-    ctx.fillRect(fx,0,fw,H);
-
-    // Perforations
-    const ph=10,pw=7,pGap=20,margin=4;
-    for(let py=6;py<H-ph;py+=pGap){
-      ctx.fillStyle='rgba(255,255,255,0.88)';
-      ctx.fillRect(fx+margin,py,pw,ph);
-      ctx.fillRect(fx+fw-margin-pw,py,pw,ph);
+  function drawFilmStrip() {
+    const fx = W * Z_PHOTO;
+    const fw = W * (Z_FILM - Z_PHOTO);
+    ctx.fillStyle = 'rgba(0,0,0,0.94)';
+    ctx.fillRect(fx, 0, fw, H);
+    // perforations
+    const ph = 10, pw2 = 7, gap = 20, mg = 4;
+    for (let py = 6; py < H - ph; py += gap) {
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.fillRect(fx + mg, py, pw2, ph);
+      ctx.fillRect(fx + fw - mg - pw2, py, pw2, ph);
     }
-
-    // Pink edge glow
-    const eg=ctx.createLinearGradient(fx,0,fx+fw,0);
-    eg.addColorStop(0,'rgba(255,0,128,0.2)');
-    eg.addColorStop(0.5,'transparent');
-    eg.addColorStop(1,'rgba(255,0,128,0.14)');
-    ctx.fillStyle=eg;
-    ctx.fillRect(fx,0,fw,H);
+    // cobalt edge glow on film strip
+    const eg = ctx.createLinearGradient(fx, 0, fx + fw, 0);
+    eg.addColorStop(0, 'rgba(0,91,255,0.18)');
+    eg.addColorStop(0.5, 'transparent');
+    eg.addColorStop(1, 'rgba(0,91,255,0.12)');
+    ctx.fillStyle = eg; ctx.fillRect(fx, 0, fw, H);
   }
 
-  const NCOLS_COLORS=['#ff4040','#4488ff','#40ff88','#ffffff','#ff9040','#ffffff'];
+  const MC = ['#ff4444', '#4488ff', '#44ff88', '#ffffff', '#ff9944', '#ffffff'];
+  function hexRgba(hex, a) {
+    const r = parseInt(hex.slice(1,3),16);
+    const g = parseInt(hex.slice(3,5),16);
+    const b = parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
 
-  function drawMatrix(){
-    const mx = W*Z_FILM;
-    const mw = W*(Z_MAT-Z_FILM);
-    // dark background
-    ctx.fillStyle='rgba(0,0,0,0.85)';
-    ctx.fillRect(mx,0,mw,H);
+  function drawMatrix() {
+    const mx = W * Z_FILM;
+    const mw = W * (Z_MAT - Z_FILM);
+    ctx.fillStyle = 'rgba(0,0,0,0.88)';
+    ctx.fillRect(mx, 0, mw, H);
+    ctx.font = '10px "Helvetica Neue",Helvetica,monospace';
 
-    ctx.font='10px "Helvetica Neue",Helvetica,monospace';
-    const lineH=14;
-
-    matRows.forEach(row=>{
-      row.age+=0.3;
-      if(Math.random()<0.004) row.vals=Array.from({length:18},()=>rndI(0,2500));
-
-      let x=mx+8;
-      row.vals.forEach((v,vi)=>{
-        const col=NCOLS_COLORS[vi%NCOLS_COLORS.length];
-        const r2=parseInt(col.slice(1,3),16);
-        const g2=parseInt(col.slice(3,5),16);
-        const b2=parseInt(col.slice(5,7),16);
-        ctx.fillStyle=`rgba(${r2},${g2},${b2},0.24)`;
-        const str=v+',';
-        ctx.fillText(str,x,row.y);
-        x+=ctx.measureText(str).width;
-        if(x>mx+mw-20) return;
+    matRows.forEach(row => {
+      row.age += 0.25;
+      if (Math.random() < 0.003) row.vals = Array.from({ length: 16 }, () => rndI(0, 2500));
+      let x = mx + 6;
+      row.vals.forEach((v, vi) => {
+        const str = v + ',';
+        ctx.fillStyle = hexRgba(MC[vi % MC.length], 0.22);
+        ctx.fillText(str, x, row.y);
+        x += ctx.measureText(str).width;
+        if (x > mx + mw - 14) return;
       });
     });
   }
 
-  function drawPinkStripe(){
-    const px=W*Z_MAT;
-    const pw=W*(1-Z_MAT);
-    ctx.fillStyle='#ff0080';
-    ctx.fillRect(px,0,pw,H);
-    // subtle left glow
-    const sg=ctx.createLinearGradient(px-20,0,px+pw,0);
-    sg.addColorStop(0,'rgba(255,0,128,0.2)');
-    sg.addColorStop(0.3,'transparent');
-    ctx.fillStyle=sg;
-    ctx.fillRect(px-20,0,pw+20,H);
+  function drawCobaltStripe() {
+    const sx = W * Z_MAT;
+    const sw = W * (1 - Z_MAT);
+    ctx.fillStyle = '#005BFF';
+    ctx.fillRect(sx, 0, sw, H);
+    // glow
+    const sg = ctx.createLinearGradient(sx - 24, 0, sx + sw, 0);
+    sg.addColorStop(0, 'rgba(0,91,255,0.22)');
+    sg.addColorStop(0.4, 'transparent');
+    ctx.fillStyle = sg;
+    ctx.fillRect(sx - 24, 0, sw + 24, H);
   }
 
-  function frame(ts){
-    t=ts*0.001;
-    // Clear
-    ctx.fillStyle='#000';
-    ctx.fillRect(0,0,W,H);
-
-    drawRooms();
+  function frame() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, W, H);
+    drawPhotoZone();
     drawFilmStrip();
     drawMatrix();
-    drawPinkStripe();
-
+    drawCobaltStripe();
     requestAnimationFrame(frame);
   }
 
   resize();
-  window.addEventListener('resize',resize);
+  window.addEventListener('resize', resize);
   requestAnimationFrame(frame);
 })();
 </script>
