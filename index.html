@@ -67,6 +67,22 @@ body::after {
   pointer-events: none;
   transition: opacity 0.3s;
 }
+#down-hint {
+  position: absolute;
+  top: calc(50% + 80px); left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 10px solid rgba(255,255,255,0.6);
+  pointer-events: none;
+  transition: opacity 0.3s;
+  animation: hintFloat 2.1s cubic-bezier(0.45,0,0.55,1) infinite;
+}
+@keyframes hintFloat {
+  0%, 100% { transform: translateX(-50%) translateY(0);   opacity: 0.3; }
+  50%       { transform: translateX(-50%) translateY(7px); opacity: 0.8; }
+}
 
 /* ── L2 vertical sub-nav ── */
 #sub-nav {
@@ -165,6 +181,7 @@ body::after {
   <div id="stage">
     <div id="cat-carousel"></div>
     <div id="enter-hint">↓ &nbsp;ENTER</div>
+    <div id="down-hint"></div>
     <div id="sub-nav">
       <div id="parent-label"></div>
       <div id="desc-preview"></div>
@@ -290,6 +307,7 @@ let subBtns = [];
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const catCarousel   = document.getElementById('cat-carousel');
 const enterHint     = document.getElementById('enter-hint');
+const downHint      = document.getElementById('down-hint');
 const subNavEl      = document.getElementById('sub-nav');
 const parentLabel   = document.getElementById('parent-label');
 const descPreview   = document.getElementById('desc-preview');
@@ -366,9 +384,10 @@ function positionAllSubBtns() {
     const off = i - subIdx, abs = Math.abs(off);
     let size, opacity, yOff;
     if      (abs === 0) { size = selectedFontSize(btn.textContent); opacity = 1.0; yOff = 0; }
-    else if (abs === 1) { size = 27; opacity = 0.62; yOff = off * YGAP; }
-    else if (abs === 2) { size = 17; opacity = 0.32; yOff = off > 0 ? YGAP * 1.55 : -YGAP * 1.55; }
-    else                { size = 12; opacity = 0;    yOff = off > 0 ? YGAP * 2    : -YGAP * 2;    }
+    else if (abs === 1) { size = 32; opacity = 0.78; yOff = off * YGAP; }
+    else if (abs === 2) { size = 20; opacity = 0.50; yOff = off > 0 ? YGAP * 1.55 : -YGAP * 1.55; }
+    else if (abs === 3) { size = 14; opacity = 0.25; yOff = off > 0 ? YGAP * 2.1  : -YGAP * 2.1;  }
+    else                { size = 11; opacity = 0;    yOff = off > 0 ? YGAP * 2.6  : -YGAP * 2.6;  }
     btn.style.fontSize  = size + 'px';
     btn.style.opacity   = String(opacity);
     btn.style.transform = `translate(-50%, calc(-50% + ${yOff}px))`;
@@ -407,6 +426,7 @@ function goTo(newDepth) {
   catCarousel.style.opacity       = depth === 0 ? '1' : '0';
   catCarousel.style.pointerEvents = depth === 0 ? 'auto' : 'none';
   enterHint.style.opacity         = depth === 0 ? '1' : '0';
+  downHint.style.opacity          = depth === 0 ? '1' : '0';
   subNavEl.classList.toggle('active', depth === 1);
   descFullEl.classList.toggle('active', depth === 2);
   if (depth === 2) renderFullDesc();
@@ -478,6 +498,124 @@ window.addEventListener('resize', () => { updateCats(); if (depth === 1) positio
 
   function rndI(a, b) { return Math.floor(a + Math.random() * (b - a + 1)); }
 
+  // ── Whirlpool holes ────────────────────────────────────────────────────────
+  // 3 voids that orbit slowly; the matrix thins into a spiral near each void
+  const HOLES = Array.from({length: 3}, () => ({
+    cx:    0.15 + Math.random() * 0.70,  // orbit-centre x (normalised in matrix zone)
+    cy:    0.15 + Math.random() * 0.70,  // orbit-centre y (normalised)
+    oR:    0.06 + Math.random() * 0.10,  // orbit radius (normalised)
+    angle: Math.random() * Math.PI * 2,
+    spd:   0.004 + Math.random() * 0.004,
+    r:     55 + Math.random() * 55,      // hole pixel radius
+  }));
+
+  function holeAlpha(cx, cy, mx, mw) {
+    let mn = 1;
+    for (const h of HOLES) {
+      const hx2 = mx + (h.cx + Math.cos(h.angle) * h.oR) * mw;
+      const hy2 =       (h.cy + Math.sin(h.angle) * h.oR * 0.5) * H;
+      const dx = cx - hx2, dy = cy - hy2;
+      const d  = Math.sqrt(dx * dx + dy * dy);
+      const outerR = h.r * 1.9;
+      if (d < outerR) {
+        const ang    = Math.atan2(dy, dx);
+        const phase  = ((ang - h.angle * 4) % (Math.PI*2) + Math.PI*2) % (Math.PI*2);
+        const swirl  = 0.2 + (Math.cos(phase) + 1) * 0.40;
+        const dFrac  = d / outerR;
+        const mult   = dFrac < 0.18 ? 0 : dFrac * swirl;
+        if (mult < mn) mn = mult;
+      }
+    }
+    return mn;
+  }
+
+  // ── Neural network ─────────────────────────────────────────────────────────
+  const NN = Array.from({length: 28}, () => ({
+    nx: 0.25 + Math.random() * 0.72,  // normalised in matrix zone
+    ny: 0.04 + Math.random() * 0.92,
+    pulse: Math.random() * 200,
+    pMax: 90 + Math.floor(Math.random() * 140),
+    x: 0, y: 0,
+  }));
+
+  function initNN(mx, mw) {
+    NN.forEach(n => { n.x = mx + n.nx * mw; n.y = n.ny * H; });
+  }
+
+  function drawNN() {
+    for (let i = 0; i < NN.length; i++) {
+      for (let j = i + 1; j < NN.length; j++) {
+        const dx = NN[i].x - NN[j].x, dy = NN[i].y - NN[j].y;
+        const d  = Math.sqrt(dx*dx + dy*dy);
+        if (d < 195) {
+          ctx.strokeStyle = `rgba(155,195,255,${0.10 * (1 - d/195)})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath(); ctx.moveTo(NN[i].x, NN[i].y);
+          ctx.lineTo(NN[j].x, NN[j].y); ctx.stroke();
+        }
+      }
+    }
+    NN.forEach(n => {
+      n.pulse = (n.pulse + 1) % n.pMax;
+      const t    = n.pulse / n.pMax;
+      const glow = t < 0.25 ? t / 0.25 : t > 0.55 ? 0 : (0.55 - t) / 0.30;
+      ctx.fillStyle = `rgba(155,210,255,${0.14 + glow * 0.55})`;
+      ctx.beginPath(); ctx.arc(n.x, n.y, 1.2 + glow * 2.2, 0, Math.PI*2); ctx.fill();
+    });
+  }
+
+  // ── Minigame sprites ───────────────────────────────────────────────────────
+  const INV = [
+    [0,1,0,0,0,0,1,0],
+    [0,0,1,0,0,1,0,0],
+    [0,1,1,1,1,1,1,0],
+    [1,1,0,1,1,0,1,1],
+    [1,1,1,1,1,1,1,1],
+    [0,1,0,1,1,0,1,0],
+    [1,0,0,0,0,0,0,1],
+  ];
+  const SHIP = [
+    [0,0,1,0,0],
+    [0,1,1,1,0],
+    [1,1,1,1,1],
+    [0,1,0,1,0],
+  ];
+  const GHOST = [
+    [0,1,1,1,1,0],
+    [1,0,1,0,1,1],
+    [1,1,1,1,1,1],
+    [1,1,1,1,1,1],
+    [1,0,1,0,1,1],
+  ];
+  const PATS = [INV, SHIP, GHOST, SHIP, INV];
+
+  const SPRITES = Array.from({length: 5}, (_, i) => ({
+    nx: 0.05 + Math.random() * 0.90,
+    ny: 0.05 + Math.random() * 0.90,
+    vx: (Math.random() > 0.5 ? 1 : -1) * (0.00025 + Math.random() * 0.0003),
+    vy: (Math.random() > 0.5 ? 1 : -1) * (0.00015 + Math.random() * 0.0002),
+    pat: PATS[i % PATS.length],
+    sc: 2,
+  }));
+
+  function drawSprites(mx, mw) {
+    ctx.fillStyle = 'rgba(255,255,255,0.13)';
+    SPRITES.forEach(s => {
+      s.nx += s.vx; s.ny += s.vy;
+      if (s.nx < 0.02 || s.nx > 0.96) s.vx *= -1;
+      if (s.ny < 0.02 || s.ny > 0.96) s.vy *= -1;
+      const px = mx + s.nx * mw, py = s.ny * H;
+      const rows = s.pat.length, cols = s.pat[0].length;
+      const ox = -(cols * s.sc) / 2, oy = -(rows * s.sc) / 2;
+      s.pat.forEach((row, ri) =>
+        row.forEach((cell, ci) => {
+          if (cell) ctx.fillRect(px + ox + ci*s.sc, py + oy + ri*s.sc, s.sc, s.sc);
+        })
+      );
+    });
+  }
+
+  // ── Matrix ─────────────────────────────────────────────────────────────────
   function initMatrix() {
     const lh = 14, count = Math.ceil(H / lh) + 2;
     matRows = Array.from({ length: count }, (_, i) => ({
@@ -490,10 +628,12 @@ window.addEventListener('resize', () => { updateCats(); if (depth === 1) positio
     W = cv.width  = window.innerWidth;
     H = cv.height = window.innerHeight;
     initMatrix();
+    initNN(W * Z_FILM, W * (1 - Z_FILM));
   }
 
   if (PHOTO_SRC) { photoImg = new Image(); photoImg.src = PHOTO_SRC; }
 
+  // ── Zone draws ─────────────────────────────────────────────────────────────
   function drawPhoto() {
     const pw = W * Z_PHOTO;
     ctx.fillStyle = '#070710';
@@ -546,17 +686,23 @@ window.addEventListener('resize', () => { updateCats(); if (depth === 1) positio
     ctx.fillStyle = 'rgba(0,0,0,0.82)';
     ctx.fillRect(mx, 0, mw, H);
     ctx.font = '10px "Helvetica Neue", Helvetica, monospace';
+    HOLES.forEach(h => { h.angle += h.spd; });
     matRows.forEach(row => {
       if (Math.random() < 0.002) row.vals = Array.from({ length: 22 }, () => rndI(0, 2500));
       let x = mx + 6;
       row.vals.forEach((v, vi) => {
-        const str = v + ',';
-        ctx.fillStyle = hx(MC[vi % MC.length], 0.55);
-        ctx.fillText(str, x, row.y);
+        const str   = v + ',';
+        const alpha = holeAlpha(x, row.y, mx, mw);
+        if (alpha > 0.04) {
+          ctx.fillStyle = hx(MC[vi % MC.length], 0.55 * alpha);
+          ctx.fillText(str, x, row.y);
+        }
         x += ctx.measureText(str).width;
         if (x > mx + mw - 12) return;
       });
     });
+    drawNN();
+    drawSprites(mx, mw);
   }
 
   function frame() {
