@@ -25,7 +25,7 @@ body::after {
   pointer-events: none; z-index: 999;
 }
 
-/* ── UI shell ── */
+/* ── UI ── */
 #ui { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; }
 
 /* ── Topbar ── */
@@ -41,17 +41,24 @@ body::after {
 /* ── Stage ── */
 #stage { flex: 1; position: relative; overflow: hidden; }
 
-/* ── L1 horizontal carousel ── */
-#cat-carousel {
-  position: absolute; inset: 0;
-  transition: opacity 0.38s ease;
+/* Persistent breadcrumb (depth 1+) */
+#nav-crumb {
+  position: absolute;
+  top: 18px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px; letter-spacing: 0.20em; text-transform: uppercase;
+  color: rgba(255,255,255,0.32); font-weight: 700;
+  white-space: nowrap; pointer-events: none;
+  opacity: 0; transition: opacity 0.3s;
 }
+
+/* ── L1 horizontal carousel ── */
+#cat-carousel { position: absolute; inset: 0; transition: opacity 0.38s ease; }
 .cat-btn {
   position: absolute; top: 50%; left: 50%;
   background: none; border: none; cursor: pointer;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700;
-  color: #e8e8e8; line-height: 1;
-  padding: 0; white-space: nowrap;
+  color: #e8e8e8; line-height: 1; padding: 0; white-space: nowrap;
   transition:
     font-size 0.42s cubic-bezier(0.16,1,0.3,1),
     opacity   0.42s cubic-bezier(0.16,1,0.3,1),
@@ -59,24 +66,20 @@ body::after {
   text-shadow: 0 2px 20px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.7);
 }
 #enter-hint {
-  position: absolute;
-  top: calc(50% + 58px); left: 50%;
+  position: absolute; top: calc(50% + 58px); left: 50%;
   transform: translateX(-50%);
   font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase;
   color: rgba(255,255,255,0.3); font-weight: 700;
-  pointer-events: none;
-  transition: opacity 0.3s;
+  pointer-events: none; transition: opacity 0.3s;
 }
 #down-hint {
-  position: absolute;
-  top: calc(50% + 80px); left: 50%;
+  position: absolute; top: calc(50% + 80px); left: 50%;
   transform: translateX(-50%);
   width: 0; height: 0;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
   border-top: 10px solid rgba(255,255,255,0.6);
-  pointer-events: none;
-  transition: opacity 0.3s;
+  pointer-events: none; transition: opacity 0.3s;
   animation: hintFloat 2.1s cubic-bezier(0.45,0,0.55,1) infinite;
 }
 @keyframes hintFloat {
@@ -85,72 +88,113 @@ body::after {
 }
 
 /* ── L2 vertical sub-nav ── */
-#sub-nav {
-  position: absolute; inset: 0;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.38s ease;
-}
+#sub-nav { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity 0.38s ease; }
 #sub-nav.active { opacity: 1; pointer-events: auto; }
-
 #parent-label {
-  position: absolute;
-  top: 22%; left: 33%;
+  position: absolute; top: 22%; left: 33%;
   transform: translate(-50%, -50%);
   font-size: 22px; font-weight: 700;
-  color: rgba(232,232,232,0.25);
-  white-space: nowrap;
-  pointer-events: none;
-  letter-spacing: -0.01em;
+  color: rgba(232,232,232,0.25); white-space: nowrap;
+  pointer-events: none; letter-spacing: -0.01em;
 }
-
 .sub-btn {
   position: absolute; top: 50%; left: 33%;
   background: none; border: none; cursor: pointer;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700;
-  color: #e8e8e8; line-height: 1;
-  padding: 0; white-space: nowrap;
+  color: #e8e8e8; line-height: 1; padding: 0; white-space: nowrap;
   text-shadow: 0 2px 24px rgba(0,0,0,0.95);
   transition:
     font-size 0.38s cubic-bezier(0.16,1,0.3,1),
     opacity   0.38s cubic-bezier(0.16,1,0.3,1),
     transform 0.38s cubic-bezier(0.16,1,0.3,1);
 }
-
-/* ── Description preview (right of sub-nav) ── */
 #desc-preview {
-  position: absolute;
-  top: 50%; left: 52%; right: 2%;
+  position: absolute; top: 50%; left: 52%; right: 2%;
   transform: translateY(-50%);
-  font-size: 19px; font-weight: 700;
-  color: #e8e8e8;
+  font-size: 19px; font-weight: 700; color: #e8e8e8;
   overflow: hidden; white-space: nowrap;
   -webkit-mask-image: linear-gradient(to right, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.35) 50%, transparent 88%);
   mask-image: linear-gradient(to right, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.35) 50%, transparent 88%);
-  pointer-events: none;
-  letter-spacing: -0.01em;
+  pointer-events: none; letter-spacing: -0.01em;
 }
 
-/* ── L3 full description ── */
+/* ── L3a: full text (no children) ── */
 #desc-full {
   position: absolute; inset: 0;
-  padding: 54px 52px 40px;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.38s ease;
+  padding: 50px 52px 160px;
+  opacity: 0; pointer-events: none; transition: opacity 0.38s ease;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.15) transparent;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
 }
 #desc-full::-webkit-scrollbar { width: 2px; }
 #desc-full::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
 #desc-full.active { opacity: 1; pointer-events: auto; }
-#desc-full-crumb {
+.panel-crumb {
   font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
-  color: rgba(232,232,232,0.3); margin-bottom: 28px; font-weight: 700;
+  color: rgba(232,232,232,0.3); margin-bottom: 24px; font-weight: 700;
 }
 #desc-full-body {
   font-size: 23px; font-weight: 700;
   line-height: 1.62; color: #e8e8e8;
-  white-space: pre-line; max-width: 840px;
+  white-space: pre-line; max-width: 820px;
+}
+
+/* ── L3b: child item view (has children) ── */
+#child-view {
+  position: absolute; inset: 0;
+  padding: 50px 52px 160px;
+  opacity: 0; pointer-events: none; transition: opacity 0.38s ease;
+  overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+#child-view::-webkit-scrollbar { width: 2px; }
+#child-view::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
+#child-view.active { opacity: 1; pointer-events: auto; }
+
+#child-counter {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(232,232,232,0.38); margin-bottom: 22px;
+  display: flex; align-items: center; gap: 14px;
+}
+#child-counter .arr { font-size: 12px; color: rgba(255,255,255,0.55); }
+#child-title {
+  font-size: 30px; font-weight: 700; letter-spacing: -0.02em;
+  color: #e8e8e8; margin-bottom: 18px; line-height: 1.2;
+}
+#child-body {
+  font-size: 18px; font-weight: 700;
+  line-height: 1.68; color: rgba(232,232,232,0.72);
+  white-space: pre-line; max-width: 680px;
+}
+
+/* ── Work preview (TV placeholder) ── */
+.work-preview {
+  position: absolute; bottom: 44px; right: 52px;
+  pointer-events: none;
+}
+.tv-outer {
+  width: 148px;
+  border: 2px solid rgba(255,255,255,0.14);
+  border-radius: 6px; padding: 6px;
+  background: rgba(0,0,0,0.55);
+}
+.tv-screen {
+  width: 100%; height: 88px;
+  background: #020208;
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.tv-screen::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.04) 2px, rgba(255,255,255,0.04) 4px);
+}
+.tv-play { font-size: 22px; color: rgba(255,255,255,0.38); z-index: 1; }
+.tv-label {
+  font-size: 7px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255,255,255,0.16); text-align: center;
+  margin-top: 6px; font-weight: 700;
 }
 
 /* ── Footer ── */
@@ -179,6 +223,7 @@ body::after {
     <span id="clk"></span>
   </div>
   <div id="stage">
+    <div id="nav-crumb"></div>
     <div id="cat-carousel"></div>
     <div id="enter-hint">↓ &nbsp;ENTER</div>
     <div id="down-hint"></div>
@@ -187,16 +232,32 @@ body::after {
       <div id="desc-preview"></div>
     </div>
     <div id="desc-full">
-      <div id="desc-full-crumb"></div>
+      <div class="panel-crumb" id="desc-full-crumb"></div>
       <div id="desc-full-body"></div>
+      <div class="work-preview">
+        <div class="tv-outer">
+          <div class="tv-screen"><span class="tv-play">▶</span></div>
+          <div class="tv-label">Upload work image</div>
+        </div>
+      </div>
+    </div>
+    <div id="child-view">
+      <div class="panel-crumb" id="child-crumb"></div>
+      <div id="child-counter"></div>
+      <div id="child-title"></div>
+      <div id="child-body"></div>
+      <div class="work-preview">
+        <div class="tv-outer">
+          <div class="tv-screen"><span class="tv-play">▶</span></div>
+          <div class="tv-label">Upload work image</div>
+        </div>
+      </div>
     </div>
   </div>
   <div id="footer"></div>
 </div>
 
 <script>
-const PHOTO_SRC = ''; // e.g. './divyum.jpg'
-
 // ── Data ──────────────────────────────────────────────────────────────────────
 const CAT = [
   {
@@ -214,33 +275,33 @@ const CAT = [
       {
         label: 'Tech + Data',
         children: [
-          { label: 'Inventory System · Informal Stores',  desc: 'Group Project · Ideation, Coding, Pitching\n\nFormalising part-sourcing and repair workflows of informal electronic vendors in Mumbai. Addresses inventory overload, part traceability, and customer retention.\n\nPOEMS · Empathy Maps · Persona Clustering · QR inventory sharing · CSV traceability.' },
-          { label: 'OURoute · Safety Match Making',       desc: 'Group Project · Ideation, User Testing\n\nMobility and safety platform for walking alone at night on campus. Matches students along shared routes via institutional verification.\n\n93% of students walk at night. 56% report feeling unsafe.\nKey insight: Safety is achieved through presence, not alerts.' },
-          { label: 'Scaling Design Education · India',    desc: 'Systemic challenges of scaling design education through formal licensure frameworks in India. Policy, pedagogy, and institutional barriers.' },
-          { label: 'Systemic Biases in Agent AI',         desc: 'How systemic biases propagate within agent-based AI systems deployed for design decision-making in the Indian context.' },
-          { label: 'Traffic Optimisation · Kurla',        desc: 'Data-driven traffic flow analysis and optimisation for Kurla district, Mumbai. Congestion modelling and intervention strategies.' },
-          { label: 'Full Stack Social Platform',          desc: 'End-to-end social media platform built with Flask, SQL, JavaScript, CSS and Python.' },
+          { label: 'Inventory System',            desc: 'Group Project · Ideation, Coding, Pitching\n\nFormalising part-sourcing and repair workflows of informal electronic vendors in Mumbai. Addresses inventory overload, part traceability, and customer retention.\n\nPOEMS · Empathy Maps · Persona Clustering · QR inventory sharing · CSV traceability.' },
+          { label: 'OURoute · Safety Matching',   desc: 'Group Project · Ideation, User Testing\n\nMobility and safety platform for walking alone at night on campus. Matches students along shared routes via institutional verification.\n\n93% of students walk at night. 56% report feeling unsafe.\nKey insight: Safety is achieved through presence, not alerts.' },
+          { label: 'Scaling Design Education',    desc: 'Systemic challenges of scaling design education through formal licensure frameworks in India. Policy, pedagogy, and institutional barriers.' },
+          { label: 'Systemic Biases in Agent AI', desc: 'How systemic biases propagate within agent-based AI systems deployed for design decision-making in the Indian context.' },
+          { label: 'Traffic Optimisation',        desc: 'Data-driven traffic flow analysis and optimisation for Kurla district, Mumbai. Congestion modelling and intervention strategies.' },
+          { label: 'Full Stack Social Platform',  desc: 'End-to-end social media platform built with Flask, SQL, JavaScript, CSS and Python.' },
         ]
       },
       {
         label: 'Business',
         children: [
-          { label: "Boeing's Demise",                     desc: "Decline from engineering excellence to PR-first short-termism.\n\nLion Air 610 · Ethiopian Airlines 302 · Alaska Flight 1282 · Starliner.\n$2.5B fraud + $200M investor deception settlement.\n\nRecommendations: Engineering-led leadership · Transparency · Eliminate McDonnell Douglas cultural legacy." },
-          { label: 'Cars24 · Turnaround Strategy',        desc: "Strategic audit and recommendations for India's leading used-car marketplace." },
-          { label: 'Diversity, Equity & Inclusion',       desc: 'DEI frameworks in modern organisations — systemic barriers, measurable interventions, equitable workplace design.' },
-          { label: 'Digital Fabrication · Market',        desc: 'Global digital fabrication: $38.2B (2023) → $239.8B (2030), CAGR 30%.' },
+          { label: "Boeing's Demise",             desc: "Decline from engineering excellence to PR-first short-termism.\n\nLion Air 610 · Ethiopian Airlines 302 · Alaska Flight 1282 · Starliner.\n$2.5B fraud + $200M investor deception settlement.\n\nRecommendations: Engineering-led leadership · Transparency · Eliminate McDonnell Douglas cultural legacy." },
+          { label: 'Cars24 · Turnaround',         desc: "Strategic audit and recommendations for India's leading used-car marketplace." },
+          { label: 'Diversity, Equity & Inclusion', desc: 'DEI frameworks in modern organisations — systemic barriers, measurable interventions, equitable workplace design.' },
+          { label: 'Digital Fabrication Market',  desc: 'Global digital fabrication: $38.2B (2023) → $239.8B (2030), CAGR 30%.' },
         ]
       },
       {
         label: 'Design',
         children: [
-          { label: 'Jam Jong · Memory Game',              desc: 'Group Project · Ideation, User Testing\n\nMulti-sensory cognitive game for seniors at risk of dementia. Music, tactile interaction, and social gameplay — inspired by Mahjong and record players.' },
-          { label: 'Ercon · Rebranding',                  desc: 'Pitching, correspondence, specifications, hundreds of design iterations, certification, fabrication, and finishing. Qualified for NEOM City, KSA.' },
-          { label: 'Indigenous House Bricks',             desc: 'Indigenous materials and traditional construction for passive cooling in residential architecture.' },
-          { label: 'Mycelium Agriculture',                desc: 'Mycelium-based agricultural facilitation — circular bioeconomy and sustainable farming.' },
-          { label: 'Cycle Battery Lock',                  desc: 'Parametric product design for a cycle battery locking mechanism.' },
-          { label: 'IP68 Lighting Fixtures',              desc: 'Design and fabrication of dozens of IP68-certified lighting fixtures. Concept through manufacture.' },
-          { label: 'Parametric Installation',             desc: 'Large-scale parametric installation — structural logic, material selection, spatial composition.' },
+          { label: 'Jam Jong · Memory Game',      desc: 'Group Project · Ideation, User Testing\n\nMulti-sensory cognitive game for seniors at risk of dementia. Music, tactile interaction, and social gameplay — inspired by Mahjong and record players.' },
+          { label: 'Ercon · Rebranding',          desc: 'Pitching, specifications, hundreds of design iterations, certification, fabrication, and finishing. Qualified for NEOM City, KSA.' },
+          { label: 'Indigenous House Bricks',     desc: 'Indigenous materials and traditional construction for passive cooling in residential architecture.' },
+          { label: 'Mycelium Agriculture',        desc: 'Mycelium-based agricultural facilitation — circular bioeconomy and sustainable farming.' },
+          { label: 'Cycle Battery Lock',          desc: 'Parametric product design for a cycle battery locking mechanism.' },
+          { label: 'IP68 Lighting Fixtures',      desc: 'Design and fabrication of dozens of IP68-certified lighting fixtures. Concept through manufacture.' },
+          { label: 'Parametric Installation',     desc: 'Large-scale parametric installation — structural logic, material selection, spatial composition.' },
         ]
       },
     ]
@@ -248,10 +309,10 @@ const CAT = [
   {
     key: 'education', label: 'Alma Matters',
     items: [
-      { label: 'Imperial College',    desc: 'MSc. Design Engineering · London, UK' },
-      { label: 'Atlas Skilltech',     desc: "Bachelor's in Administration · Strategic Design · Minor in Programming · Mumbai, India" },
-      { label: 'IIT Madras',          desc: 'Diploma in Programming · First in Jodhpur batch · Subject Topper · Chennai, India' },
-      { label: 'Sabbatical',          desc: 'Two years of self-directed learning through travel.\nAudit in Foundational Pre-Design · Charter in Product Management · Science Stream with Fine Arts' },
+      { label: 'Imperial College',  desc: 'MSc. Design Engineering · London, UK' },
+      { label: 'Atlas Skilltech',   desc: "Bachelor's in Administration · Strategic Design · Minor in Programming · Mumbai, India" },
+      { label: 'IIT Madras',        desc: 'Diploma in Programming · First in Jodhpur batch · Subject Topper · Chennai, India' },
+      { label: 'Sabbatical',        desc: 'Two years of self-directed learning through travel.\nAudit in Foundational Pre-Design · Charter in Product Management · Science Stream with Fine Arts' },
     ]
   },
   {
@@ -266,43 +327,68 @@ const CAT = [
       {
         label: 'Product Pitches',
         children: [
-          { label: 'Jupyter Neo Bank',            desc: 'Neo-banking product for the Jupyter ecosystem — financial infrastructure for data scientists.' },
-          { label: 'Drone / UAV Surveillance',    desc: 'ML presentation on UAV surveillance — architecture, use cases, ethical considerations.' },
-          { label: 'Pharmeasy · Marketing',       desc: "Marketing intervention for India's online pharmacy — acquisition, retention, brand positioning." },
-          { label: 'Wakefit · Conversion',        desc: 'Conversion funnel analysis and tactical recommendations for the D2C sleep products brand.' },
-          { label: 'Netflix Kids · Curation',     desc: 'Content strategy for Netflix Kids — taxonomy, recommendation logic, parental control UX.' },
-          { label: "Meta's VR Problem",           desc: "Strategic analysis of Meta's VR/AR challenges — adoption barriers, platform economics." },
+          { label: 'Jupyter Neo Bank',        desc: 'Neo-banking product for the Jupyter ecosystem — financial infrastructure for data scientists.' },
+          { label: 'Drone / UAV Surveillance',desc: 'ML presentation on UAV surveillance — architecture, use cases, ethical considerations.' },
+          { label: 'Pharmeasy · Marketing',   desc: "Marketing intervention for India's online pharmacy — acquisition, retention, brand positioning." },
+          { label: 'Wakefit · Conversion',    desc: 'Conversion funnel analysis for the D2C sleep products brand.' },
+          { label: 'Netflix Kids',            desc: 'Content strategy for Netflix Kids — taxonomy, recommendation logic, parental control UX.' },
+          { label: "Meta's VR Problem",       desc: "Strategic analysis of Meta's VR/AR challenges — adoption barriers, platform economics." },
         ]
       },
       {
         label: 'Drawing & Imaging',
         children: [
-          { label: 'Human Anatomy',               desc: 'Anatomical studies through ink-based sketching and structural observation.' },
-          { label: 'Geometrical Exploration',     desc: 'Pattern, symmetry, rhythm, and compositional relationships in two dimensions.' },
-          { label: 'Structure Sketching',         desc: 'Architectural and product structure sketching — rapid ideation and spatial reasoning.' },
-          { label: 'Village Ethnography',         desc: 'Visual ethnography in a Maharashtrian village — documentary drawing capturing culture, space, and daily life.' },
+          { label: 'Human Anatomy',           desc: 'Anatomical studies through ink-based sketching and structural observation.' },
+          { label: 'Geometrical Exploration', desc: 'Pattern, symmetry, rhythm, and compositional relationships in two dimensions.' },
+          { label: 'Structure Sketching',     desc: 'Architectural and product structure sketching — rapid ideation and spatial reasoning.' },
+          { label: 'Village Ethnography',     desc: 'Visual ethnography in a Maharashtrian village — documentary drawing capturing culture, space, and daily life.' },
         ]
       },
       {
         label: 'Achievements',
         children: [
-          { label: 'Hackathon · Top 8 / 375',     desc: 'Top 8 finalist out of 375 teams — Technical Pitching.' },
-          { label: 'Hackathon · 2nd / 1500',      desc: 'Second Place out of 1500 teams — Technical Pitching.' },
-          { label: 'Data Narrative · 3rd / 30+',  desc: 'Third Place in Data Narrative Contest.' },
-          { label: 'IIT Madras · Topper',         desc: 'First in Jodhpur batch out of 30. Subject Topper. Qualifier.' },
-          { label: 'UN SDG Scholarship',          desc: 'Selected for the Makers Asylum Goa UN SDG Scholarship.' },
-          { label: 'Presentation Prize · 120',    desc: 'First Prize Presentation out of 120 students.' },
+          { label: 'Hackathon · Top 8 / 375', desc: 'Top 8 finalist out of 375 teams — Technical Pitching.' },
+          { label: 'Hackathon · 2nd / 1500',  desc: 'Second Place out of 1500 teams — Technical Pitching.' },
+          { label: 'Data Narrative · 3rd',    desc: 'Third Place in Data Narrative Contest.' },
+          { label: 'IIT Madras · Topper',     desc: 'First in Jodhpur batch out of 30. Subject Topper. Qualifier.' },
+          { label: 'UN SDG Scholarship',      desc: 'Selected for the Makers Asylum Goa UN SDG Scholarship.' },
+          { label: 'Presentation Prize',      desc: 'First Prize Presentation out of 120 students.' },
         ]
       },
     ]
   },
 ];
 
-// ── State ─────────────────────────────────────────────────────────────────────
-let catIdx  = 0;
-let depth   = 0;   // 0=L1 categories  1=L2 sub-items  2=L3 full desc
-let subIdx  = 0;
-let subBtns = [];
+// ── Navigation state ──────────────────────────────────────────────────────────
+let catIdx    = 0;
+let depth     = 0;   // 0=L1 categories  1=L2 sub-items  2=L3 content
+let subIdx    = 0;
+let childIdx  = 0;   // index within current item's children (depth=2, has children)
+let subBtns   = [];
+
+// ── Camera state (8-bit world panning) ───────────────────────────────────────
+const TS      = 8;   // tile size in pixels
+const SEC_W   = 52;  // tiles wide per category section
+const LEV_H   = 130; // tiles tall per depth level
+
+let camTX = 0, camTY = 0;   // current camera (tile coords, sub-pixel)
+let tgtTX = 0, tgtTY = 0;   // target camera
+
+function updateCamTarget() {
+  const nSubs    = CAT[catIdx].items.length;
+  const subFrac  = nSubs > 1 ? subIdx / (nSubs - 1) : 0;
+  const visH     = window.innerHeight / TS;
+
+  tgtTX = catIdx * SEC_W + subFrac * SEC_W * 0.45;
+  tgtTY = depth * LEV_H + LEV_H / 2 - visH / 2 + subFrac * LEV_H * 0.25;
+
+  if (depth === 2 && CAT[catIdx].items[subIdx] && CAT[catIdx].items[subIdx].children) {
+    const nc = CAT[catIdx].items[subIdx].children.length;
+    const cf = nc > 1 ? childIdx / (nc - 1) : 0;
+    tgtTX += cf * SEC_W * 0.30;
+    tgtTY += cf * LEV_H * 0.08;
+  }
+}
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const catCarousel   = document.getElementById('cat-carousel');
@@ -314,6 +400,12 @@ const descPreview   = document.getElementById('desc-preview');
 const descFullEl    = document.getElementById('desc-full');
 const descFullCrumb = document.getElementById('desc-full-crumb');
 const descFullBody  = document.getElementById('desc-full-body');
+const childViewEl   = document.getElementById('child-view');
+const childCrumb    = document.getElementById('child-crumb');
+const childCounter  = document.getElementById('child-counter');
+const childTitle    = document.getElementById('child-title');
+const childBody     = document.getElementById('child-body');
+const navCrumb      = document.getElementById('nav-crumb');
 const footerEl      = document.getElementById('footer');
 
 // ── Clock ─────────────────────────────────────────────────────────────────────
@@ -331,7 +423,7 @@ CAT.forEach((cat, i) => {
   btn.textContent = cat.label;
   btn.addEventListener('click', () => {
     if (depth > 0) return;
-    if (i !== catIdx) { catIdx = i; updateCats(); }
+    if (i !== catIdx) { catIdx = i; updateCats(); updateCamTarget(); }
     else { subIdx = 0; buildSubBtns(); goTo(1); }
   });
   catCarousel.appendChild(btn);
@@ -361,8 +453,8 @@ function buildSubBtns() {
     btn.className = 'sub-btn';
     btn.textContent = item.label;
     btn.addEventListener('click', () => {
-      if (i === subIdx) { goTo(2); }
-      else { subIdx = i; positionAllSubBtns(); updateDescPreview(); }
+      if (i === subIdx) { childIdx = 0; goTo(2); }
+      else { subIdx = i; positionAllSubBtns(); updateDescPreview(); updateCamTarget(); }
     });
     subNavEl.insertBefore(btn, descPreview);
     subBtns.push(btn);
@@ -371,11 +463,9 @@ function buildSubBtns() {
   updateDescPreview();
 }
 
-function selectedFontSize(text) {
+function selFontSize(text) {
   const maxW = window.innerWidth * 0.40;
-  const est  = text.length * 0.54;
-  const size = Math.floor(maxW / est);
-  return Math.min(76, Math.max(28, size));
+  return Math.min(76, Math.max(28, Math.floor(maxW / (text.length * 0.54))));
 }
 
 function positionAllSubBtns() {
@@ -383,11 +473,11 @@ function positionAllSubBtns() {
   subBtns.forEach((btn, i) => {
     const off = i - subIdx, abs = Math.abs(off);
     let size, opacity, yOff;
-    if      (abs === 0) { size = selectedFontSize(btn.textContent); opacity = 1.0; yOff = 0; }
+    if      (abs === 0) { size = selFontSize(btn.textContent); opacity = 1.0; yOff = 0; }
     else if (abs === 1) { size = 32; opacity = 0.78; yOff = off * YGAP; }
-    else if (abs === 2) { size = 20; opacity = 0.50; yOff = off > 0 ? YGAP * 1.55 : -YGAP * 1.55; }
-    else if (abs === 3) { size = 14; opacity = 0.25; yOff = off > 0 ? YGAP * 2.1  : -YGAP * 2.1;  }
-    else                { size = 11; opacity = 0;    yOff = off > 0 ? YGAP * 2.6  : -YGAP * 2.6;  }
+    else if (abs === 2) { size = 20; opacity = 0.50; yOff = off > 0 ? YGAP*1.55 : -YGAP*1.55; }
+    else if (abs === 3) { size = 14; opacity = 0.25; yOff = off > 0 ? YGAP*2.1  : -YGAP*2.1;  }
+    else                { size = 11; opacity = 0;    yOff = off > 0 ? YGAP*2.6  : -YGAP*2.6;  }
     btn.style.fontSize  = size + 'px';
     btn.style.opacity   = String(opacity);
     btn.style.transform = `translate(-50%, calc(-50% + ${yOff}px))`;
@@ -405,79 +495,132 @@ function updateDescPreview() {
   descPreview.textContent = text;
 }
 
-// ── L3 full description ───────────────────────────────────────────────────────
+// ── L3 renders ────────────────────────────────────────────────────────────────
 function renderFullDesc() {
   const cat  = CAT[catIdx];
   const item = cat.items[subIdx];
-  descFullCrumb.textContent = cat.label + ' — ' + item.label;
-  let text = '';
-  if (item.desc) {
-    text = item.desc;
-  } else if (item.children) {
-    text = item.children.map(c => c.label + (c.desc ? '\n' + c.desc : '')).join('\n\n');
-  }
-  descFullBody.textContent = text;
+  descFullCrumb.textContent = cat.label + ' / ' + item.label;
+  descFullBody.textContent  = item.desc || '';
   descFullEl.scrollTop = 0;
 }
 
-// ── Navigation ────────────────────────────────────────────────────────────────
+function renderChildView() {
+  const cat   = CAT[catIdx];
+  const item  = cat.items[subIdx];
+  const child = item.children[childIdx];
+  const total = item.children.length;
+
+  childCrumb.textContent = cat.label + ' / ' + item.label;
+  childCounter.innerHTML =
+    `<span class="arr">←</span><span>${childIdx + 1} / ${total}</span><span class="arr">→</span>`;
+  childTitle.textContent = child.label;
+  childBody.textContent  = child.desc || '';
+  childViewEl.scrollTop  = 0;
+}
+
+// ── Navigation core ───────────────────────────────────────────────────────────
+function hasChildren() {
+  const item = CAT[catIdx].items[subIdx];
+  return !!(item && item.children);
+}
+
 function goTo(newDepth) {
   depth = newDepth;
+
   catCarousel.style.opacity       = depth === 0 ? '1' : '0';
   catCarousel.style.pointerEvents = depth === 0 ? 'auto' : 'none';
   enterHint.style.opacity         = depth === 0 ? '1' : '0';
   downHint.style.opacity          = depth === 0 ? '1' : '0';
+
   subNavEl.classList.toggle('active', depth === 1);
-  descFullEl.classList.toggle('active', depth === 2);
-  if (depth === 2) renderFullDesc();
+  descFullEl.classList.toggle('active', depth === 2 && !hasChildren());
+  childViewEl.classList.toggle('active', depth === 2 && hasChildren());
+
+  if (depth === 2 && !hasChildren()) renderFullDesc();
+  if (depth === 2 && hasChildren())  renderChildView();
+
+  updateCrumb();
+  updateCamTarget();
   updateFooter();
 }
 
+function updateCrumb() {
+  if (depth === 0) { navCrumb.style.opacity = '0'; navCrumb.textContent = ''; return; }
+  const cat  = CAT[catIdx];
+  let text   = cat.label;
+  if (depth >= 1) text += '  /  ' + cat.items[subIdx].label;
+  if (depth === 2 && hasChildren()) text += '  /  ' + cat.items[subIdx].children[childIdx].label;
+  navCrumb.textContent = text;
+  navCrumb.style.opacity = '1';
+}
+
 function updateFooter() {
-  const h = {
-    0: `<span><span class="key">←</span><span class="key">→</span> CATEGORY</span><span><span class="key">↓</span> ENTER</span>`,
-    1: `<span><span class="key">↑</span><span class="key">↓</span> NAVIGATE</span><span><span class="key">→</span> OPEN</span><span><span class="key">←</span> BACK</span>`,
-    2: `<span><span class="key">↑</span><span class="key">↓</span> SCROLL</span><span><span class="key">←</span> BACK</span>`,
+  const hc = hasChildren();
+  const hints = {
+    0:  `<span><span class="key">←</span><span class="key">→</span> CATEGORY</span><span><span class="key">↓</span> ENTER</span>`,
+    1:  `<span><span class="key">↑</span><span class="key">↓</span> NAVIGATE</span><span><span class="key">→</span> OPEN</span><span><span class="key">←</span> BACK</span>`,
+    2:  hc
+        ? `<span><span class="key">←</span><span class="key">→</span> ITEM</span><span><span class="key">↑</span><span class="key">↓</span> SCROLL</span><span><span class="key">ESC</span> BACK</span>`
+        : `<span><span class="key">↑</span><span class="key">↓</span> SCROLL</span><span><span class="key">←</span> BACK</span>`,
   };
-  footerEl.innerHTML = h[depth];
+  footerEl.innerHTML = hints[depth];
 }
 
 // ── Keyboard ──────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   const n = CAT.length;
+
   if (depth === 0) {
     if (e.key === 'ArrowRight') {
-      e.preventDefault(); catIdx = (catIdx + 1) % n; updateCats();
+      e.preventDefault(); catIdx = (catIdx + 1) % n; updateCats(); updateCamTarget();
     } else if (e.key === 'ArrowLeft') {
-      e.preventDefault(); catIdx = (catIdx - 1 + n) % n; updateCats();
+      e.preventDefault(); catIdx = (catIdx - 1 + n) % n; updateCats(); updateCamTarget();
     } else if (e.key === 'ArrowDown' || e.key === 'Enter') {
-      e.preventDefault(); subIdx = 0; buildSubBtns(); goTo(1);
+      e.preventDefault(); subIdx = 0; childIdx = 0; buildSubBtns(); goTo(1);
     }
-  } else if (depth === 1) {
+  }
+  else if (depth === 1) {
     const count = CAT[catIdx].items.length;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      if (subIdx < count - 1) { subIdx++; positionAllSubBtns(); updateDescPreview(); }
+      if (subIdx < count - 1) { subIdx++; positionAllSubBtns(); updateDescPreview(); updateCamTarget(); }
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      if (subIdx > 0) { subIdx--; positionAllSubBtns(); updateDescPreview(); }
+      if (subIdx > 0) { subIdx--; positionAllSubBtns(); updateDescPreview(); updateCamTarget(); }
       else { goTo(0); }
     } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
-      e.preventDefault(); goTo(2);
+      e.preventDefault(); childIdx = 0; goTo(2);
     } else if (e.key === 'ArrowLeft' || e.key === 'Escape') {
       e.preventDefault(); goTo(0);
     }
-  } else if (depth === 2) {
-    if (e.key === 'ArrowLeft' || e.key === 'Escape') {
-      e.preventDefault();
-      depth = 1;
-      descFullEl.classList.remove('active');
-      subNavEl.classList.add('active');
-      updateFooter();
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault(); descFullEl.scrollBy({ top: 80, behavior: 'smooth' });
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault(); descFullEl.scrollBy({ top: -80, behavior: 'smooth' });
+  }
+  else if (depth === 2) {
+    if (hasChildren()) {
+      const nc = CAT[catIdx].items[subIdx].children.length;
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        if (childIdx < nc - 1) { childIdx++; renderChildView(); updateCamTarget(); updateCrumb(); }
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (childIdx > 0) { childIdx--; renderChildView(); updateCamTarget(); updateCrumb(); }
+        else { depth = 1; childViewEl.classList.remove('active'); subNavEl.classList.add('active'); updateCrumb(); updateFooter(); }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        depth = 1; childViewEl.classList.remove('active'); subNavEl.classList.add('active'); updateCrumb(); updateFooter();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault(); childViewEl.scrollBy({ top: 80, behavior: 'smooth' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault(); childViewEl.scrollBy({ top: -80, behavior: 'smooth' });
+      }
+    } else {
+      if (e.key === 'ArrowLeft' || e.key === 'Escape') {
+        e.preventDefault();
+        depth = 1; descFullEl.classList.remove('active'); subNavEl.classList.add('active'); updateCrumb(); updateFooter();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault(); descFullEl.scrollBy({ top: 80, behavior: 'smooth' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault(); descFullEl.scrollBy({ top: -80, behavior: 'smooth' });
+      }
     }
   }
 });
@@ -485,28 +628,173 @@ document.addEventListener('keydown', e => {
 // ── Init ──────────────────────────────────────────────────────────────────────
 updateCats();
 updateFooter();
-window.addEventListener('resize', () => { updateCats(); if (depth === 1) positionAllSubBtns(); });
+window.addEventListener('resize', () => {
+  updateCats();
+  if (depth === 1) positionAllSubBtns();
+  updateCamTarget();
+});
 
 // ── Canvas background ─────────────────────────────────────────────────────────
 (function () {
   const cv  = document.getElementById('bg');
   const ctx = cv.getContext('2d');
-  let W, H, matRows = [], photoImg = null;
+  let W, H, matRows = [];
 
-  const Z_PHOTO = 0.30;
-  const Z_FILM  = 0.40;
+  const Z_FILM = 0.40;
 
-  function rndI(a, b) { return Math.floor(a + Math.random() * (b - a + 1)); }
+  // ── 8-bit tile world (left zone, 0 to Z_FILM * W) ─────────────────────────
+  // 3 depth levels × 5 category sections, each a distinct game room
 
-  // ── Whirlpool holes ────────────────────────────────────────────────────────
-  // 3 voids that orbit slowly; the matrix thins into a spiral near each void
+  const PALETTES = [
+    // Level 0 — Overworld (greens, warm earth)
+    {
+      wall: '#5a3818', wallB: '#7a5028',
+      fA: '#2d6018',   fB: '#3a7020',
+      acc: '#f0c820',  wat: '#1858c8',
+      o1: '#c04018',   o2: '#20a0c0',  sp: '#ffff40',
+    },
+    // Level 1 — Dungeon (cool blues, stone, torch orange)
+    {
+      wall: '#3a3a52', wallB: '#4a4a68',
+      fA: '#22223a',   fB: '#282848',
+      acc: '#f06820',  wat: '#0010c0',
+      o1: '#b03010',   o2: '#1840a0',  sp: '#ff8020',
+    },
+    // Level 2 — Boss (deep purples, crimson, black)
+    {
+      wall: '#380018', wallB: '#580028',
+      fA: '#1e0012',   fB: '#280020',
+      acc: '#ff0040',  wat: '#600080',
+      o1: '#ff2000',   o2: '#8000c0',  sp: '#ff00ff',
+    },
+  ];
+
+  // Fast deterministic hash (integer domain)
+  function th(x, y) {
+    let v = (Math.imul(x, 1664525) + Math.imul(y, 22695477) + 1013904223) | 0;
+    v ^= v >>> 16; v = Math.imul(v, 0x45d9f3b) | 0; v ^= v >>> 16;
+    return (v >>> 0) / 0xffffffff;
+  }
+
+  function getTileColor(tx, ty) {
+    const section = Math.max(0, Math.floor(tx / SEC_W));
+    const level   = Math.min(2, Math.max(0, Math.floor(ty / LEV_H)));
+    const lx      = ((tx % SEC_W) + SEC_W) % SEC_W;
+    const ly      = ((ty % LEV_H) + LEV_H) % LEV_H;
+    const pal     = PALETTES[level];
+
+    // Room border walls
+    const WT = 3, WS = 2;
+    if (ly < WT || ly >= LEV_H - WT) return (lx & 1) ? pal.wall : pal.wallB;
+    if (lx < WS || lx >= SEC_W - WS) return (ly & 1) ? pal.wall : pal.wallB;
+
+    const h  = th(tx, ty);
+    const h2 = th(tx >> 1, ty >> 1);  // 2×2 block grain
+
+    // Boss room (level 2): circular boss pattern
+    if (level === 2) {
+      const cx = SEC_W / 2, cy = LEV_H / 2;
+      const dx = lx - cx, dy = ly - cy;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d < 4)               return pal.sp;
+      if (d >= 5 && d < 7)     return pal.acc;
+      if (d >= 9 && d < 11)    return pal.wall;
+      const ang = (Math.atan2(dy, dx) * 4 / Math.PI + 8) % 2;
+      if (ang < 0.25 && d > 7 && d < 18) return pal.o1;
+    }
+
+    // Pillars at level 1+
+    if (level >= 1) {
+      const px = lx % 10, py = ly % 12;
+      if (px < 2 && py < 2 && lx > 4 && ly > 4 && lx < SEC_W-4 && ly < LEV_H-4 && h2 < 0.35)
+        return pal.wall;
+    }
+
+    // Sparse objects
+    if (h < 0.022) return pal.o1;
+    if (h < 0.040) return pal.o2;
+    if (h < 0.052 && h2 < 0.5) return pal.acc;
+    if (h < 0.062 && level < 2) return pal.wat;
+
+    // Floor pattern varies per section × level
+    const pat = (section * 3 + level) % 4;
+    switch (pat) {
+      case 0: return (Math.floor(tx/2) + Math.floor(ty/2)) % 2 ? pal.fA : pal.fB;
+      case 1: return h2 < 0.55 ? pal.fA : pal.fB;
+      case 2: return (tx + ty) % 3 < 2 ? pal.fA : pal.fB;
+      case 3: return Math.floor(ty/4) % 2 ? pal.fA : pal.fB;
+    }
+    return pal.fA;
+  }
+
+  function drawGameWorld(pw) {
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, 0, pw, H); ctx.clip();
+
+    const visTX = Math.ceil(pw / TS) + 2;
+    const visTY = Math.ceil(H  / TS) + 2;
+    const stX   = Math.floor(camTX);
+    const stY   = Math.floor(camTY);
+    const offX  = -(camTX - stX) * TS;
+    const offY  = -(camTY - stY) * TS;
+
+    for (let dy = 0; dy < visTY; dy++) {
+      for (let dx = 0; dx < visTX; dx++) {
+        ctx.fillStyle = getTileColor(stX + dx, stY + dy);
+        ctx.fillRect(offX + dx * TS, offY + dy * TS, TS, TS);
+      }
+    }
+
+    // Subtle grid lines to enhance the pixel-art feel
+    ctx.strokeStyle = 'rgba(0,0,0,0.30)';
+    ctx.lineWidth   = 0.5;
+    for (let dx = 0; dx < visTX; dx++) {
+      const sx = offX + dx * TS;
+      ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H); ctx.stroke();
+    }
+    for (let dy = 0; dy < visTY; dy++) {
+      const sy = offY + dy * TS;
+      ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(pw, sy); ctx.stroke();
+    }
+
+    // Light vignette over game world so text stays legible
+    const vg = ctx.createLinearGradient(pw * 0.5, 0, pw, 0);
+    vg.addColorStop(0, 'transparent');
+    vg.addColorStop(1, 'rgba(0,0,0,0.65)');
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, pw, H);
+
+    ctx.restore();
+  }
+
+  // ── Film strip ─────────────────────────────────────────────────────────────
+  function drawFilm() {
+    const fx = W * Z_FILM * (1 - (Z_FILM - 0.30)) ; // keep same proportions
+    const filmX = W * 0.30, filmW = W * (Z_FILM - 0.30);
+    ctx.fillStyle = 'rgba(0,0,0,0.95)';
+    ctx.fillRect(filmX, 0, filmW, H);
+    const ph = 10, pw2 = 7, gap = 20, mg = 4;
+    for (let py = 6; py < H - ph; py += gap) {
+      ctx.fillStyle = 'rgba(255,255,255,0.88)';
+      ctx.fillRect(filmX + mg, py, pw2, ph);
+      ctx.fillRect(filmX + filmW - mg - pw2, py, pw2, ph);
+    }
+  }
+
+  // ── Matrix zone (whirlpool holes, neural net, sprites) ─────────────────────
+  function initMatrix() {
+    const lh = 14, count = Math.ceil(H / lh) + 2;
+    matRows = Array.from({ length: count }, (_, i) => ({
+      y: i * lh,
+      vals: Array.from({ length: 22 }, () => Math.floor(Math.random() * 2500))
+    }));
+  }
+
   const HOLES = Array.from({length: 3}, () => ({
-    cx:    0.15 + Math.random() * 0.70,  // orbit-centre x (normalised in matrix zone)
-    cy:    0.15 + Math.random() * 0.70,  // orbit-centre y (normalised)
-    oR:    0.06 + Math.random() * 0.10,  // orbit radius (normalised)
+    cx: 0.15 + Math.random() * 0.70, cy: 0.15 + Math.random() * 0.70,
+    oR: 0.06  + Math.random() * 0.10,
     angle: Math.random() * Math.PI * 2,
     spd:   0.004 + Math.random() * 0.004,
-    r:     55 + Math.random() * 55,      // hole pixel radius
+    r:     55 + Math.random() * 55,
   }));
 
   function holeAlpha(cx, cy, mx, mw) {
@@ -515,26 +803,23 @@ window.addEventListener('resize', () => { updateCats(); if (depth === 1) positio
       const hx2 = mx + (h.cx + Math.cos(h.angle) * h.oR) * mw;
       const hy2 =       (h.cy + Math.sin(h.angle) * h.oR * 0.5) * H;
       const dx = cx - hx2, dy = cy - hy2;
-      const d  = Math.sqrt(dx * dx + dy * dy);
+      const d  = Math.sqrt(dx*dx + dy*dy);
       const outerR = h.r * 1.9;
       if (d < outerR) {
-        const ang    = Math.atan2(dy, dx);
-        const phase  = ((ang - h.angle * 4) % (Math.PI*2) + Math.PI*2) % (Math.PI*2);
-        const swirl  = 0.2 + (Math.cos(phase) + 1) * 0.40;
-        const dFrac  = d / outerR;
-        const mult   = dFrac < 0.18 ? 0 : dFrac * swirl;
+        const ang   = Math.atan2(dy, dx);
+        const phase = ((ang - h.angle * 4) % (Math.PI*2) + Math.PI*2) % (Math.PI*2);
+        const swirl = 0.2 + (Math.cos(phase) + 1) * 0.40;
+        const dFrac = d / outerR;
+        const mult  = dFrac < 0.18 ? 0 : dFrac * swirl;
         if (mult < mn) mn = mult;
       }
     }
     return mn;
   }
 
-  // ── Neural network ─────────────────────────────────────────────────────────
   const NN = Array.from({length: 28}, () => ({
-    nx: 0.25 + Math.random() * 0.72,  // normalised in matrix zone
-    ny: 0.04 + Math.random() * 0.92,
-    pulse: Math.random() * 200,
-    pMax: 90 + Math.floor(Math.random() * 140),
+    nx: 0.25 + Math.random() * 0.72, ny: 0.04 + Math.random() * 0.92,
+    pulse: Math.random() * 200, pMax: 90 + Math.floor(Math.random() * 140),
     x: 0, y: 0,
   }));
 
@@ -564,38 +849,16 @@ window.addEventListener('resize', () => { updateCats(); if (depth === 1) positio
     });
   }
 
-  // ── Minigame sprites ───────────────────────────────────────────────────────
-  const INV = [
-    [0,1,0,0,0,0,1,0],
-    [0,0,1,0,0,1,0,0],
-    [0,1,1,1,1,1,1,0],
-    [1,1,0,1,1,0,1,1],
-    [1,1,1,1,1,1,1,1],
-    [0,1,0,1,1,0,1,0],
-    [1,0,0,0,0,0,0,1],
-  ];
-  const SHIP = [
-    [0,0,1,0,0],
-    [0,1,1,1,0],
-    [1,1,1,1,1],
-    [0,1,0,1,0],
-  ];
-  const GHOST = [
-    [0,1,1,1,1,0],
-    [1,0,1,0,1,1],
-    [1,1,1,1,1,1],
-    [1,1,1,1,1,1],
-    [1,0,1,0,1,1],
-  ];
-  const PATS = [INV, SHIP, GHOST, SHIP, INV];
+  const INV  = [[0,1,0,0,0,0,1,0],[0,0,1,0,0,1,0,0],[0,1,1,1,1,1,1,0],[1,1,0,1,1,0,1,1],[1,1,1,1,1,1,1,1],[0,1,0,1,1,0,1,0],[1,0,0,0,0,0,0,1]];
+  const SHIP = [[0,0,1,0,0],[0,1,1,1,0],[1,1,1,1,1],[0,1,0,1,0]];
+  const GHST = [[0,1,1,1,1,0],[1,0,1,0,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,0,1,0,1,1]];
+  const PATS = [INV, SHIP, GHST, SHIP, INV];
 
   const SPRITES = Array.from({length: 5}, (_, i) => ({
-    nx: 0.05 + Math.random() * 0.90,
-    ny: 0.05 + Math.random() * 0.90,
+    nx: 0.05 + Math.random() * 0.90, ny: 0.05 + Math.random() * 0.90,
     vx: (Math.random() > 0.5 ? 1 : -1) * (0.00025 + Math.random() * 0.0003),
     vy: (Math.random() > 0.5 ? 1 : -1) * (0.00015 + Math.random() * 0.0002),
-    pat: PATS[i % PATS.length],
-    sc: 2,
+    pat: PATS[i % PATS.length], sc: 2,
   }));
 
   function drawSprites(mx, mw) {
@@ -615,66 +878,6 @@ window.addEventListener('resize', () => { updateCats(); if (depth === 1) positio
     });
   }
 
-  // ── Matrix ─────────────────────────────────────────────────────────────────
-  function initMatrix() {
-    const lh = 14, count = Math.ceil(H / lh) + 2;
-    matRows = Array.from({ length: count }, (_, i) => ({
-      y: i * lh,
-      vals: Array.from({ length: 22 }, () => rndI(0, 2500))
-    }));
-  }
-
-  function resize() {
-    W = cv.width  = window.innerWidth;
-    H = cv.height = window.innerHeight;
-    initMatrix();
-    initNN(W * Z_FILM, W * (1 - Z_FILM));
-  }
-
-  if (PHOTO_SRC) { photoImg = new Image(); photoImg.src = PHOTO_SRC; }
-
-  // ── Zone draws ─────────────────────────────────────────────────────────────
-  function drawPhoto() {
-    const pw = W * Z_PHOTO;
-    ctx.fillStyle = '#070710';
-    ctx.fillRect(0, 0, pw, H);
-    if (photoImg && photoImg.complete && photoImg.naturalWidth) {
-      const iw = photoImg.naturalWidth, ih = photoImg.naturalHeight;
-      const sc = Math.max(pw / iw, H / ih);
-      const dw = iw * sc, dh = ih * sc;
-      ctx.drawImage(photoImg, (pw - dw) / 2, (H - dh) / 2, dw, dh);
-      const vg = ctx.createLinearGradient(pw - 60, 0, pw, 0);
-      vg.addColorStop(0, 'transparent');
-      vg.addColorStop(1, 'rgba(0,0,0,0.9)');
-      ctx.fillStyle = vg; ctx.fillRect(0, 0, pw, H);
-    } else {
-      const cx2 = pw / 2, cy2 = H * 0.38, r = Math.min(pw, H) * 0.1;
-      ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.arc(cx2, cy2 - r * 0.3, r, 0, Math.PI * 2); ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(cx2 - r * 1.4, cy2 + r * 2.2);
-      ctx.quadraticCurveTo(cx2, cy2 + r * 0.6, cx2 + r * 1.4, cy2 + r * 2.2);
-      ctx.stroke();
-      ctx.font = '700 9px "Helvetica Neue", Helvetica, sans-serif';
-      ctx.fillStyle = 'rgba(255,255,255,0.15)';
-      ctx.textAlign = 'center';
-      ctx.fillText('ADD PHOTO', cx2, cy2 + r * 3.4);
-      ctx.textAlign = 'left';
-    }
-  }
-
-  function drawFilm() {
-    const fx = W * Z_PHOTO, fw = W * (Z_FILM - Z_PHOTO);
-    ctx.fillStyle = 'rgba(0,0,0,0.95)';
-    ctx.fillRect(fx, 0, fw, H);
-    const ph = 10, pw2 = 7, gap = 20, mg = 4;
-    for (let py = 6; py < H - ph; py += gap) {
-      ctx.fillStyle = 'rgba(255,255,255,0.88)';
-      ctx.fillRect(fx + mg, py, pw2, ph);
-      ctx.fillRect(fx + fw - mg - pw2, py, pw2, ph);
-    }
-  }
-
   const MC = ['#ff4444','#4488ff','#44ff88','#ffffff','#ff9944','#ffffff'];
   function hx(hex, a) {
     const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
@@ -683,12 +886,11 @@ window.addEventListener('resize', () => { updateCats(); if (depth === 1) positio
 
   function drawMatrix() {
     const mx = W * Z_FILM, mw = W * (1 - Z_FILM);
-    ctx.fillStyle = 'rgba(0,0,0,0.82)';
-    ctx.fillRect(mx, 0, mw, H);
+    ctx.fillStyle = 'rgba(0,0,0,0.82)'; ctx.fillRect(mx, 0, mw, H);
     ctx.font = '10px "Helvetica Neue", Helvetica, monospace';
     HOLES.forEach(h => { h.angle += h.spd; });
     matRows.forEach(row => {
-      if (Math.random() < 0.002) row.vals = Array.from({ length: 22 }, () => rndI(0, 2500));
+      if (Math.random() < 0.002) row.vals = Array.from({length:22}, () => Math.floor(Math.random()*2500));
       let x = mx + 6;
       row.vals.forEach((v, vi) => {
         const str   = v + ',';
@@ -705,12 +907,27 @@ window.addEventListener('resize', () => { updateCats(); if (depth === 1) positio
     drawSprites(mx, mw);
   }
 
+  // ── Resize ─────────────────────────────────────────────────────────────────
+  function resize() {
+    W = cv.width  = window.innerWidth;
+    H = cv.height = window.innerHeight;
+    initMatrix();
+    initNN(W * Z_FILM, W * (1 - Z_FILM));
+  }
+
+  // ── Frame loop ─────────────────────────────────────────────────────────────
   function frame() {
+    // Smooth camera pan
+    camTX += (tgtTX - camTX) * 0.065;
+    camTY += (tgtTY - camTY) * 0.065;
+
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, W, H);
-    drawPhoto();
+
+    drawGameWorld(W * 0.30);
     drawFilm();
     drawMatrix();
+
     requestAnimationFrame(frame);
   }
 
