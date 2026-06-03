@@ -118,6 +118,15 @@ body::after {
   white-space: nowrap; border-radius: 3px;
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
+/* Inline desc preview lines — allow wrapping, not interactive */
+.desc-tease {
+  position: absolute; top: 26%; left: 6%;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 400;
+  color: #e8e8e8; font-size: 11px; line-height: 1.45; padding: 2px 8px;
+  white-space: normal; max-width: 46%; border-radius: 3px;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
 .child-tease.sel {
   border-color: rgba(255,255,255,0.3);
   background: rgba(255,255,255,0.05);
@@ -1147,14 +1156,11 @@ function applyBulletList() {
     + (levelDescLines.length > 0 ? levelDescLines.length * DGAP + 10 : 0);
   let y = -totalH / 2 + LGAP / 2;
 
-  function addDescLine(text, indentX, opacity, fontSize) {
+  function addDescLine(text, indentX, opacity) {
     const d = document.createElement('div');
-    d.className = 'child-tease';
+    d.className = 'desc-tease';
     d.textContent = text;
     d.style.opacity = String(opacity);
-    d.style.fontSize = fontSize || '11px';
-    d.style.pointerEvents = 'none';
-    d.style.fontWeight = '400';
     d.style.transform = `translate(${indentX}px, calc(-50% + ${y}px))`;
     subNavEl.insertBefore(d, descPreview);
     childTeaseBtns.push(d);
@@ -1190,7 +1196,7 @@ function applyBulletList() {
       // Show active child's desc inline below child list
       if (childDescLines.length > 0) {
         y += 2;
-        childDescLines.forEach(line => addDescLine(line, 20, 0.42, '11px'));
+        childDescLines.forEach(line => addDescLine(line, 20, 0.42));
         y += 4;
       }
     }
@@ -1198,7 +1204,7 @@ function applyBulletList() {
     // Show active level's desc inline (when no children)
     if (isActive && nc === 0 && levelDescLines.length > 0) {
       y += 6;
-      levelDescLines.forEach(line => addDescLine(line, 10, 0.42, '11px'));
+      levelDescLines.forEach(line => addDescLine(line, 10, 0.42));
       y += 4;
     }
   });
@@ -1314,7 +1320,7 @@ function goTo(newDepth) {
     parentLabel.style.opacity = '0.55';
   }
 
-  const showDescFull = (depth === 2 && !hasChildren()) || (depth === 1 && !hasChildren());
+  const showDescFull = depth === 2 && !hasChildren();
   descFullEl.classList.toggle('active', showDescFull);
   childViewEl.classList.toggle('active', depth === 2 && hasChildren());
 
@@ -1377,7 +1383,7 @@ function updateFooter() {
   const hc = hasChildren();
   const hints = {
     0: `<span><span class="key">←</span><span class="key">→</span> WORLD</span><span><span class="key">↓</span> ENTER</span>`,
-    1: `<span><span class="key">↑</span><span class="key">↓</span> LEVEL</span><span><span class="key">→</span> OPEN</span><span><span class="key">←</span> BACK</span>`,
+    1: `<span><span class="key">↑</span><span class="key">↓</span> LEVEL</span><span><span class="key">←</span> BACK</span>`,
     2: hc
       ? `<span><span class="key">←</span><span class="key">→</span> ITEM</span><span><span class="key">↑</span><span class="key">↓</span> SCROLL</span><span><span class="key">ESC</span> BACK</span>`
       : `<span><span class="key">↑</span><span class="key">↓</span> SCROLL</span><span><span class="key">←</span> BACK</span>`,
@@ -2042,17 +2048,7 @@ window.addEventListener('resize', () => {
 function getNextStepArrow() {
   const item = CAT[catIdx].items[subIdx];
   if (item && item.children) {
-    if (depth === 1) {
-      // Check if any child of this level is unvisited
-      let unvisitedChild = false;
-      for (let i = 0; i < item.children.length; i++) {
-        if (!localStorage.getItem(`visited_${catIdx}_${subIdx}_${i}`)) {
-          unvisitedChild = true;
-          break;
-        }
-      }
-      if (unvisitedChild) return 'arr-right';
-    } else if (depth === 2) {
+    if (depth === 2) {
       if (childIdx < item.children.length - 1) {
         return 'arr-right';
       } else {
