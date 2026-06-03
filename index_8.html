@@ -1111,27 +1111,18 @@ function positionAllSubBtns() {
   });
 }
 
-// Header mode: active subheading stays at top-left, subheadings beneath it fade out downwards
+// Header mode: flat equal-opacity bullet list, same treatment as depth-1
 function applyHeaderMode() {
-  const YGAP = 80;
+  const YGAP = 40;
+  const n = subBtns.length;
+  const listTop = -(n - 1) / 2 * YGAP;
   subBtns.forEach((btn, i) => {
-    const off = i - subIdx;
-    if (off === 0) {
-      btn.style.fontSize  = getActiveFontSize() + 'px';
-      btn.style.opacity   = '0.88';
-      btn.style.transform = 'translate(0, -50%)';
-    } else if (off > 0) {
-      // Subheadings beneath are visible with decreasing brightness
-      let size, opacity, yOff;
-      if      (off === 1) { size = 17; opacity = 0.38; yOff = YGAP * 0.9; }
-      else if (off === 2) { size = 13; opacity = 0.18; yOff = YGAP * 1.45; }
-      else                { size = 11; opacity = 0;    yOff = YGAP * 1.9; }
-      btn.style.fontSize  = size + 'px';
-      btn.style.opacity   = String(opacity);
-      btn.style.transform = `translate(0, calc(-50% + ${yOff}px))`;
-    } else {
-      btn.style.opacity = '0';
-    }
+    const isActive = (i === subIdx);
+    btn.textContent = (isActive ? '› ' : '· ') + btn.dataset.base;
+    btn.style.fontSize  = '16px';
+    btn.style.opacity   = '0.62';
+    btn.style.transform = `translate(0, calc(-50% + ${listTop + i * YGAP}px))`;
+    btn.style.pointerEvents = 'auto';
   });
 }
 
