@@ -39,12 +39,14 @@ body::after {
 
 /* ── Directional navigation arrows — D-pad cluster ── */
 #dpad {
-  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   display: grid;
-  grid-template-columns: repeat(3, 44px);
-  grid-template-rows: repeat(3, 44px);
+  grid-template-columns: 58px 44px 58px;
+  grid-template-rows: 44px 44px 44px;
   gap: 5px;
   z-index: 50;
+  align-items: center;
+  justify-items: center;
 }
 .nav-arr {
   position: relative;
@@ -57,17 +59,21 @@ body::after {
   cursor: pointer;
   transition: opacity 0.25s, background 0.2s, border-color 0.2s, transform 0.1s;
 }
-.nav-arr:hover {
-  background: rgba(255,255,255,0.16);
-  border-color: rgba(255,255,255,0.6);
-  color: #ffffff;
-}
+.nav-arr:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.6); color: #ffffff; }
 .nav-arr.dim { opacity: 0.18; pointer-events: none; }
 #arr-up    { grid-column: 2; grid-row: 1; }
 #arr-left  { grid-column: 1; grid-row: 2; }
 #arr-right { grid-column: 3; grid-row: 2; }
 #arr-down  { grid-column: 2; grid-row: 3; }
 .nav-arr:active { transform: scale(0.92); }
+/* Arrow hint labels flanking left/right */
+.arr-hint {
+  font-size: 8px; font-weight: 700; letter-spacing: 0.09em;
+  color: rgba(255,255,255,0.32); white-space: nowrap; text-align: center;
+  pointer-events: none; text-transform: uppercase;
+}
+#hint-left  { grid-column: 1; grid-row: 2; justify-self: start; padding-left: 2px; }
+#hint-right { grid-column: 3; grid-row: 2; justify-self: end;   padding-right: 2px; }
 
 /* ── L1 horizontal carousel — anchor: top-left ── */
 #cat-carousel { position: absolute; inset: 0; transition: opacity 0.38s ease; }
@@ -86,12 +92,13 @@ body::after {
 /* ── L2 vertical sub-nav — anchor: top-left ── */
 #sub-nav { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity 0.38s ease; }
 #sub-nav.active { opacity: 1; pointer-events: auto; }
-/* Category name shown above sub-items as breadcrumb */
+/* World title — large bold heading above level list */
 #parent-label {
-  position: absolute; top: 14%; left: 6%;
-  font-size: 14px; font-weight: 700;
-  color: rgba(232,232,232,0.28); white-space: nowrap;
-  pointer-events: none; letter-spacing: 0.03em; text-transform: uppercase;
+  position: absolute; top: 11%; left: 6%;
+  font-size: 22px; font-weight: 900;
+  color: rgba(232,232,232,0.88); white-space: nowrap;
+  pointer-events: none; letter-spacing: -0.01em;
+  text-shadow: 0 2px 24px rgba(0,0,0,0.95);
 }
 /* Sub-item buttons all anchored to top: 26%, left: 6% */
 .sub-btn {
@@ -144,11 +151,11 @@ body::after {
   transition: opacity 0.3s, left 0.38s ease;
 }
 
-/* ── L3a full desc (no children) — starts below header ── */
+/* ── L3a full desc (no children) — aligned with selected level ── */
 #desc-full {
   position: absolute;
-  top: 0; bottom: 0; left: 58%; right: 0;
-  padding: 24vh 52px 180px 0;
+  top: 18%; bottom: 0; left: 56%; right: 0;
+  padding: 4vh 52px 180px 0;
   opacity: 0; pointer-events: none; transition: opacity 0.38s ease;
   overflow-y: auto;
   scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
@@ -491,6 +498,8 @@ body::after {
 
 <!-- D-pad directional arrow cluster -->
 <div id="dpad">
+  <div class="arr-hint" id="hint-left">BACK</div>
+  <div class="arr-hint" id="hint-right">OPEN</div>
   <button class="nav-arr" id="arr-up" aria-label="Up">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
   </button>
@@ -1131,8 +1140,8 @@ function clearChildTease() {
 function applyBulletList() {
   clearChildTease();
 
-  const LGAP = 38;  // gap between level items
-  const CGAP = 26;  // gap between child items
+  const LGAP = 44;  // gap between level items
+  const CGAP = 28;  // gap between child items
   const DGAP = 17;  // gap between desc lines
   const n    = subBtns.length;
   const item = CAT[catIdx].items[subIdx];
@@ -1146,7 +1155,7 @@ function applyBulletList() {
     const isActive = (i === subIdx);
     btn.textContent      = (isActive ? '› ' : '· ') + subBtnLabel(i);
     btn.classList.toggle('sel', isActive);
-    btn.style.fontSize      = '15px';
+    btn.style.fontSize      = '18px';
     btn.style.opacity       = '1';
     btn.style.transform     = `translate(0, calc(-50% + ${y}px))`;
     btn.style.pointerEvents = 'auto';
@@ -1282,7 +1291,7 @@ function goTo(newDepth) {
     parentLabel.style.opacity = '0.55';
   }
 
-  const showDescFull = !hasChildren() && (depth === 1 || depth === 2);
+  const showDescFull = depth === 2 && !hasChildren();
   descFullEl.classList.toggle('active', showDescFull);
   childViewEl.classList.toggle('active', depth === 2 && hasChildren());
 
@@ -1344,13 +1353,21 @@ function updateNavArrows() {
 function updateFooter() {
   const hc = hasChildren();
   const hints = {
-    0: `<span><span class="key">←</span><span class="key">→</span> WORLD</span><span><span class="key">↓</span> ENTER</span>`,
-    1: `<span><span class="key">↑</span><span class="key">↓</span> LEVEL</span><span><span class="key">←</span> BACK</span>`,
+    0: `<span><span class="key">←</span><span class="key">→</span> WORLDS</span><span><span class="key">↓</span> ENTER</span>`,
+    1: `<span><span class="key">↑</span><span class="key">↓</span> LEVELS</span><span><span class="key">←</span> WORLDS</span>` + (hc ? `<span><span class="key">→</span> DIVE IN</span>` : ''),
     2: hc
-      ? `<span><span class="key">←</span><span class="key">→</span> ITEM</span><span><span class="key">↑</span><span class="key">↓</span> SCROLL</span><span><span class="key">ESC</span> BACK</span>`
+      ? `<span><span class="key">←</span><span class="key">→</span> ITEMS</span><span><span class="key">ESC</span> BACK</span>`
       : `<span><span class="key">↑</span><span class="key">↓</span> SCROLL</span><span><span class="key">←</span> BACK</span>`,
   };
   footerEl.innerHTML = hints[depth];
+  // Update D-pad side labels
+  const hintL = document.getElementById('hint-left');
+  const hintR = document.getElementById('hint-right');
+  if (hintL && hintR) {
+    if (depth === 0) { hintL.textContent = 'PREV'; hintR.textContent = 'NEXT'; }
+    else if (depth === 1) { hintL.textContent = 'WORLDS'; hintR.textContent = hc ? 'DIVE IN' : ''; }
+    else { hintL.textContent = hc ? 'PREV' : 'BACK'; hintR.textContent = hc ? 'NEXT' : ''; }
+  }
 }
 
 // ── Keyboard + arrow-button handler ──────────────────────────────────────────
