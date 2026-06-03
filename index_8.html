@@ -141,7 +141,7 @@ body::after {
 }
 /* Preview of sub-item desc on the right side */
 #desc-preview {
-  position: absolute; top: 26%; left: 58%; right: 2%;
+  position: absolute; top: 26%; left: 34%; right: 2%;
   transform: translateY(-50%);
   font-size: 15px; font-weight: 700; color: #e8e8e8;
   overflow: hidden; white-space: pre-line;
@@ -155,8 +155,8 @@ body::after {
 /* ── L3a full desc (no children) — aligned with selected level ── */
 #desc-full {
   position: absolute;
-  top: 18%; bottom: 0; left: 56%; right: 0;
-  padding: 4vh 52px 180px 0;
+  top: 0; bottom: 0; left: 32%; right: 0;
+  padding: 6vh 52px 180px 48px;
   opacity: 0; pointer-events: none; transition: opacity 0.38s ease;
   overflow-y: auto;
   scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
@@ -165,16 +165,16 @@ body::after {
 #desc-full::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
 #desc-full.active { opacity: 1; pointer-events: auto; }
 #desc-full-body {
-  font-size: 23px; font-weight: 700;
+  font-size: 22px; font-weight: 700;
   line-height: 1.62; color: #e8e8e8;
-  white-space: pre-line; max-width: 740px;
+  white-space: pre-line; max-width: 780px;
 }
 
 /* ── L3b child item view — starts below header ── */
 #child-view {
   position: absolute;
-  top: 0; bottom: 0; left: 58%; right: 0;
-  padding: 31vh 52px 200px 0;
+  top: 0; bottom: 0; left: 32%; right: 0;
+  padding: 28vh 52px 200px 48px;
   opacity: 0; pointer-events: none; transition: opacity 0.38s ease;
   overflow-y: auto;
   scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
@@ -185,7 +185,7 @@ body::after {
 #child-header {
   position: absolute;
   top: 26%;
-  left: 58%;
+  left: 34%;
   transform: translateY(-50%);
   z-index: 40;
   display: flex;
@@ -394,7 +394,7 @@ body::after {
 #celebration-banner {
   position: fixed;
   top: 50%;
-  left: 55%;
+  left: 65%;
   transform: translate(-50%, -50%) scale(0.85);
   background: rgba(0, 0, 0, 0.95);
   border: 3px double #a3e635;
@@ -1436,7 +1436,7 @@ window.addEventListener('resize', () => {
   let W, H, matRows = [];
   let t = 0;
 
-  const Z_FILM = 0.40;
+  const Z_FILM = 0.30;
 
   const PALETTES = [
     { wall:'#5a3818',wallB:'#7a5028',fA:'#14300a',fB:'#4b8826',acc:'#f0c820',wat:'#1858c8',o1:'#c04018',o2:'#20a0c0',sp:'#ffff40',cCol:'#ffffff' },
@@ -1696,14 +1696,8 @@ window.addEventListener('resize', () => {
     ctx.restore();
   }
 
-  // Remove second white film bar — only keep the left border line
   function drawFilm() {
-    const filmX=W*0.30, filmW=W*(Z_FILM-0.30);
-    ctx.fillStyle='rgba(0,0,0,0.95)'; ctx.fillRect(filmX,0,filmW,H);
-    const pw2=7,mg=4;
-    ctx.fillStyle='rgba(255,255,255,1.0)';
-    ctx.fillRect(filmX+mg,0,pw2,H);
-    // second bar removed
+    // No separator line — left game world meets right bitmap directly
   }
 
   // Draw the same bitmap tile pattern on the right content zone
