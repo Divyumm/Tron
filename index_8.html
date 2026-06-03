@@ -130,29 +130,6 @@ body::after {
   border-color: rgba(255,255,255,0.5);
   background: rgba(0,0,0,0.55);
 }
-.child-tease {
-  position: absolute; top: 55%; left: 6%;
-  background: none; border: 1px solid transparent; cursor: pointer;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700;
-  color: #ffffff; font-size: 12px; line-height: 1; padding: 3px 8px;
-  white-space: nowrap; border-radius: 3px;
-  text-shadow: 0 0 2px #000, 1px 1px 0 rgba(0,0,0,0.9);
-  transition: opacity 0.18s ease, transform 0.18s ease;
-}
-/* Inline desc preview lines — allow wrapping, not interactive */
-.desc-tease {
-  position: absolute; top: 55%; left: 6%;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 400;
-  color: #ffffff; font-size: 11px; line-height: 1.45; padding: 2px 8px;
-  white-space: normal; max-width: 46%; border-radius: 3px;
-  pointer-events: none;
-  text-shadow: 0 0 2px #000, 1px 1px 0 rgba(0,0,0,0.9);
-  transition: opacity 0.18s ease, transform 0.18s ease;
-}
-.child-tease.sel {
-  border-color: rgba(255,255,255,0.5);
-  background: rgba(0,0,0,0.55);
-}
 /* Preview of sub-item desc on the right side */
 #desc-preview {
   position: absolute; top: 26%; left: 34%; right: 2%;
@@ -1144,15 +1121,9 @@ function clearChildTease() {
 function applyBulletList() {
   clearChildTease();
 
-  const LGAP = 44;  // gap between level items
-  const CGAP = 28;  // gap between child items
-  const DGAP = 17;  // gap between desc lines
+  const LGAP = 44;
   const n    = subBtns.length;
-  const item = CAT[catIdx].items[subIdx];
-  const children = item && item.children ? item.children : [];
-  const nc = children.length;
-
-  const totalH = n * LGAP + (nc > 0 ? nc * CGAP + 8 : 0);
+  const totalH = n * LGAP;
   let y = -totalH / 2 + LGAP / 2;
   let activeLevelY = 0;
 
@@ -1166,24 +1137,6 @@ function applyBulletList() {
     btn.style.transform     = `translate(0, calc(-50% + ${y}px))`;
     btn.style.pointerEvents = 'auto';
     y += LGAP;
-
-    if (isActive && nc > 0) {
-      y += 4;
-      children.forEach((child, idx) => {
-        const isChildActive = (idx === childIdx);
-        const btn2 = document.createElement('button');
-        btn2.className = 'child-tease' + (isChildActive ? ' sel' : '');
-        btn2.textContent = (isChildActive ? '› ' : '· ') +
-          (catIdx + 1) + '.' + (subIdx + 1) + '.' + (idx + 1) + ' · ' + child.label;
-        btn2.style.opacity   = '0.75';
-        btn2.style.transform = `translate(10px, calc(-50% + ${y}px))`;
-        btn2.addEventListener('click', () => { childIdx = idx; goTo(2); });
-        subNavEl.insertBefore(btn2, descPreview);
-        childTeaseBtns.push(btn2);
-        y += CGAP;
-      });
-      y += 4;
-    }
   });
 
   // Align desc-full top with the selected level's vertical position
