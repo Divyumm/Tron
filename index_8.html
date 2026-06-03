@@ -572,11 +572,11 @@ body::after {
   <div id="topbar">
     <span>Divyum Maheshwari</span>
     <a href="https://www.linkedin.com/in/divyum-maheshwari/" target="_blank" rel="noopener">LinkedIn ↗</a>
-    <div id="points-block"><span class="label">SCORE</span><span id="score-val">00</span>/42</div>
+    <div id="points-block"><span class="label">★</span><span id="score-val">0</span>/4</div>
   </div>
   <div id="celebration-banner">
-    <div>★ CONGRATULATIONS ★</div>
-    <div style="font-size: 14px; margin-top: 8px; color: rgba(255,255,255,0.8);">PORTFOLIO 100% COMPLETED</div>
+    <div>★ ALL EASTER EGGS FOUND ★</div>
+    <div style="font-size: 14px; margin-top: 8px; color: rgba(255,255,255,0.8);">YOU FOUND ALL 4 HIDDEN GEMS</div>
     <div style="font-size: 10px; margin-top: 14px; color: rgba(255,255,255,0.35); letter-spacing: 0.18em;">CLICK TO DISMISS</div>
   </div>
   <div id="stage">
@@ -627,10 +627,10 @@ const CAT = [
   {
     key: 'about', label: 'About',
     items: [
-      { label: 'Profile',      desc: "AI Design Engineer · 25 · London, GB\n\nProduct Practitioner educated in Business, Design and Engineering. Capable of articulating novelty and aggregate limits to define scope. Creating value by combining concepts into exciting new applications in equitable tech." },
-      { label: 'Values',       desc: 'Tenacity · Altruism · Audacity · Orchestration · Signposting' },
-      { label: 'Competencies', desc: 'Writing and storytelling · Product thinking · Design thinking · Prompt engineering · Ink-based sketching · Pitching to market · User testing · Curating exhaustive knowledge · Data communication and presentation.' },
-      { label: 'Contact',      desc: 'divyummaheshwari@gmail.com\nlinkedin.com/in/divyum-maheshwari' },
+      { label: 'Profile', desc: "AI Design Engineer · 25 · London, GB\n\nProduct Practitioner educated in Business, Design and Engineering. Capable of articulating novelty and aggregate limits to define scope. Creating value by combining concepts into exciting new applications in equitable tech.\n\nCurrently pursuing MSc. Design Engineering at Imperial College London. Previously at Atlas Skilltech (BSc Strategic Design + Programming) and IIT Madras (Diploma in Programming, First in Batch).\n\nOpen to Product, Design, and Technology roles at the intersection of systems thinking and human-centred design." },
+      { label: 'Values', desc: "Tenacity · Altruism · Audacity · Orchestration · Signposting\n\nTenacity — Pursuing ideas through resistance, iteration, and ambiguity without losing conviction.\n\nAltruism — Designing for communities and users who are underserved by current systems.\n\nAudacity — Proposing solutions that are ambitious enough to matter.\n\nOrchestration — Connecting dots across disciplines, teams, and constraints.\n\nSignposting — Making complexity legible for collaborators, stakeholders, and end-users." },
+      { label: 'Competencies', desc: "Writing and storytelling · Product thinking · Design thinking · Prompt engineering · Ink-based sketching · Pitching to market · User testing · Curating exhaustive knowledge · Data communication and presentation.\n\nTools — Figma · Notion · Python · Flask · SQL · JavaScript · Processing · Rhino · Grasshopper\n\nMethods — POEMS · Empathy Mapping · Persona Clustering · Jobs-to-be-Done · Storyboarding · Wizard of Oz · Rapid Prototyping · Data Narrative" },
+      { label: 'Contact', easter: true, desc: 'divyummaheshwari@gmail.com\nlinkedin.com/in/divyum-maheshwari' },
     ]
   },
   {
@@ -639,12 +639,12 @@ const CAT = [
       {
         label: 'Tech + Data',
         children: [
-          { label: 'Inventory System',            desc: 'Group Project · Ideation, Coding, Pitching\n\nFormalising part-sourcing and repair workflows of informal electronic vendors in Mumbai. Addresses inventory overload, part traceability, and customer retention.\n\nPOEMS · Empathy Maps · Persona Clustering · QR inventory sharing · CSV traceability.' },
-          { label: 'OURoute · Safety Matching',   desc: 'Group Project · Ideation, User Testing\n\nMobility and safety platform for walking alone at night on campus. Matches students along shared routes via institutional verification.\n\n93% of students walk at night. 56% report feeling unsafe.\nKey insight: Safety is achieved through presence, not alerts.' },
+          { label: 'Inventory System',            links: [{url: 'https://github.com', label: 'GitHub Repo'}], desc: 'Group Project · Ideation, Coding, Pitching\n\nFormalising part-sourcing and repair workflows of informal electronic vendors in Mumbai. Addresses inventory overload, part traceability, and customer retention.\n\nPOEMS · Empathy Maps · Persona Clustering · QR inventory sharing · CSV traceability.' },
+          { label: 'OURoute · Safety Matching', easter: true, links: [{url: 'https://www.figma.com', label: 'Figma Prototype'}], desc: 'Group Project · Ideation, User Testing\n\nMobility and safety platform for walking alone at night on campus. Matches students along shared routes via institutional verification.\n\n93% of students walk at night. 56% report feeling unsafe.\nKey insight: Safety is achieved through presence, not alerts.' },
           { label: 'Scaling Design Education',    desc: 'Systemic challenges of scaling design education through formal licensure frameworks in India. Policy, pedagogy, and institutional barriers.' },
           { label: 'Systemic Biases in Agent AI', desc: 'How systemic biases propagate within agent-based AI systems deployed for design decision-making in the Indian context.' },
           { label: 'Traffic Optimisation',        desc: 'Data-driven traffic flow analysis and optimisation for Kurla district, Mumbai. Congestion modelling and intervention strategies.' },
-          { label: 'Full Stack Social Platform',  desc: 'End-to-end social media platform built with Flask, SQL, JavaScript, CSS and Python.' },
+          { label: 'Full Stack Social Platform',  links: [{url: 'https://github.com', label: 'Source Code'}, {url: 'https://flask.palletsprojects.com', label: 'Built with Flask'}], desc: 'End-to-end social media platform built with Flask, SQL, JavaScript, CSS and Python.' },
         ]
       },
       {
@@ -659,8 +659,8 @@ const CAT = [
       {
         label: 'Design',
         children: [
-          { label: 'Jam Jong · Memory Game',      desc: 'Group Project · Ideation, User Testing\n\nMulti-sensory cognitive game for seniors at risk of dementia. Music, tactile interaction, and social gameplay — inspired by Mahjong and record players.' },
-          { label: 'Ercon · Rebranding',          desc: 'Pitching, specifications, hundreds of design iterations, certification, fabrication, and finishing. Qualified for NEOM City, KSA.' },
+          { label: 'Jam Jong · Memory Game',      links: [{url: 'https://www.figma.com', label: 'Design Prototype'}], desc: 'Group Project · Ideation, User Testing\n\nMulti-sensory cognitive game for seniors at risk of dementia. Music, tactile interaction, and social gameplay — inspired by Mahjong and record players.' },
+          { label: 'Ercon · Rebranding',          links: [{url: 'https://erconcomposites.com', label: 'Ercon Composites'}], desc: 'Pitching, specifications, hundreds of design iterations, certification, fabrication, and finishing. Qualified for NEOM City, KSA.' },
           { label: 'Indigenous House Bricks',     desc: 'Indigenous materials and traditional construction for passive cooling in residential architecture.' },
           { label: 'Mycelium Agriculture',        desc: 'Mycelium-based agricultural facilitation — circular bioeconomy and sustainable farming.' },
           { label: 'Cycle Battery Lock',          desc: 'Parametric product design for a cycle battery locking mechanism.' },
@@ -676,7 +676,7 @@ const CAT = [
       { label: 'Imperial College',  desc: 'MSc. Design Engineering · London, UK' },
       { label: 'Atlas Skilltech',   desc: "Bachelor's in Administration · Strategic Design · Minor in Programming · Mumbai, India" },
       { label: 'IIT Madras',        desc: 'Diploma in Programming · First in Jodhpur batch · Subject Topper · Chennai, India' },
-      { label: 'Sabbatical',        desc: 'Two years of self-directed learning through travel.\nAudit in Foundational Pre-Design · Charter in Product Management · Science Stream with Fine Arts' },
+      { label: 'Sabbatical', easter: true, desc: 'Two years of self-directed learning through travel.\nAudit in Foundational Pre-Design · Charter in Product Management · Science Stream with Fine Arts' },
     ]
   },
   {
@@ -705,7 +705,7 @@ const CAT = [
           { label: 'Human Anatomy',           desc: 'Anatomical studies through ink-based sketching and structural observation.' },
           { label: 'Geometrical Exploration', desc: 'Pattern, symmetry, rhythm, and compositional relationships in two dimensions.' },
           { label: 'Structure Sketching',     desc: 'Architectural and product structure sketching — rapid ideation and spatial reasoning.' },
-          { label: 'Village Ethnography',     desc: 'Visual ethnography in a Maharashtrian village — documentary drawing capturing culture, space, and daily life.' },
+          { label: 'Village Ethnography', easter: true, desc: 'Visual ethnography in a Maharashtrian village — documentary drawing capturing culture, space, and daily life.' },
         ]
       },
       {
@@ -829,6 +829,7 @@ let depth    = 0;
 let subIdx   = 0;
 let childIdx = 0;
 let gameWorldOpacity = 0;
+let celebrationMode  = false;
 let subBtns  = [];
 
 // ── Camera state ──────────────────────────────────────────────────────────────
@@ -882,94 +883,72 @@ const arrDown     = document.getElementById('arr-down');
 const arrLeft     = document.getElementById('arr-left');
 const arrRight    = document.getElementById('arr-right');
 
-// TV Work Preview elements
-const descTvScreen  = descFullEl.querySelector('.tv-screen');
-const descTvLabel   = descFullEl.querySelector('.tv-label');
-const childTvScreen = childViewEl.querySelector('.tv-screen');
-const childTvLabel  = childViewEl.querySelector('.tv-label');
-
 descFullEl.addEventListener('scroll', updateNavArrows);
 childViewEl.addEventListener('scroll', updateNavArrows);
 
-// ── TV Image Upload Logic ─────────────────────────────────────────────────────
-const tvFileInput = document.createElement('input');
-tvFileInput.type = 'file';
-tvFileInput.accept = 'image/*';
-tvFileInput.style.display = 'none';
-document.body.appendChild(tvFileInput);
-
-function getTvStorageKey() {
-  const item = CAT[catIdx].items[subIdx];
-  if (depth === 2 && item.children) {
-    return `tv_img_${catIdx}_${subIdx}_${childIdx}`;
-  }
-  return `tv_img_${catIdx}_${subIdx}_main`;
-}
 
 function updateTvView() {
-  const storageKey = getTvStorageKey();
-  const savedImg = localStorage.getItem(storageKey);
+  // Get current item/child
+  const item = CAT[catIdx].items[subIdx];
+  const child = (depth === 2 && item.children) ? item.children[childIdx] : null;
+  const source = child || (depth >= 2 ? item : null);
+  const links = (source && source.links) ? source.links : (item.links || []);
 
-  const activeTvScreen = hasChildren() ? childTvScreen : descTvScreen;
-  const activeTvLabel = hasChildren() ? childTvLabel : descTvLabel;
-  if (!activeTvScreen || !activeTvLabel) return;
-  
-  const activePlayBtn = activeTvScreen.querySelector('.tv-play');
+  // Render into the active work-preview container
+  const container = hasChildren() ? childViewEl.querySelector('.work-preview') : descFullEl.querySelector('.work-preview');
+  if (!container) return;
 
-  if (savedImg) {
-    activeTvScreen.style.backgroundImage = `url(${savedImg})`;
-    activeTvScreen.style.backgroundSize = 'cover';
-    activeTvScreen.style.backgroundPosition = 'center';
-    activeTvScreen.style.backgroundRepeat = 'no-repeat';
-    if (activePlayBtn) activePlayBtn.style.opacity = '0';
-    activeTvLabel.textContent = 'Click to change image';
-  } else {
-    activeTvScreen.style.backgroundImage = 'none';
-    if (activePlayBtn) activePlayBtn.style.opacity = '1';
-    activeTvLabel.textContent = 'Upload work image';
+  if (links.length === 0) {
+    container.innerHTML = `<div class="tv-outer"><div class="tv-screen"><span class="tv-play">▶</span></div><div class="tv-label">Work preview</div></div>`;
+    return;
   }
+
+  container.innerHTML = links.map(link => {
+    const domain = (() => { try { return new URL(link.url).hostname; } catch { return link.url; } })();
+    const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+    return `<div class="tv-outer link-card" style="margin-bottom:10px;cursor:pointer;" onclick="window.open('${link.url}','_blank')">
+      <div class="tv-screen" style="height:80px;background:#050510;justify-content:flex-start;padding:12px;gap:10px;flex-direction:row;align-items:center;">
+        <img src="${favicon}" style="width:24px;height:24px;border-radius:4px;flex-shrink:0;" onerror="this.style.display='none'"/>
+        <div style="overflow:hidden;">
+          <div style="font-size:11px;font-weight:700;color:#e8e8e8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${link.label}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.38);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${domain}</div>
+        </div>
+        <div style="margin-left:auto;font-size:14px;color:rgba(255,255,255,0.3);">↗</div>
+      </div>
+    </div>`;
+  }).join('');
+  container.style.pointerEvents = 'auto';
 }
 
-descTvScreen.style.cursor = 'pointer';
-childTvScreen.style.cursor = 'pointer';
 
-descTvScreen.addEventListener('click', () => tvFileInput.click());
-childTvScreen.addEventListener('click', () => tvFileInput.click());
+// ── Points System (Easter Eggs only) ─────────────────────────────────────────
+function isEasterEgg(c, s, idx) {
+  const item = CAT[c].items[s];
+  if (idx !== undefined && item.children) return !!(item.children[idx] && item.children[idx].easter);
+  return !!item.easter;
+}
 
-tvFileInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    const dataUrl = evt.target.result;
-    const storageKey = getTvStorageKey();
-    try {
-      localStorage.setItem(storageKey, dataUrl);
-    } catch (err) {
-      console.warn('LocalStorage full, unable to save image:', err);
-    }
-    updateTvView();
-  };
-  reader.readAsDataURL(file);
-});
-
-// ── Points System ─────────────────────────────────────────────────────────────
 function markLevelVisited() {
   const item = CAT[catIdx].items[subIdx];
-  let key = `visited_${catIdx}_${subIdx}`;
+  let key, isEgg;
   if (item.children) {
     if (depth === 2) {
       key = `visited_${catIdx}_${subIdx}_${childIdx}`;
+      isEgg = item.children[childIdx] && item.children[childIdx].easter;
     } else {
-      return; // Do not count parent level nodes if they have children (only children count!)
+      return;
     }
+  } else {
+    key = `visited_${catIdx}_${subIdx}`;
+    isEgg = item.easter;
   }
-  
+
   if (!localStorage.getItem(key)) {
     localStorage.setItem(key, 'true');
-    triggerCollectAnimation();
-    updatePoints();
+    if (isEgg) {
+      triggerCollectAnimation();
+      updatePoints();
+    }
   }
 }
 
@@ -978,15 +957,11 @@ function getPoints() {
   CAT.forEach((cat, c) => {
     cat.items.forEach((item, s) => {
       if (item.children) {
-        item.children.forEach((_, idx) => {
-          if (localStorage.getItem(`visited_${c}_${s}_${idx}`)) {
-            pts++;
-          }
+        item.children.forEach((child, idx) => {
+          if (child.easter && localStorage.getItem(`visited_${c}_${s}_${idx}`)) pts++;
         });
       } else {
-        if (localStorage.getItem(`visited_${c}_${s}`)) {
-          pts++;
-        }
+        if (item.easter && localStorage.getItem(`visited_${c}_${s}`)) pts++;
       }
     });
   });
@@ -997,9 +972,9 @@ function triggerCollectAnimation() {
   const pointsBlock = document.getElementById('points-block');
   if (!pointsBlock) return;
   gameWorldOpacity = 1.0;
-  
+
   const plus = document.createElement('div');
-  plus.textContent = '+1 PT';
+  plus.textContent = '★ EASTER EGG';
   plus.style.position = 'absolute';
   plus.style.right = '40px';
   plus.style.top = '30px';
@@ -1028,10 +1003,11 @@ function updatePoints() {
   const pts = getPoints();
   const valEl = document.getElementById('score-val');
   if (valEl) {
-    valEl.textContent = pts.toString().padStart(2, '0');
+    valEl.textContent = pts.toString();
   }
-  
-  if (pts === 42) {
+
+  if (pts === 4) {
+    celebrationMode = true;
     const banner = document.getElementById('celebration-banner');
     if (banner) banner.classList.add('show');
   }
@@ -1804,6 +1780,28 @@ window.addEventListener('resize', () => {
     // second bar removed
   }
 
+  // Draw the same bitmap tile pattern on the right content zone
+  function drawBitmapBackground() {
+    const rx = W * Z_FILM;
+    const rw = W * (1 - Z_FILM);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(rx, 0, rw, H); ctx.clip();
+    const visTX = Math.ceil(rw / TS) + 2;
+    const visTY = Math.ceil(H / TS) + 2;
+    const stX = Math.floor(camTX + rx / TS);
+    const stY = Math.floor(camTY);
+    const offX = rx - (camTX - Math.floor(camTX)) * TS;
+    const offY = -(camTY - stY) * TS;
+    for (let dy = 0; dy < visTY; dy++) for (let dx = 0; dx < visTX; dx++) {
+      ctx.fillStyle = getTileColor(stX + dx, stY + dy);
+      ctx.fillRect(offX + dx * TS, offY + dy * TS, TS, TS);
+    }
+    // Dark overlay so content text remains readable
+    ctx.fillStyle = 'rgba(0,0,12,0.78)';
+    ctx.fillRect(rx, 0, rw, H);
+    ctx.restore();
+  }
+
   function initMatrix() {
     const lh=14, count=Math.ceil(H/lh)+2;
     matRows=Array.from({length:count},(_,i)=>({y:i*lh,vals:Array.from({length:60},()=>Math.floor(Math.random()*2500))}));
@@ -1883,15 +1881,14 @@ window.addEventListener('resize', () => {
     ctx.fillStyle='rgba(0,0,0,0.82)';ctx.fillRect(mx,0,mw,H);
     ctx.font='10px "Helvetica Neue",Helvetica,monospace';
     HOLES.forEach(h=>{h.angle+=h.spd;});
-    const isComplete = (getPoints() === 42);
     matRows.forEach(row=>{
       if(Math.random()<0.002)row.vals=Array.from({length:60},()=>Math.floor(Math.random()*2500));
       let x=mx+6;
       row.vals.forEach((v,vi)=>{
-        const str = isComplete ? '★,' : v+',';
+        const str = '★,';
         const alpha=holeAlpha(x,row.y,mx,mw);
         if(alpha>0.04){
-          ctx.fillStyle = isComplete ? `rgba(234, 179, 8, ${0.65*alpha})` : hx(MC[vi%MC.length],0.55*alpha);
+          ctx.fillStyle = `rgba(234, 179, 8, ${0.65*alpha})`;
           ctx.fillText(str,x,row.y);
         }
         x+=ctx.measureText(str).width;
@@ -2103,7 +2100,11 @@ window.addEventListener('resize', () => {
       gameWorldOpacity = Math.max(0, gameWorldOpacity - 0.008);
     }
     drawFilm();
-    drawMatrix();
+    if (celebrationMode) {
+      drawMatrix();
+    } else {
+      drawBitmapBackground();
+    }
     drawMinimap();
     requestAnimationFrame(frame);
   }
@@ -2115,35 +2116,66 @@ window.addEventListener('resize', () => {
 
 // ── Idle Guidance Timer ───────────────────────────────────────────────────────
 function getGuideArrows() {
-  const item = CAT[catIdx].items[subIdx];
-  const count = CAT[catIdx].items.length;
+  // Find next unvisited item in overall sequence to guide toward
+  function findNextUnvisited() {
+    for (let c = 0; c < CAT.length; c++) {
+      for (let s = 0; s < CAT[c].items.length; s++) {
+        const item = CAT[c].items[s];
+        if (item.children) {
+          for (let idx = 0; idx < item.children.length; idx++) {
+            if (!localStorage.getItem(`visited_${c}_${s}_${idx}`)) {
+              return { c, s, idx, hasChildren: true };
+            }
+          }
+        } else {
+          if (!localStorage.getItem(`visited_${c}_${s}`)) {
+            return { c, s, idx: -1, hasChildren: false };
+          }
+        }
+      }
+    }
+    return null; // all done
+  }
+
   const ids = [];
+  const next = findNextUnvisited();
+  if (!next) { ids.push('arr-up'); return ids; } // all done, go back to top
+
+  const item = CAT[catIdx].items[subIdx];
 
   if (depth === 0) {
-    // At world select: guide down to enter
-    ids.push('arr-down');
+    // Guide to world containing next unvisited
+    if (catIdx < next.c) ids.push('arr-right');
+    else if (catIdx > next.c) ids.push('arr-left');
+    else ids.push('arr-down'); // correct world, enter it
   } else if (depth === 1) {
-    // Guide down if more levels below
-    if (subIdx < count - 1) ids.push('arr-down');
-    // Guide right if current level has unvisited children
-    if (item && item.children) {
-      const hasUnvisited = item.children.some((_, idx) =>
-        !localStorage.getItem(`visited_${catIdx}_${subIdx}_${idx}`)
-      );
-      if (hasUnvisited) ids.push('arr-right');
+    if (catIdx !== next.c) {
+      // Wrong world — go back to depth 0
+      ids.push('arr-left');
+    } else if (subIdx < next.s) {
+      ids.push('arr-down');
+    } else if (subIdx > next.s) {
+      ids.push('arr-up');
+    } else {
+      // Correct level
+      if (next.hasChildren) ids.push('arr-right');
+      else ids.push('arr-right'); // enter to mark visited
     }
-    if (ids.length === 0) ids.push('arr-left'); // all done, guide back
   } else if (depth === 2) {
     if (item && item.children) {
-      // Navigate items: right if more ahead, left when at last (to go back)
-      if (childIdx < item.children.length - 1) ids.push('arr-right');
-      else ids.push('arr-left');
+      // Navigate children in order
+      if (childIdx < next.idx) ids.push('arr-right');
+      else if (childIdx > next.idx) ids.push('arr-left');
+      else ids.push('arr-down'); // at correct child, reading = point collected; go to next
+      if (ids.length === 0 || (childIdx < item.children.length - 1)) {
+        // still more children
+      }
     } else {
-      // No children: guide left to go back
-      ids.push('arr-left');
+      ids.push('arr-left'); // no children, go back after reading
     }
   }
 
+  if (ids.length === 0) ids.push('arr-down');
   return ids;
 }
 
