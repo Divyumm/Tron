@@ -779,6 +779,7 @@ let catIdx   = 0;
 let depth    = 0;
 let subIdx   = 0;
 let childIdx = 0;
+let gameWorldOpacity = 0;
 let subBtns  = [];
 
 // ── Camera state ──────────────────────────────────────────────────────────────
@@ -946,6 +947,7 @@ function getPoints() {
 function triggerCollectAnimation() {
   const pointsBlock = document.getElementById('points-block');
   if (!pointsBlock) return;
+  gameWorldOpacity = 1.0;
   
   const plus = document.createElement('div');
   plus.textContent = '+1 PT';
@@ -1092,8 +1094,9 @@ function updateCats() {
     const off = i - catIdx, abs = Math.abs(off);
     // Spread to the right; active at left: 6% (no X shift), others shift right
     btn.style.transform    = `translate(${off > 0 ? off * SP : off * SP * 0.6}px, -50%)`;
-    btn.style.fontSize     = abs === 0 ? getActiveFontSize() + 'px' : abs === 1 ? '26px' : '17px';
-    btn.style.opacity      = abs === 0 ? '1' : abs === 1 ? '0.72' : abs === 2 ? '0.40' : '0';
+    const completed = getWorldProgress(i) >= 1;
+    btn.style.fontSize     = abs === 0 ? getActiveFontSize() + 'px' : '26px';
+    btn.style.opacity      = completed ? '1' : abs === 0 ? '1' : abs === 1 ? '0.45' : abs === 2 ? '0.18' : '0';
     btn.style.pointerEvents = abs <= 2 ? 'auto' : 'none';
     btn.style.zIndex       = String(10 - abs);
   });
@@ -1192,10 +1195,10 @@ function positionAllSubBtns() {
     btn.textContent = '· ' + subBtnLabel(i);
     btn.classList.remove('sel');
     let size, opacity, yOff;
-    if      (i === 0) { size = 15; opacity = 0.38; yOff = YGAP; }
-    else if (i === 1) { size = 13; opacity = 0.22; yOff = YGAP * 1.55; }
-    else if (i === 2) { size = 11; opacity = 0.12; yOff = YGAP * 2.1; }
-    else              { size = 10; opacity = 0;    yOff = YGAP * 2.55; }
+    const opacities = [0.45, 0.22, 0.10, 0];
+    size = 13; opacity = opacities[i] || 0;
+    const yOffs = [YGAP, YGAP * 1.55, YGAP * 2.1, YGAP * 2.55];
+    yOff = yOffs[i] || YGAP * 3;
     btn.style.fontSize      = size + 'px';
     btn.style.opacity       = String(opacity);
     btn.style.transform     = `translate(0, calc(-50% + ${yOff}px))`;
@@ -1854,7 +1857,7 @@ window.addEventListener('resize', () => {
   const minimapCanvas = document.getElementById('minimap-canvas');
   const minimapCtx = minimapCanvas.getContext('2d');
 
-  const MM_SCALE = 0.72; // node-space units → minimap pixels
+  const MM_SCALE = 0.42; // node-space units → minimap pixels
 
   function nodeToMM(nx, ny) {
     const cx = minimapCanvas.width  / 2;
@@ -2032,7 +2035,12 @@ window.addEventListener('resize', () => {
     t++;
     camTX = tgtTX; camTY = tgtTY;
     ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
-    drawGameWorld(W*0.30);
+    if (gameWorldOpacity > 0.01) {
+      ctx.globalAlpha = gameWorldOpacity;
+      drawGameWorld(W*0.30);
+      ctx.globalAlpha = 1;
+      gameWorldOpacity = Math.max(0, gameWorldOpacity - 0.008);
+    }
     drawFilm();
     drawMatrix();
     drawMinimap();
@@ -2049,12 +2057,12 @@ function getGuideArrows() {
   const item = CAT[catIdx].items[subIdx];
   const count = CAT[catIdx].items.length;
   const ids = [];
-  if (depth === 2 && item && item.children) {
-    ids.push(childIdx < item.children.length - 1 ? 'arr-right' : 'arr-left');
-    return ids;
-  }
-  if (depth === 1) {
-    // Always guide down if there are more levels to explore
+
+  if (depth === 0) {
+    // At world select: guide down to enter
+    ids.push('arr-down');
+  } else if (depth === 1) {
+    // Guide down if more levels below
     if (subIdx < count - 1) ids.push('arr-down');
     // Guide right if current level has unvisited children
     if (item && item.children) {
@@ -2063,10 +2071,18 @@ function getGuideArrows() {
       );
       if (hasUnvisited) ids.push('arr-right');
     }
-    if (ids.length === 0) ids.push('arr-down');
-  } else {
-    ids.push('arr-down');
+    if (ids.length === 0) ids.push('arr-left'); // all done, guide back
+  } else if (depth === 2) {
+    if (item && item.children) {
+      // Navigate items: right if more ahead, left when at last (to go back)
+      if (childIdx < item.children.length - 1) ids.push('arr-right');
+      else ids.push('arr-left');
+    } else {
+      // No children: guide left to go back
+      ids.push('arr-left');
+    }
   }
+
   return ids;
 }
 
