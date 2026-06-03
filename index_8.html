@@ -358,7 +358,100 @@ body::after {
   pointer-events: auto;
   transform: translate(-50%, -50%) scale(1);
 }
-.nav-arr.guide { border-color: #a3e635 !important; color: #a3e635 !important; box-shadow: 0 0 12px rgba(163,230,53,0.55); }
+.nav-arr.guide {
+  border-color: #a3e635 !important;
+  color: #a3e635 !important;
+  box-shadow: 0 0 14px rgba(163,230,53,0.6), inset 0 0 6px rgba(163,230,53,0.12);
+  background: rgba(163,230,53,0.08) !important;
+}
+
+/* ── Sitemap ── */
+#sitemap-toggle {
+  position: absolute;
+  bottom: 24px;
+  left: 158px;
+  background: rgba(0,0,0,0.72);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  z-index: 80;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: border-color 0.2s;
+}
+#sitemap-toggle:hover { border-color: rgba(255,255,255,0.35); }
+#sitemap-toggle svg { opacity: 0.55; transition: opacity 0.2s; }
+#sitemap-toggle:hover svg { opacity: 0.9; }
+#sitemap-toggle-label {
+  font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255,255,255,0.35); font-weight: 700; user-select: none;
+}
+#sitemap-panel {
+  position: absolute;
+  bottom: 24px;
+  left: 196px;
+  width: 280px;
+  max-height: calc(100vh - 120px);
+  background: rgba(0,0,0,0.88);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 79;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.12) transparent;
+  padding: 12px 0 12px;
+  display: none;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.9);
+}
+#sitemap-panel.open { display: block; }
+#sitemap-panel::-webkit-scrollbar { width: 2px; }
+#sitemap-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+.sm-world {
+  padding: 0 14px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 4px;
+}
+.sm-world:last-child { border-bottom: none; margin-bottom: 0; }
+.sm-world-label {
+  font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(255,255,255,0.28); font-weight: 700;
+  padding: 4px 0 6px; user-select: none;
+}
+.sm-level {
+  display: block; width: 100%;
+  background: none; border: none; cursor: pointer;
+  text-align: left; padding: 3px 0 3px 8px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.01em;
+  color: rgba(255,255,255,0.38);
+  border-left: 1px solid rgba(255,255,255,0.08);
+  transition: color 0.15s, border-color 0.15s;
+  line-height: 1.4;
+}
+.sm-level:hover { color: rgba(255,255,255,0.85); border-left-color: rgba(255,255,255,0.3); }
+.sm-level.visited { color: rgba(255,255,255,0.72); }
+.sm-level.active  { color: #a3e635 !important; border-left-color: #a3e635 !important; }
+.sm-child {
+  display: block; width: 100%;
+  background: none; border: none; cursor: pointer;
+  text-align: left; padding: 2px 0 2px 20px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.01em;
+  color: rgba(255,255,255,0.25);
+  border-left: 1px solid rgba(255,255,255,0.05);
+  transition: color 0.15s, border-color 0.15s;
+  line-height: 1.4;
+}
+.sm-child:hover { color: rgba(255,255,255,0.7); border-left-color: rgba(255,255,255,0.22); }
+.sm-child.visited { color: rgba(255,255,255,0.55); }
+.sm-child.active  { color: #a3e635 !important; border-left-color: #a3e635 !important; }
 </style>
 </head>
 <body>
@@ -422,6 +515,14 @@ body::after {
       <canvas id="minimap-canvas" width="200" height="360"></canvas>
       <div class="minimap-card-label">MINI MAP</div>
     </div>
+    <button id="sitemap-toggle" aria-label="Toggle sitemap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" color="rgba(255,255,255,0.8)">
+        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+      </svg>
+      <span id="sitemap-toggle-label">MAP</span>
+    </button>
+    <div id="sitemap-panel"></div>
   </div>
   <div id="footer"></div>
 </div>
@@ -842,6 +943,74 @@ function updatePoints() {
 
 updatePoints();
 
+// ── Sitemap ───────────────────────────────────────────────────────────────────
+const sitemapPanel  = document.getElementById('sitemap-panel');
+const sitemapToggle = document.getElementById('sitemap-toggle');
+
+function buildSitemap() {
+  sitemapPanel.innerHTML = '';
+  CAT.forEach((cat, c) => {
+    const world = document.createElement('div');
+    world.className = 'sm-world';
+
+    const wLabel = document.createElement('div');
+    wLabel.className = 'sm-world-label';
+    wLabel.textContent = 'World ' + (c + 1) + ' · ' + cat.label;
+    world.appendChild(wLabel);
+
+    cat.items.forEach((item, s) => {
+      const isAct = (catIdx === c && subIdx === s);
+      const vis   = isVisited(c, s) || (item.children && item.children.some((_, idx) => isChildVisited(c, s, idx)));
+
+      const btn = document.createElement('button');
+      btn.className = 'sm-level' + (vis ? ' visited' : '') + (isAct && depth >= 1 ? ' active' : '');
+      btn.textContent = (c + 1) + '.' + (s + 1) + '  ' + item.label;
+      btn.addEventListener('click', () => {
+        catIdx = c; subIdx = s; childIdx = 0;
+        updateCats(); goTo(item.children ? 1 : 2);
+        sitemapPanel.classList.remove('open');
+      });
+      world.appendChild(btn);
+
+      if (item.children) {
+        item.children.forEach((child, idx) => {
+          const isChildAct = isAct && depth === 2 && childIdx === idx;
+          const childVis   = isChildVisited(c, s, idx);
+
+          const cbtn = document.createElement('button');
+          cbtn.className = 'sm-child' + (childVis ? ' visited' : '') + (isChildAct ? ' active' : '');
+          cbtn.textContent = (c + 1) + '.' + (s + 1) + '.' + (idx + 1) + '  ' + child.label;
+          cbtn.addEventListener('click', () => {
+            catIdx = c; subIdx = s; childIdx = idx;
+            updateCats(); goTo(2);
+            sitemapPanel.classList.remove('open');
+          });
+          world.appendChild(cbtn);
+        });
+      }
+    });
+
+    sitemapPanel.appendChild(world);
+  });
+}
+
+function refreshSitemap() {
+  if (sitemapPanel.classList.contains('open')) buildSitemap();
+}
+
+sitemapToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const opening = !sitemapPanel.classList.contains('open');
+  sitemapPanel.classList.toggle('open', opening);
+  if (opening) buildSitemap();
+});
+
+document.addEventListener('click', (e) => {
+  if (!sitemapPanel.contains(e.target) && e.target !== sitemapToggle) {
+    sitemapPanel.classList.remove('open');
+  }
+});
+
 // ── L1 carousel (spread RIGHT from top-left anchor) ──────────────────────────
 CAT.forEach((cat, i) => {
   const btn = document.createElement('button');
@@ -1053,6 +1222,7 @@ function goTo(newDepth) {
   updateNavArrows();
   updateGuideArrow();
   updateFooter();
+  refreshSitemap();
 }
 
 // ── Nav arrows: show/dim based on available moves ────────────────────────────
