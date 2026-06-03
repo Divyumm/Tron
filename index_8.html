@@ -1685,7 +1685,7 @@ window.addEventListener('resize', () => {
         const nextRevealed = isVisited(c + 1, 0) || isUnlocked(c + 1, 0);
 
         // Only draw anything if this world has been reached
-        if (!isVisited(c, 0) && !isUnlocked(c, 0)) continue; // skip connector entirely if world not reached
+        if (!isVisited(c, 0) && !isUnlocked(c, 0)) return; // skip connector entirely if world not reached
 
         // Base track (dim until next world opens)
         minimapCtx.beginPath();
