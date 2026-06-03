@@ -122,10 +122,11 @@ body::after {
 #desc-preview {
   position: absolute; top: 26%; left: 58%; right: 2%;
   transform: translateY(-50%);
-  font-size: 18px; font-weight: 700; color: #e8e8e8;
-  overflow: hidden; white-space: nowrap;
-  -webkit-mask-image: linear-gradient(to right, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.3) 55%, transparent 88%);
-  mask-image: linear-gradient(to right, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.3) 55%, transparent 88%);
+  font-size: 15px; font-weight: 700; color: #e8e8e8;
+  overflow: hidden; white-space: pre-line;
+  line-height: 1.7;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 60%, transparent 92%);
+  mask-image: linear-gradient(to bottom, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 60%, transparent 92%);
   pointer-events: none; letter-spacing: -0.01em;
   transition: opacity 0.3s, left 0.38s ease;
 }
@@ -367,6 +368,7 @@ body::after {
   box-shadow: 0 0 30px rgba(163, 230, 53, 0.6);
   opacity: 0;
   pointer-events: none;
+  cursor: pointer;
   transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   user-select: none;
 }
@@ -497,6 +499,7 @@ body::after {
   <div id="celebration-banner">
     <div>★ CONGRATULATIONS ★</div>
     <div style="font-size: 14px; margin-top: 8px; color: rgba(255,255,255,0.8);">PORTFOLIO 100% COMPLETED</div>
+    <div style="font-size: 10px; margin-top: 14px; color: rgba(255,255,255,0.35); letter-spacing: 0.18em;">CLICK TO DISMISS</div>
   </div>
   <div id="stage">
     <div id="cat-carousel"></div>
@@ -960,6 +963,13 @@ function updatePoints() {
 
 updatePoints();
 
+// Dismiss celebration banner on click or ESC
+(function() {
+  const banner = document.getElementById('celebration-banner');
+  banner.addEventListener('click', () => banner.classList.remove('show'));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') banner.classList.remove('show'); });
+})();
+
 // ── Sitemap ───────────────────────────────────────────────────────────────────
 const sitemapPanel  = document.getElementById('sitemap-panel');
 const sitemapToggle = document.getElementById('sitemap-toggle');
@@ -1100,35 +1110,19 @@ function clearChildTease() {
   childTeaseBtns = [];
 }
 
-function buildChildTease(bottomOfLevelList) {
-  clearChildTease();
-  const item = CAT[catIdx].items[subIdx];
-  if (!item.children) return;
-
-  const YGAP = 28;
-  // Start the child list 20px below the last level item — never overlaps the level list
-  const startOff = bottomOfLevelList + 20;
-
-  item.children.forEach((child, idx) => {
-    const btn = document.createElement('button');
-    const isActive = (idx === childIdx);
-    btn.className = 'child-tease' + (isActive ? ' sel' : '');
-    btn.textContent = (isActive ? '› ' : '· ') +
-      (catIdx + 1) + '.' + (subIdx + 1) + '.' + (idx + 1) + ' · ' + child.label;
-    // Equal opacity for all — no dimness gradient
-    btn.style.opacity   = '0.72';
-    btn.style.transform = `translate(8px, calc(-50% + ${startOff + idx * YGAP}px))`;
-    btn.addEventListener('click', () => { childIdx = idx; goTo(2); });
-    subNavEl.insertBefore(btn, descPreview);
-    childTeaseBtns.push(btn);
-  });
-}
-
 function applyBulletList() {
-  const YGAP = 38;
+  clearChildTease();
+
+  const LGAP = 38;  // gap between level items
+  const CGAP = 26;  // gap between child items
   const n    = subBtns.length;
-  const listTop    = -(n - 1) / 2 * YGAP;
-  const listBottom =  (n - 1) / 2 * YGAP;   // Y offset of the last level item
+  const item = CAT[catIdx].items[subIdx];
+  const children = (depth === 2 && item && item.children) ? item.children : [];
+  const nc = children.length;
+
+  // Total virtual height: n level items + nc child items (if expanded) + small separator
+  const totalH = n * LGAP + (nc > 0 ? nc * CGAP + 8 : 0);
+  let y = -totalH / 2 + LGAP / 2;
 
   subBtns.forEach((btn, i) => {
     const isActive = (i === subIdx);
@@ -1136,15 +1130,29 @@ function applyBulletList() {
     btn.classList.toggle('sel', isActive);
     btn.style.fontSize      = '15px';
     btn.style.opacity       = '1';
-    btn.style.transform     = `translate(0, calc(-50% + ${listTop + i * YGAP}px))`;
+    btn.style.transform     = `translate(0, calc(-50% + ${y}px))`;
     btn.style.pointerEvents = 'auto';
-  });
+    y += LGAP;
 
-  if (depth === 2) {
-    buildChildTease(listBottom);
-  } else {
-    clearChildTease();
-  }
+    // Inject child tease inline right after the active level item
+    if (isActive && nc > 0) {
+      y += 4; // small gap before children
+      children.forEach((child, idx) => {
+        const isChildActive = (idx === childIdx);
+        const btn2 = document.createElement('button');
+        btn2.className = 'child-tease' + (isChildActive ? ' sel' : '');
+        btn2.textContent = (isChildActive ? '› ' : '· ') +
+          (catIdx + 1) + '.' + (subIdx + 1) + '.' + (idx + 1) + ' · ' + child.label;
+        btn2.style.opacity   = '0.75';
+        btn2.style.transform = `translate(10px, calc(-50% + ${y}px))`;
+        btn2.addEventListener('click', () => { childIdx = idx; goTo(2); });
+        subNavEl.insertBefore(btn2, descPreview);
+        childTeaseBtns.push(btn2);
+        y += CGAP;
+      });
+      y += 4; // small gap after children
+    }
+  });
 }
 
 function positionAllSubBtns() {
@@ -1173,8 +1181,13 @@ function applyHeaderMode() { applyBulletList(); }
 function updateDescPreview() {
   const item = CAT[catIdx].items[subIdx];
   let text = '';
-  if (item.desc)      text = item.desc.split('\n').filter(l => l.trim()).join(' · ');
-  else if (item.children) text = item.children.map((c, idx) => 'Level ' + (catIdx + 1) + '.' + (subIdx + 1) + '.' + (idx + 1) + ' · ' + c.label).join(' · ');
+  if (item.desc) {
+    text = item.desc.split('\n').filter(l => l.trim()).slice(0, 3).join('\n');
+  } else if (item.children) {
+    text = item.children.map((c, idx) =>
+      '· ' + (catIdx + 1) + '.' + (subIdx + 1) + '.' + (idx + 1) + ' · ' + c.label
+    ).join('\n');
+  }
   descPreview.textContent = text;
 }
 
