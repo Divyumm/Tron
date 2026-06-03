@@ -1011,11 +1011,6 @@ function updatePoints() {
 
   if (pts === 4) {
     celebrationMode = true;
-    // Reinit NN nodes to span full screen for the celebration effect
-    const cv2 = document.getElementById('bg');
-    const W2 = cv2 ? cv2.width : window.innerWidth;
-    NN.forEach(n => { n.x = n.nx * W2; n.y = n.ny * (cv2 ? cv2.height : window.innerHeight); });
-    HOLES.forEach(h => { h.cx = 0.15 + Math.random() * 0.70; });
     const banner = document.getElementById('celebration-banner');
     if (banner) banner.classList.add('show');
     // Show the reward key after a short delay
