@@ -1,0 +1,2000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Divyum Maheshwari</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%;
+  background: #080810;
+  color: #e8e8e8;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  overflow: hidden;
+  user-select: none;
+}
+canvas#bg { position: fixed; inset: 0; z-index: 0; }
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg,
+    transparent, transparent 2px,
+    rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px);
+  pointer-events: none; z-index: 999;
+}
+
+/* ── UI shell ── */
+#ui { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; }
+#topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 36px 0;
+  font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
+  color: #e8e8e8; font-weight: 700; flex-shrink: 0;
+}
+#topbar a { color: #e8e8e8; text-decoration: none; }
+#topbar a:hover { opacity: 0.65; }
+#stage { flex: 1; position: relative; overflow: hidden; }
+
+/* ── Directional navigation arrows ── */
+.nav-arr {
+  position: fixed; z-index: 50;
+  background: rgba(0,0,0,0.65);
+  border: 2px solid rgba(255,255,255,0.35);
+  color: rgba(255,255,255,0.95);
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.25s, background 0.2s, border-color 0.2s, transform 0.1s;
+}
+.nav-arr:hover {
+  background: rgba(255,255,255,0.16);
+  border-color: rgba(255,255,255,0.6);
+  color: #ffffff;
+}
+.nav-arr.dim { opacity: 0.18; pointer-events: none; }
+#arr-up    { top: 58px;    left: 50%; transform: translateX(-50%); }
+#arr-down  { bottom: 58px; left: 50%; transform: translateX(-50%); }
+#arr-left  { top: 50%;     left: 16px; transform: translateY(-50%); }
+#arr-right { top: 50%;     right: 16px; transform: translateY(-50%); }
+
+#arr-up:active    { transform: translateX(-50%) scale(0.92); }
+#arr-down:active  { transform: translateX(-50%) scale(0.92); }
+#arr-left:active  { transform: translateY(-50%) scale(0.92); }
+#arr-right:active { transform: translateY(-50%) scale(0.92); }
+
+/* ── L1 horizontal carousel — anchor: top-left ── */
+#cat-carousel { position: absolute; inset: 0; transition: opacity 0.38s ease; }
+.cat-btn {
+  position: absolute; top: 26%; left: 6%;
+  background: none; border: none; cursor: pointer;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700;
+  color: #e8e8e8; line-height: 1; padding: 0; white-space: nowrap;
+  transition:
+    font-size 0.42s cubic-bezier(0.16,1,0.3,1),
+    opacity   0.42s cubic-bezier(0.16,1,0.3,1),
+    transform 0.42s cubic-bezier(0.16,1,0.3,1);
+  text-shadow: 0 2px 20px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.7);
+}
+
+/* ── L2 vertical sub-nav — anchor: top-left ── */
+#sub-nav { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity 0.38s ease; }
+#sub-nav.active { opacity: 1; pointer-events: auto; }
+/* Category name shown above sub-items as breadcrumb */
+#parent-label {
+  position: absolute; top: 14%; left: 6%;
+  font-size: 14px; font-weight: 700;
+  color: rgba(232,232,232,0.28); white-space: nowrap;
+  pointer-events: none; letter-spacing: 0.03em; text-transform: uppercase;
+}
+/* Sub-item buttons all anchored to top: 26%, left: 6% */
+.sub-btn {
+  position: absolute; top: 26%; left: 6%;
+  background: none; border: none; cursor: pointer;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700;
+  color: #e8e8e8; line-height: 1; padding: 0; white-space: nowrap;
+  text-shadow: 0 2px 24px rgba(0,0,0,0.95);
+  transition:
+    font-size   0.38s cubic-bezier(0.16,1,0.3,1),
+    opacity     0.38s cubic-bezier(0.16,1,0.3,1),
+    transform   0.38s cubic-bezier(0.16,1,0.3,1);
+}
+/* Preview of sub-item desc on the right side */
+#desc-preview {
+  position: absolute; top: 26%; left: 58%; right: 2%;
+  transform: translateY(-50%);
+  font-size: 18px; font-weight: 700; color: #e8e8e8;
+  overflow: hidden; white-space: nowrap;
+  -webkit-mask-image: linear-gradient(to right, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.3) 55%, transparent 88%);
+  mask-image: linear-gradient(to right, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.3) 55%, transparent 88%);
+  pointer-events: none; letter-spacing: -0.01em;
+  transition: opacity 0.3s, left 0.38s ease;
+}
+
+/* ── L3a full desc (no children) — starts below header ── */
+#desc-full {
+  position: absolute;
+  top: 0; bottom: 0; left: 58%; right: 0;
+  padding: 24vh 52px 180px 0;
+  opacity: 0; pointer-events: none; transition: opacity 0.38s ease;
+  overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+#desc-full::-webkit-scrollbar { width: 2px; }
+#desc-full::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
+#desc-full.active { opacity: 1; pointer-events: auto; }
+#desc-full-body {
+  font-size: 23px; font-weight: 700;
+  line-height: 1.62; color: #e8e8e8;
+  white-space: pre-line; max-width: 740px;
+}
+
+/* ── L3b child item view — starts below header ── */
+#child-view {
+  position: absolute;
+  top: 0; bottom: 0; left: 58%; right: 0;
+  padding: 31vh 52px 200px 0;
+  opacity: 0; pointer-events: none; transition: opacity 0.38s ease;
+  overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+#child-view::-webkit-scrollbar { width: 2px; }
+#child-view::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
+#child-view.active { opacity: 1; pointer-events: auto; }
+#child-header {
+  position: absolute;
+  top: 26%;
+  left: 58%;
+  transform: translateY(-50%);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.38s ease;
+  white-space: nowrap;
+}
+#child-header.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+#child-sep {
+  position: absolute;
+  left: -24px;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 26px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.3);
+}
+#child-title {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #e8e8e8;
+  line-height: 1;
+}
+#child-counter {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(232, 232, 232, 0.38);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  padding-left: 16px;
+  margin-left: 6px;
+  user-select: none;
+}
+#child-counter .arr {
+  font-size: 14px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+#child-counter .arr:hover {
+  color: #ffffff;
+}
+#child-body {
+  font-size: 18px; font-weight: 700;
+  line-height: 1.68; color: rgba(232,232,232,0.72);
+  white-space: pre-line; max-width: 680px;
+}
+/* Next item peek */
+#child-next {
+  margin-top: 52px;
+  font-size: 17px; font-weight: 700; letter-spacing: 0.04em;
+  color: #ffffff;
+  transition: opacity 0.3s;
+}
+
+/* ── Work preview (TV placeholder) ── 4× area (2× each dimension) ── */
+.work-preview {
+  position: absolute; bottom: 44px; right: 52px;
+  pointer-events: none;
+}
+.tv-outer {
+  width: 296px;
+  border: 2px solid rgba(255,255,255,0.14);
+  border-radius: 8px; padding: 8px;
+  background: rgba(0,0,0,0.55);
+}
+.tv-screen {
+  width: 100%; height: 176px;
+  background: #020208;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.tv-screen::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.04) 2px, rgba(255,255,255,0.04) 4px);
+}
+.tv-play { font-size: 42px; color: rgba(255,255,255,0.38); z-index: 1; }
+.tv-label {
+  font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255,255,255,0.16); text-align: center;
+  margin-top: 8px; font-weight: 700;
+}
+
+/* ── Footer ── */
+#footer {
+  padding: 10px 36px 18px;
+  display: flex; justify-content: center; align-items: center; gap: 32px;
+  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: rgba(255,255,255,0.42); font-weight: 700; flex-shrink: 0;
+  background: rgba(0,0,0,0.55);
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+#footer span { display: flex; align-items: center; gap: 6px; }
+.key {
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,0.22);
+  padding: 1px 6px; font-size: 9px; min-width: 22px; color: #e8e8e8;
+}
+.key {
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,0.22);
+  padding: 1px 6px; font-size: 9px; min-width: 22px; color: #e8e8e8;
+}
+
+/* ── Map Navigation & Minimap Widget ── */
+#minimap-card {
+  position: absolute;
+  bottom: 24px;
+  left: 36px;
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+#minimap-card:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 24px rgba(255, 255, 255, 0.05), 0 4px 20px rgba(0, 0, 0, 0.8);
+}
+#minimap-canvas {
+  width: 100px;
+  height: 180px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+  background: #000000;
+  cursor: crosshair;
+  transition: border-color 0.2s;
+}
+#minimap-canvas:hover {
+  border-color: rgba(255, 255, 255, 0.55);
+}
+.minimap-card-label {
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 700;
+  text-transform: uppercase;
+  user-select: none;
+  pointer-events: none;
+}
+#points-block {
+  background: #000000;
+  border: 2px solid #a3e635;
+  border-radius: 4px;
+  color: #a3e635;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 16px;
+  font-weight: 900;
+  padding: 4px 10px;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 5px rgba(163, 230, 53, 0.85);
+  box-shadow: inset 0 0 5px rgba(163, 230, 53, 0.3), 0 0 8px rgba(163, 230, 53, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+}
+#points-block span.label {
+  font-size: 9px;
+  color: rgba(163, 230, 53, 0.6);
+  letter-spacing: 0.15em;
+  margin-right: 4px;
+  text-transform: uppercase;
+}
+#celebration-banner {
+  position: fixed;
+  top: 50%;
+  left: 55%;
+  transform: translate(-50%, -50%) scale(0.85);
+  background: rgba(0, 0, 0, 0.95);
+  border: 3px double #a3e635;
+  padding: 24px 48px;
+  border-radius: 8px;
+  color: #a3e635;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  z-index: 10000;
+  box-shadow: 0 0 30px rgba(163, 230, 53, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  user-select: none;
+}
+#celebration-banner.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+@keyframes shake-v {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-50%) scale(1.05) translateY(-1.5px); }
+  20%, 40%, 60%, 80% { transform: translateX(-50%) scale(1.05) translateY(1.5px); }
+}
+@keyframes shake-h {
+  0%, 100% { transform: translateY(-50%) scale(1); }
+  10%, 30%, 50%, 70%, 90% { transform: translateY(-50%) scale(1.05) translateX(-1.5px); }
+  20%, 40%, 60%, 80% { transform: translateY(-50%) scale(1.05) translateX(1.5px); }
+}
+.shake-up, .shake-down { animation: shake-v 0.6s ease-in-out infinite; border-color: #a3e635 !important; color: #a3e635 !important; box-shadow: 0 0 15px #a3e635; }
+.shake-left, .shake-right { animation: shake-h 0.6s ease-in-out infinite; border-color: #a3e635 !important; color: #a3e635 !important; box-shadow: 0 0 15px #a3e635; }
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<!-- Persistent directional arrows -->
+<button class="nav-arr" id="arr-up" aria-label="Up">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+</button>
+<button class="nav-arr" id="arr-down" aria-label="Down">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+</button>
+<button class="nav-arr" id="arr-left" aria-label="Left">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+</button>
+<button class="nav-arr" id="arr-right" aria-label="Right">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+</button>
+
+<div id="ui">
+  <div id="topbar">
+    <span>Divyum Maheshwari</span>
+    <a href="https://www.linkedin.com/in/divyum-maheshwari/" target="_blank" rel="noopener">LinkedIn ↗</a>
+    <div id="points-block"><span class="label">SCORE</span><span id="score-val">00</span>/42</div>
+  </div>
+  <div id="celebration-banner">
+    <div>★ CONGRATULATIONS ★</div>
+    <div style="font-size: 14px; margin-top: 8px; color: rgba(255,255,255,0.8);">PORTFOLIO 100% COMPLETED</div>
+  </div>
+  <div id="stage">
+    <div id="cat-carousel"></div>
+    <div id="sub-nav">
+      <div id="parent-label"></div>
+      <div id="desc-preview"></div>
+    </div>
+    <div id="child-header">
+      <span id="child-sep">›</span>
+      <div id="child-title"></div>
+      <div id="child-counter"></div>
+    </div>
+    <div id="desc-full">
+      <div id="desc-full-body"></div>
+      <div class="work-preview">
+        <div class="tv-outer">
+          <div class="tv-screen"><span class="tv-play">▶</span></div>
+          <div class="tv-label">Upload work image</div>
+        </div>
+      </div>
+    </div>
+    <div id="child-view">
+      <div id="child-body"></div>
+      <div id="child-next"></div>
+      <div class="work-preview">
+        <div class="tv-outer">
+          <div class="tv-screen"><span class="tv-play">▶</span></div>
+          <div class="tv-label">Upload work image</div>
+        </div>
+      </div>
+    </div>
+    <div id="minimap-card">
+      <canvas id="minimap-canvas" width="200" height="360"></canvas>
+      <div class="minimap-card-label">MINI MAP</div>
+    </div>
+  </div>
+  <div id="footer"></div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const CAT = [
+  {
+    key: 'about', label: 'About',
+    items: [
+      { label: 'Profile',      desc: "AI Design Engineer · 25 · London, GB\n\nProduct Practitioner educated in Business, Design and Engineering. Capable of articulating novelty and aggregate limits to define scope. Creating value by combining concepts into exciting new applications in equitable tech." },
+      { label: 'Values',       desc: 'Tenacity · Altruism · Audacity · Orchestration · Signposting' },
+      { label: 'Competencies', desc: 'Writing and storytelling · Product thinking · Design thinking · Prompt engineering · Ink-based sketching · Pitching to market · User testing · Curating exhaustive knowledge · Data communication and presentation.' },
+      { label: 'Contact',      desc: 'divyummaheshwari@gmail.com\nlinkedin.com/in/divyum-maheshwari' },
+    ]
+  },
+  {
+    key: 'projects', label: 'Projects',
+    items: [
+      {
+        label: 'Tech + Data',
+        children: [
+          { label: 'Inventory System',            desc: 'Group Project · Ideation, Coding, Pitching\n\nFormalising part-sourcing and repair workflows of informal electronic vendors in Mumbai. Addresses inventory overload, part traceability, and customer retention.\n\nPOEMS · Empathy Maps · Persona Clustering · QR inventory sharing · CSV traceability.' },
+          { label: 'OURoute · Safety Matching',   desc: 'Group Project · Ideation, User Testing\n\nMobility and safety platform for walking alone at night on campus. Matches students along shared routes via institutional verification.\n\n93% of students walk at night. 56% report feeling unsafe.\nKey insight: Safety is achieved through presence, not alerts.' },
+          { label: 'Scaling Design Education',    desc: 'Systemic challenges of scaling design education through formal licensure frameworks in India. Policy, pedagogy, and institutional barriers.' },
+          { label: 'Systemic Biases in Agent AI', desc: 'How systemic biases propagate within agent-based AI systems deployed for design decision-making in the Indian context.' },
+          { label: 'Traffic Optimisation',        desc: 'Data-driven traffic flow analysis and optimisation for Kurla district, Mumbai. Congestion modelling and intervention strategies.' },
+          { label: 'Full Stack Social Platform',  desc: 'End-to-end social media platform built with Flask, SQL, JavaScript, CSS and Python.' },
+        ]
+      },
+      {
+        label: 'Business',
+        children: [
+          { label: "Boeing's Demise",             desc: "Decline from engineering excellence to PR-first short-termism.\n\nLion Air 610 · Ethiopian Airlines 302 · Alaska Flight 1282 · Starliner.\n$2.5B fraud + $200M investor deception settlement.\n\nRecommendations: Engineering-led leadership · Transparency · Eliminate McDonnell Douglas cultural legacy." },
+          { label: 'Cars24 · Turnaround',         desc: "Strategic audit and recommendations for India's leading used-car marketplace." },
+          { label: 'Diversity, Equity & Inclusion', desc: 'DEI frameworks in modern organisations — systemic barriers, measurable interventions, equitable workplace design.' },
+          { label: 'Digital Fabrication Market',  desc: 'Global digital fabrication: $38.2B (2023) → $239.8B (2030), CAGR 30%.' },
+        ]
+      },
+      {
+        label: 'Design',
+        children: [
+          { label: 'Jam Jong · Memory Game',      desc: 'Group Project · Ideation, User Testing\n\nMulti-sensory cognitive game for seniors at risk of dementia. Music, tactile interaction, and social gameplay — inspired by Mahjong and record players.' },
+          { label: 'Ercon · Rebranding',          desc: 'Pitching, specifications, hundreds of design iterations, certification, fabrication, and finishing. Qualified for NEOM City, KSA.' },
+          { label: 'Indigenous House Bricks',     desc: 'Indigenous materials and traditional construction for passive cooling in residential architecture.' },
+          { label: 'Mycelium Agriculture',        desc: 'Mycelium-based agricultural facilitation — circular bioeconomy and sustainable farming.' },
+          { label: 'Cycle Battery Lock',          desc: 'Parametric product design for a cycle battery locking mechanism.' },
+          { label: 'IP68 Lighting Fixtures',      desc: 'Design and fabrication of dozens of IP68-certified lighting fixtures. Concept through manufacture.' },
+          { label: 'Parametric Installation',     desc: 'Large-scale parametric installation — structural logic, material selection, spatial composition.' },
+        ]
+      },
+    ]
+  },
+  {
+    key: 'education', label: 'Alma Matters',
+    items: [
+      { label: 'Imperial College',  desc: 'MSc. Design Engineering · London, UK' },
+      { label: 'Atlas Skilltech',   desc: "Bachelor's in Administration · Strategic Design · Minor in Programming · Mumbai, India" },
+      { label: 'IIT Madras',        desc: 'Diploma in Programming · First in Jodhpur batch · Subject Topper · Chennai, India' },
+      { label: 'Sabbatical',        desc: 'Two years of self-directed learning through travel.\nAudit in Foundational Pre-Design · Charter in Product Management · Science Stream with Fine Arts' },
+    ]
+  },
+  {
+    key: 'experience', label: 'Experience',
+    items: [
+      { label: 'Ercon Composites', desc: 'Product Design Intern · Aug 2023 — Apr 2024 · Mumbai, India\n\nDeveloped product lines, specifications, managed fabrication workflows. Qualified for NEOM City, KSA.' },
+    ]
+  },
+  {
+    key: 'other', label: 'Other Work',
+    items: [
+      {
+        label: 'Product Pitches',
+        children: [
+          { label: 'Jupyter Neo Bank',        desc: 'Neo-banking product for the Jupyter ecosystem — financial infrastructure for data scientists.' },
+          { label: 'Drone / UAV Surveillance',desc: 'ML presentation on UAV surveillance — architecture, use cases, ethical considerations.' },
+          { label: 'Pharmeasy · Marketing',   desc: "Marketing intervention for India's online pharmacy — acquisition, retention, brand positioning." },
+          { label: 'Wakefit · Conversion',    desc: 'Conversion funnel analysis for the D2C sleep products brand.' },
+          { label: 'Netflix Kids',            desc: 'Content strategy for Netflix Kids — taxonomy, recommendation logic, parental control UX.' },
+          { label: "Meta's VR Problem",       desc: "Strategic analysis of Meta's VR/AR challenges — adoption barriers, platform economics." },
+        ]
+      },
+      {
+        label: 'Drawing & Imaging',
+        children: [
+          { label: 'Human Anatomy',           desc: 'Anatomical studies through ink-based sketching and structural observation.' },
+          { label: 'Geometrical Exploration', desc: 'Pattern, symmetry, rhythm, and compositional relationships in two dimensions.' },
+          { label: 'Structure Sketching',     desc: 'Architectural and product structure sketching — rapid ideation and spatial reasoning.' },
+          { label: 'Village Ethnography',     desc: 'Visual ethnography in a Maharashtrian village — documentary drawing capturing culture, space, and daily life.' },
+        ]
+      },
+      {
+        label: 'Achievements',
+        children: [
+          { label: 'Hackathon · Top 8 / 375', desc: 'Top 8 finalist out of 375 teams — Technical Pitching.' },
+          { label: 'Hackathon · 2nd / 1500',  desc: 'Second Place out of 1500 teams — Technical Pitching.' },
+          { label: 'Data Narrative · 3rd',    desc: 'Third Place in Data Narrative Contest.' },
+          { label: 'IIT Madras · Topper',     desc: 'First in Jodhpur batch out of 30. Subject Topper. Qualifier.' },
+          { label: 'UN SDG Scholarship',      desc: 'Selected for the Makers Asylum Goa UN SDG Scholarship.' },
+          { label: 'Presentation Prize',      desc: 'First Prize Presentation out of 120 students.' },
+        ]
+      },
+    ]
+  },
+];
+
+// ── Navigation state ──────────────────────────────────────────────────────────
+const WORLD_DIRS = ['down', 'up', 'down', 'up', 'up'];
+const SLOT_YS = [40, 133, 227, 320];
+
+function getNodeY(c, s) {
+  if (WORLD_DIRS[c] === 'up') {
+    return SLOT_YS[3 - s];
+  } else {
+    return SLOT_YS[s];
+  }
+}
+
+function getLevelGridCoords(c, s, pw) {
+  let slotIdx = s;
+  if (WORLD_DIRS[c] === 'up') {
+    slotIdx = 3 - s;
+  }
+  const tx = c * SEC_W + (pw / (2 * TS));
+  const slotFrac = slotIdx / 3;
+  const ty = LEV_H * 1.4 + slotFrac * LEV_H * 1.05;
+  return { tx, ty };
+}
+
+function isSlotEmpty(c, slotIdx) {
+  const nc = CAT[c].items.length;
+  if (WORLD_DIRS[c] === 'up') {
+    return slotIdx < (4 - nc);
+  } else {
+    return slotIdx >= nc;
+  }
+}
+
+function isVisited(c, s) {
+  return !!localStorage.getItem(`visited_${c}_${s}`);
+}
+
+function isUnlocked(c, s) {
+  if (c === 0 && s === 0) return true;
+  let prevC, prevS;
+  if (s > 0) {
+    prevC = c;
+    prevS = s - 1;
+  } else {
+    prevC = c - 1;
+    prevS = CAT[prevC].items.length - 1;
+  }
+  return isVisited(prevC, prevS);
+}
+
+function isChildVisited(c, s, idx) {
+  return !!localStorage.getItem(`visited_${c}_${s}_${idx}`);
+}
+
+function isChildUnlocked(c, s, idx) {
+  if (!isVisited(c, s)) return false;
+  if (idx === 0) return true;
+  return isChildVisited(c, s, idx - 1);
+}
+
+function draw8BitBlock(cContext, x, y, size) {
+  cContext.fillStyle = '#4a5568';
+  cContext.fillRect(x - size/2, y - size/2, size, size);
+  
+  cContext.strokeStyle = '#718096';
+  cContext.lineWidth = 1.5;
+  cContext.strokeRect(x - size/2 + 0.75, y - size/2 + 0.75, size - 1.5, size - 1.5);
+  
+  cContext.fillStyle = '#2d3748';
+  cContext.fillRect(x - size/4, y - size/4, size/2, size/2);
+  
+  cContext.strokeStyle = '#1a202c';
+  cContext.lineWidth = 1;
+  cContext.beginPath();
+  cContext.moveTo(x - size/2 + 2, y - size/2 + 2);
+  cContext.lineTo(x + size/2 - 2, y + size/2 - 2);
+  cContext.moveTo(x + size/2 - 2, y - size/2 + 2);
+  cContext.lineTo(x - size/2 + 2, y + size/2 - 2);
+  cContext.stroke();
+  
+  cContext.fillStyle = '#1a202c';
+  cContext.fillRect(x - size/2, y + size/2 - 1.5, size, 1.5);
+  cContext.fillRect(x + size/2 - 1.5, y - size/2, 1.5, size);
+}
+
+let catIdx   = 0;
+let depth    = 0;
+let subIdx   = 0;
+let childIdx = 0;
+let subBtns  = [];
+
+// ── Camera state ──────────────────────────────────────────────────────────────
+const TS    = 8;
+const SEC_W = 100;
+const LEV_H = 150;
+let camTX = 0, camTY = 0, tgtTX = 0, tgtTY = 0;
+
+function updateCamTarget() {
+  let slotIdx = subIdx;
+  if (WORLD_DIRS[catIdx] === 'up') {
+    slotIdx = 3 - subIdx;
+  }
+  const slotFrac = slotIdx / 3;
+  const visH    = window.innerHeight / TS;
+  
+  // Confine the horizontal camera position purely to the selected category zone
+  tgtTX = catIdx * SEC_W;
+  
+  if (depth === 0) {
+    tgtTY = LEV_H * 0.3 - visH * 0.5;
+  } else if (depth === 1) {
+    tgtTY = LEV_H * 1.4 + slotFrac * LEV_H * 1.05 - visH * 0.5;
+  } else {
+    tgtTY = LEV_H * 2.85 + slotFrac * LEV_H * 0.7 - visH * 0.5;
+    const item = CAT[catIdx].items[subIdx];
+    if (item && item.children) {
+      const nc = item.children.length;
+      const cf = nc > 1 ? childIdx / (nc - 1) : 0;
+      tgtTY += cf * LEV_H * 0.85;
+    }
+  }
+}
+
+// ── DOM refs ──────────────────────────────────────────────────────────────────
+const catCarousel = document.getElementById('cat-carousel');
+const subNavEl    = document.getElementById('sub-nav');
+const parentLabel = document.getElementById('parent-label');
+const descPreview = document.getElementById('desc-preview');
+const descFullEl  = document.getElementById('desc-full');
+const descFullBody= document.getElementById('desc-full-body');
+const childViewEl = document.getElementById('child-view');
+const childHeader = document.getElementById('child-header');
+const childCounter= document.getElementById('child-counter');
+const childTitle  = document.getElementById('child-title');
+const childBody   = document.getElementById('child-body');
+const childNext   = document.getElementById('child-next');
+const footerEl    = document.getElementById('footer');
+const arrUp       = document.getElementById('arr-up');
+const arrDown     = document.getElementById('arr-down');
+const arrLeft     = document.getElementById('arr-left');
+const arrRight    = document.getElementById('arr-right');
+
+// TV Work Preview elements
+const descTvScreen  = descFullEl.querySelector('.tv-screen');
+const descTvLabel   = descFullEl.querySelector('.tv-label');
+const childTvScreen = childViewEl.querySelector('.tv-screen');
+const childTvLabel  = childViewEl.querySelector('.tv-label');
+
+descFullEl.addEventListener('scroll', updateNavArrows);
+childViewEl.addEventListener('scroll', updateNavArrows);
+
+// ── TV Image Upload Logic ─────────────────────────────────────────────────────
+const tvFileInput = document.createElement('input');
+tvFileInput.type = 'file';
+tvFileInput.accept = 'image/*';
+tvFileInput.style.display = 'none';
+document.body.appendChild(tvFileInput);
+
+function getTvStorageKey() {
+  const item = CAT[catIdx].items[subIdx];
+  if (depth === 2 && item.children) {
+    return `tv_img_${catIdx}_${subIdx}_${childIdx}`;
+  }
+  return `tv_img_${catIdx}_${subIdx}_main`;
+}
+
+function updateTvView() {
+  const storageKey = getTvStorageKey();
+  const savedImg = localStorage.getItem(storageKey);
+
+  const activeTvScreen = hasChildren() ? childTvScreen : descTvScreen;
+  const activeTvLabel = hasChildren() ? childTvLabel : descTvLabel;
+  if (!activeTvScreen || !activeTvLabel) return;
+  
+  const activePlayBtn = activeTvScreen.querySelector('.tv-play');
+
+  if (savedImg) {
+    activeTvScreen.style.backgroundImage = `url(${savedImg})`;
+    activeTvScreen.style.backgroundSize = 'cover';
+    activeTvScreen.style.backgroundPosition = 'center';
+    activeTvScreen.style.backgroundRepeat = 'no-repeat';
+    if (activePlayBtn) activePlayBtn.style.opacity = '0';
+    activeTvLabel.textContent = 'Click to change image';
+  } else {
+    activeTvScreen.style.backgroundImage = 'none';
+    if (activePlayBtn) activePlayBtn.style.opacity = '1';
+    activeTvLabel.textContent = 'Upload work image';
+  }
+}
+
+descTvScreen.style.cursor = 'pointer';
+childTvScreen.style.cursor = 'pointer';
+
+descTvScreen.addEventListener('click', () => tvFileInput.click());
+childTvScreen.addEventListener('click', () => tvFileInput.click());
+
+tvFileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const dataUrl = evt.target.result;
+    const storageKey = getTvStorageKey();
+    try {
+      localStorage.setItem(storageKey, dataUrl);
+    } catch (err) {
+      console.warn('LocalStorage full, unable to save image:', err);
+    }
+    updateTvView();
+  };
+  reader.readAsDataURL(file);
+});
+
+// ── Points System ─────────────────────────────────────────────────────────────
+function markLevelVisited() {
+  const item = CAT[catIdx].items[subIdx];
+  let key = `visited_${catIdx}_${subIdx}`;
+  if (item.children) {
+    if (depth === 2) {
+      key = `visited_${catIdx}_${subIdx}_${childIdx}`;
+    } else {
+      return; // Do not count parent level nodes if they have children (only children count!)
+    }
+  }
+  
+  if (!localStorage.getItem(key)) {
+    localStorage.setItem(key, 'true');
+    triggerCollectAnimation();
+    updatePoints();
+  }
+}
+
+function getPoints() {
+  let pts = 0;
+  CAT.forEach((cat, c) => {
+    cat.items.forEach((item, s) => {
+      if (item.children) {
+        item.children.forEach((_, idx) => {
+          if (localStorage.getItem(`visited_${c}_${s}_${idx}`)) {
+            pts++;
+          }
+        });
+      } else {
+        if (localStorage.getItem(`visited_${c}_${s}`)) {
+          pts++;
+        }
+      }
+    });
+  });
+  return pts;
+}
+
+function triggerCollectAnimation() {
+  const pointsBlock = document.getElementById('points-block');
+  if (!pointsBlock) return;
+  
+  const plus = document.createElement('div');
+  plus.textContent = '+1 PT';
+  plus.style.position = 'absolute';
+  plus.style.right = '40px';
+  plus.style.top = '30px';
+  plus.style.color = '#a3e635';
+  plus.style.fontFamily = '"Courier New", Courier, monospace';
+  plus.style.fontSize = '18px';
+  plus.style.fontWeight = 'bold';
+  plus.style.textShadow = '0 0 5px #a3e635';
+  plus.style.pointerEvents = 'none';
+  plus.style.zIndex = '10000';
+  plus.style.transition = 'transform 1s ease-out, opacity 1s ease-out';
+  
+  document.body.appendChild(plus);
+  
+  setTimeout(() => {
+    plus.style.transform = 'translateY(-30px) scale(1.2)';
+    plus.style.opacity = '0';
+  }, 50);
+  
+  setTimeout(() => {
+    plus.remove();
+  }, 1100);
+}
+
+function updatePoints() {
+  const pts = getPoints();
+  const valEl = document.getElementById('score-val');
+  if (valEl) {
+    valEl.textContent = pts.toString().padStart(2, '0');
+  }
+  
+  if (pts === 42) {
+    const banner = document.getElementById('celebration-banner');
+    if (banner) banner.classList.add('show');
+  }
+}
+
+updatePoints();
+
+// ── L1 carousel (spread RIGHT from top-left anchor) ──────────────────────────
+CAT.forEach((cat, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'cat-btn';
+  btn.textContent = 'World ' + (i + 1) + ' · ' + cat.label;
+  btn.addEventListener('click', () => {
+    if (depth > 0) return;
+    if (i !== catIdx) { catIdx = i; updateCats(); updateCamTarget(); updateNavArrows(); }
+    else { subIdx = 0; buildSubBtns(); goTo(1); }
+  });
+  catCarousel.appendChild(btn);
+});
+
+function getActiveFontSize() {
+  const W = window.innerWidth;
+  // Uniform responsive font size for the active keyword, independent of string length
+  return Math.min(32, Math.max(24, Math.floor(W * 0.022)));
+}
+
+function updateCats() {
+  const W  = window.innerWidth;
+  const SP = Math.min(420, W / 3.2);
+  Array.from(catCarousel.querySelectorAll('.cat-btn')).forEach((btn, i) => {
+    const off = i - catIdx, abs = Math.abs(off);
+    // Spread to the right; active at left: 6% (no X shift), others shift right
+    btn.style.transform    = `translate(${off > 0 ? off * SP : off * SP * 0.6}px, -50%)`;
+    btn.style.fontSize     = abs === 0 ? getActiveFontSize() + 'px' : abs === 1 ? '26px' : '17px';
+    btn.style.opacity      = abs === 0 ? '1' : abs === 1 ? '0.72' : abs === 2 ? '0.40' : '0';
+    btn.style.pointerEvents = abs <= 2 ? 'auto' : 'none';
+    btn.style.zIndex       = String(10 - abs);
+  });
+  // Dynamically rebuild subcategories under the newly active category
+  buildSubBtns();
+}
+
+// ── L2 sub-nav (spread DOWN from top-left anchor) ────────────────────────────
+function buildSubBtns() {
+  subBtns.forEach(b => b.remove());
+  subBtns = [];
+  const cat = CAT[catIdx];
+  parentLabel.textContent = 'World ' + (catIdx + 1) + ' · ' + cat.label;
+  cat.items.forEach((item, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'sub-btn';
+    btn.textContent = 'Level ' + (catIdx + 1) + '.' + (i + 1) + ' · ' + item.label;
+    btn.addEventListener('click', () => {
+      if (i === subIdx) {
+        if (hasChildren()) { childIdx = 0; goTo(2); }
+        else { goTo(2); }
+      } else {
+        subIdx = i;
+        goTo(1);
+      }
+    });
+    subNavEl.insertBefore(btn, descPreview);
+    subBtns.push(btn);
+  });
+  positionAllSubBtns();
+  updateDescPreview();
+}
+
+function positionAllSubBtns() {
+  if (depth === 2) { applyHeaderMode(); return; }
+  const YGAP = 80;
+  subBtns.forEach((btn, i) => {
+    const off = (depth === 0) ? i : (i - subIdx);
+    const abs = Math.abs(off);
+    let size, opacity, yOff;
+    if (depth === 0) {
+      // At category level (depth 0), list subheadings beneath the category header (at yOff = 0) with decreasing brightness
+      if      (off === 0) { size = 26; opacity = 0.72; yOff = YGAP; }
+      else if (off === 1) { size = 17; opacity = 0.44; yOff = YGAP * 1.55; }
+      else if (off === 2) { size = 13; opacity = 0.22; yOff = YGAP * 2.1; }
+      else                { size = 11; opacity = 0;    yOff = YGAP * 2.55; }
+    } else {
+      if      (abs === 0) { size = getActiveFontSize(); opacity = 1.00; yOff = 0; }
+      else if (abs === 1) { size = 26; opacity = 0.72; yOff = off * YGAP; }
+      else if (abs === 2) { size = 17; opacity = 0.44; yOff = off > 0 ? YGAP*1.55 : -YGAP*1.55; }
+      else if (abs === 3) { size = 13; opacity = 0.22; yOff = off > 0 ? YGAP*2.1  : -YGAP*2.1;  }
+      else                { size = 11; opacity = 0;    yOff = off > 0 ? YGAP*2.55 : -YGAP*2.55; }
+    }
+    btn.style.fontSize  = size + 'px';
+    btn.style.opacity   = String(opacity);
+    btn.style.transform = `translate(0, calc(-50% + ${yOff}px))`;
+  });
+}
+
+// Header mode: active subheading stays at top-left, subheadings beneath it fade out downwards
+function applyHeaderMode() {
+  const YGAP = 80;
+  subBtns.forEach((btn, i) => {
+    const off = i - subIdx;
+    if (off === 0) {
+      btn.style.fontSize  = getActiveFontSize() + 'px';
+      btn.style.opacity   = '0.88';
+      btn.style.transform = 'translate(0, -50%)';
+    } else if (off > 0) {
+      // Subheadings beneath are visible with decreasing brightness
+      let size, opacity, yOff;
+      if      (off === 1) { size = 17; opacity = 0.38; yOff = YGAP * 0.9; }
+      else if (off === 2) { size = 13; opacity = 0.18; yOff = YGAP * 1.45; }
+      else                { size = 11; opacity = 0;    yOff = YGAP * 1.9; }
+      btn.style.fontSize  = size + 'px';
+      btn.style.opacity   = String(opacity);
+      btn.style.transform = `translate(0, calc(-50% + ${yOff}px))`;
+    } else {
+      btn.style.opacity = '0';
+    }
+  });
+}
+
+function updateDescPreview() {
+  const item = CAT[catIdx].items[subIdx];
+  let text = '';
+  if (item.desc)      text = item.desc.split('\n').filter(l => l.trim()).join(' · ');
+  else if (item.children) text = item.children.map((c, idx) => 'Level ' + (catIdx + 1) + '.' + (subIdx + 1) + '.' + (idx + 1) + ' · ' + c.label).join(' · ');
+  descPreview.textContent = text;
+}
+
+// ── L3 renders ────────────────────────────────────────────────────────────────
+function renderFullDesc() {
+  const item = CAT[catIdx].items[subIdx];
+  descFullBody.textContent = item.desc || '';
+  descFullEl.scrollTop = 0;
+  updateTvView();
+}
+
+function renderChildView() {
+  const item  = CAT[catIdx].items[subIdx];
+  const child = item.children[childIdx];
+  const total = item.children.length;
+  
+  // Render counter with clickable arrow spans
+  childCounter.innerHTML =
+    `<span class="arr btn-prev-child">←</span><span>${childIdx + 1} / ${total}</span><span class="arr btn-next-child">→</span>`;
+    
+  childCounter.querySelector('.btn-prev-child').addEventListener('click', (e) => {
+    e.stopPropagation();
+    handleNav('ArrowLeft');
+  });
+  childCounter.querySelector('.btn-next-child').addEventListener('click', (e) => {
+    e.stopPropagation();
+    handleNav('ArrowRight');
+  });
+
+  childTitle.textContent = 'Level ' + (catIdx + 1) + '.' + (subIdx + 1) + '.' + (childIdx + 1) + ' · ' + child.label;
+  childBody.textContent  = child.desc || '';
+  childViewEl.scrollTop  = 0;
+  // Next item peek
+  const next = item.children[childIdx + 1];
+  if (next) {
+    childNext.textContent = '→  Level ' + (catIdx + 1) + '.' + (subIdx + 1) + '.' + (childIdx + 2) + ' · ' + next.label;
+    childNext.style.opacity = '1';
+  } else {
+    childNext.textContent = '';
+    childNext.style.opacity = '0';
+  }
+  updateTvView();
+}
+
+
+
+// ── Navigation core ───────────────────────────────────────────────────────────
+function hasChildren() {
+  const item = CAT[catIdx].items[subIdx];
+  return !!(item && item.children);
+}
+
+function goTo(newDepth) {
+  depth = newDepth;
+
+  const showL1 = depth === 0;
+  catCarousel.style.opacity       = showL1 ? '1' : '0';
+  catCarousel.style.pointerEvents = showL1 ? 'auto' : 'none';
+
+  // Keep sub-nav always active to display subheadings even at depth 0
+  subNavEl.classList.add('active');
+  subNavEl.style.pointerEvents = (depth === 1) ? 'auto' : 'none';
+
+  const showChildHeader = depth === 2 && hasChildren();
+  childHeader.classList.toggle('active', showChildHeader);
+
+  if (depth === 0) {
+    positionAllSubBtns();
+    descPreview.style.opacity = '0';
+    parentLabel.style.opacity = '0';
+  } else if (depth === 1) {
+    positionAllSubBtns();
+    descPreview.style.opacity = hasChildren() ? '1' : '0';
+    parentLabel.style.opacity = '1';
+  } else if (depth === 2) {
+    applyHeaderMode();
+    descPreview.style.opacity = '0';
+    parentLabel.style.opacity = '0.55';
+  }
+
+  const showDescFull = (depth === 2 && !hasChildren()) || (depth === 1 && !hasChildren());
+  descFullEl.classList.toggle('active', showDescFull);
+  childViewEl.classList.toggle('active', depth === 2 && hasChildren());
+
+  if (showDescFull) renderFullDesc();
+  if (depth === 2 && hasChildren())  renderChildView();
+
+  if (depth >= 1) {
+    markLevelVisited();
+  }
+
+  updateCamTarget();
+  updateNavArrows();
+  updateFooter();
+}
+
+// ── Nav arrows: show/dim based on available moves ────────────────────────────
+function updateNavArrows() {
+  const n     = CAT.length;
+  const count = CAT[catIdx].items.length;
+  const hc    = hasChildren();
+  const nc    = hc ? CAT[catIdx].items[subIdx].children.length : 0;
+
+  function set(el, active) {
+    el.classList.toggle('dim', !active);
+  }
+
+  if (depth === 0) {
+    set(arrLeft,  true);
+    set(arrRight, true);
+    set(arrUp,    false);
+    set(arrDown,  true);
+  } else if (depth === 1) {
+    set(arrLeft,  true);
+    set(arrRight, true);
+    set(arrUp,    subIdx > 0);
+    set(arrDown,  subIdx < count - 1);
+  } else {
+    // depth === 2: Up/Down control vertical scrolling of content
+    const el = hc ? childViewEl : descFullEl;
+    const canScrollUp = el.scrollTop > 2;
+    const canScrollDown = el.scrollHeight > el.clientHeight + 1 && el.scrollTop < el.scrollHeight - el.clientHeight - 2;
+
+    if (hc) {
+      set(arrLeft,  true);
+      set(arrRight, childIdx < nc - 1);
+      set(arrUp,    canScrollUp);
+      set(arrDown,  canScrollDown);
+    } else {
+      set(arrLeft,  true);
+      set(arrRight, false);
+      set(arrUp,    canScrollUp);
+      set(arrDown,  canScrollDown);
+    }
+  }
+}
+
+function updateFooter() {
+  const hc = hasChildren();
+  const hints = {
+    0: `<span><span class="key">←</span><span class="key">→</span> WORLD</span><span><span class="key">↓</span> ENTER</span>`,
+    1: `<span><span class="key">↑</span><span class="key">↓</span> LEVEL</span><span><span class="key">→</span> OPEN</span><span><span class="key">←</span> BACK</span>`,
+    2: hc
+      ? `<span><span class="key">←</span><span class="key">→</span> ITEM</span><span><span class="key">↑</span><span class="key">↓</span> SCROLL</span><span><span class="key">ESC</span> BACK</span>`
+      : `<span><span class="key">↑</span><span class="key">↓</span> SCROLL</span><span><span class="key">←</span> BACK</span>`,
+  };
+  footerEl.innerHTML = hints[depth];
+}
+
+// ── Keyboard + arrow-button handler ──────────────────────────────────────────
+function handleNav(key) {
+  const n = CAT.length;
+
+  if (depth === 0) {
+    if (key === 'ArrowRight') { catIdx = (catIdx + 1) % n; updateCats(); updateCamTarget(); updateNavArrows(); }
+    else if (key === 'ArrowLeft')  { catIdx = (catIdx - 1 + n) % n; updateCats(); updateCamTarget(); updateNavArrows(); }
+    else if (key === 'ArrowDown' || key === 'Enter') { subIdx = 0; childIdx = 0; buildSubBtns(); goTo(1); }
+  }
+  else if (depth === 1) {
+    const count = CAT[catIdx].items.length;
+    if (key === 'ArrowDown') {
+      if (subIdx < count - 1) {
+        subIdx++;
+        goTo(1);
+      } else if (catIdx < n - 1) {
+        catIdx++;
+        subIdx = 0;
+        updateCats();
+        goTo(1);
+      }
+    } else if (key === 'ArrowUp') {
+      if (subIdx > 0) {
+        subIdx--;
+        goTo(1);
+      } else if (catIdx > 0) {
+        catIdx--;
+        subIdx = CAT[catIdx].items.length - 1;
+        updateCats();
+        goTo(1);
+      } else {
+        goTo(0);
+      }
+    } else if (key === 'ArrowRight' || key === 'Enter') {
+      childIdx = 0; goTo(2);
+    } else if (key === 'ArrowLeft' || key === 'Escape') {
+      goTo(0);
+    }
+  }
+  else if (depth === 2) {
+    if (hasChildren()) {
+      const nc = CAT[catIdx].items[subIdx].children.length;
+      if (key === 'ArrowRight') {
+        if (childIdx < nc - 1) {
+          childIdx++;
+          markLevelVisited();
+          renderChildView();
+          updateCamTarget();
+          updateNavArrows();
+        }
+      } else if (key === 'ArrowLeft') {
+        if (childIdx > 0) {
+          childIdx--;
+          markLevelVisited();
+          renderChildView();
+          updateCamTarget();
+          updateNavArrows();
+        }
+        else { goTo(1); }
+      } else if (key === 'Escape') {
+        goTo(1);
+      } else if (key === 'ArrowDown') {
+        childViewEl.scrollBy({ top: 80, behavior: 'smooth' });
+      } else if (key === 'ArrowUp') {
+        childViewEl.scrollBy({ top: -80, behavior: 'smooth' });
+      }
+    } else {
+      if (key === 'ArrowLeft' || key === 'Escape') {
+        goTo(1);
+      } else if (key === 'ArrowDown') {
+        descFullEl.scrollBy({ top: 80, behavior: 'smooth' });
+      } else if (key === 'ArrowUp') {
+        descFullEl.scrollBy({ top: -80, behavior: 'smooth' });
+      }
+    }
+  }
+}
+
+document.addEventListener('keydown', e => {
+  const keys = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','Escape'];
+  if (keys.includes(e.key)) { e.preventDefault(); handleNav(e.key); }
+});
+
+arrUp.addEventListener('click',    () => handleNav('ArrowUp'));
+arrDown.addEventListener('click',  () => handleNav('ArrowDown'));
+arrLeft.addEventListener('click',  () => handleNav('ArrowLeft'));
+arrRight.addEventListener('click', () => handleNav('ArrowRight'));
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+updateCats();
+goTo(0);
+window.addEventListener('resize', () => {
+  updateCats();
+  if (depth === 1) positionAllSubBtns();
+  if (depth === 2) applyHeaderMode();
+  updateCamTarget();
+});
+
+// ── Canvas background ─────────────────────────────────────────────────────────
+(function () {
+  const cv  = document.getElementById('bg');
+  const ctx = cv.getContext('2d');
+  let W, H, matRows = [];
+  let t = 0;
+
+  const Z_FILM = 0.40;
+
+  const PALETTES = [
+    { wall:'#5a3818',wallB:'#7a5028',fA:'#14300a',fB:'#4b8826',acc:'#f0c820',wat:'#1858c8',o1:'#c04018',o2:'#20a0c0',sp:'#ffff40',cCol:'#ffffff' },
+    { wall:'#1e3810',wallB:'#2c4c1a',fA:'#0a1405',fB:'#32601d',acc:'#d89030',wat:'#0e2860',o1:'#7a3010',o2:'#102a70',sp:'#e8be20',cCol:'#aaff88' },
+    { wall:'#3a3a52',wallB:'#4a4a68',fA:'#0f0f20',fB:'#3c3c66',acc:'#f06820',wat:'#0808a0',o1:'#a02808',o2:'#103878',sp:'#ff7010',cCol:'#aaaaff' },
+    { wall:'#580010',wallB:'#780020',fA:'#100003',fB:'#580018',acc:'#ff4000',wat:'#880000',o1:'#ff6000',o2:'#660000',sp:'#ffaa00',cCol:'#ff8844' },
+    { wall:'#38001a',wallB:'#500028',fA:'#0d000a',fB:'#4c0038',acc:'#ff0040',wat:'#500060',o1:'#ff1000',o2:'#700090',sp:'#ff00ff',cCol:'#ff44ff' },
+  ];
+
+  function th(x, y) {
+    let v = (Math.imul(x,1664525)+Math.imul(y,22695477)+1013904223)|0;
+    v ^= v>>>16; v = Math.imul(v,0x45d9f3b)|0; v ^= v>>>16;
+    return (v>>>0)/0xffffffff;
+  }
+
+  function getTileColor(tx, ty) {
+    const section = Math.max(0, Math.floor(tx / SEC_W));
+    const level   = Math.min(4, Math.max(0, Math.floor(ty / LEV_H)));
+    const lx = ((tx % SEC_W) + SEC_W) % SEC_W;
+    const ly = ((ty % LEV_H) + LEV_H) % LEV_H;
+    const pal = PALETTES[level];
+    const WT = 2 + Math.min(2, level);
+    if (ly < WT || ly >= LEV_H - WT) return (lx & 1) ? pal.wall : pal.wallB;
+    if (lx < 2  || lx >= SEC_W - 2)  return (ly & 1) ? pal.wall : pal.wallB;
+    const h = th(tx, ty), h2 = th(tx>>1, ty>>1);
+    if (level === 4) {
+      const cx=SEC_W/2,cy=LEV_H/2,dx=lx-cx,dy=ly-cy,d=Math.sqrt(dx*dx+dy*dy);
+      if (d<4) return pal.sp;
+      if (d>=5&&d<7) return pal.acc;
+      if (d>=9&&d<11) return pal.wall;
+      if (d>=14&&d<16) return pal.o2;
+      const ang=(Math.atan2(dy,dx)*4/Math.PI+8)%2;
+      if (ang<0.22&&d>7&&d<22) return pal.o1;
+    }
+    if (level===3) {
+      if (h<0.10) { return Math.sin(t*0.09+tx*0.8+ty*1.2)>0?pal.acc:pal.o1; }
+      if (h<0.14) return pal.o2;
+    }
+    if (level>=2) {
+      const px=lx%10,py=ly%12;
+      if (px<2&&py<2&&lx>4&&ly>4&&lx<SEC_W-4&&ly<LEV_H-4&&h2<0.38) return pal.wallB;
+    }
+    if (h<0.055&&level<3) return Math.sin(t*0.07+tx*0.4+ty*0.6)>0?pal.wat:pal.fA;
+    if (h<0.020) return Math.sin(t*0.14+tx*1.3+ty*0.9)>0.2?pal.o1:pal.acc;
+    if (h<0.038) return pal.o2;
+    if (h<0.050&&h2<0.5) return (Math.sin(t*0.06+tx*0.3)+1)*0.5>0.55?pal.acc:pal.sp;
+    const pat=(section*3+level)%4;
+    switch(pat){
+      case 0: 
+        // 4x4 room grid with 1x1 checkerboard dither inside
+        return (tx % 4 === 0 || ty % 4 === 0) ? pal.fA : ((tx + ty) % 2 === 0 ? pal.fB : pal.fA);
+      case 1: 
+        // Binary logic fractal (maze-like circuit)
+        return ((tx ^ ty) & 8) ? (((tx & ty) & 4) ? pal.fB : pal.fA) : (((tx | ty) & 4) ? pal.fB : pal.fA);
+      case 2: 
+        // Intersecting diagonal stripes (diamond crosshatch)
+        return ((tx + ty) % 6 === 0 || (tx - ty) % 6 === 0) ? pal.fB : (((tx * 2 + ty) % 4 === 0) ? pal.fB : pal.fA);
+      default: 
+        // Digital memory blocks/columns
+        return ((tx * 7) % 11 < 4 || (ty * 3) % 7 < 2) ? pal.fA : pal.fB;
+    }
+  }
+
+  const GC = Array.from({length:12},()=>({
+    x:Math.random()*SEC_W*CAT.length,y:Math.random()*LEV_H*6,
+    vx:(Math.random()-0.5)*0.06,vy:(Math.random()-0.5)*0.045,
+  }));
+  const GCW=SEC_W*CAT.length, GCH=LEV_H*6;
+
+  function drawGameChars(pw) {
+    GC.forEach(c=>{
+      c.x+=c.vx; c.y+=c.vy;
+      if(c.x<0)c.x+=GCW; if(c.x>=GCW)c.x-=GCW;
+      if(c.y<0)c.y+=GCH; if(c.y>=GCH)c.y-=GCH;
+      const sx=(c.x-camTX)*TS, sy=(c.y-camTY)*TS;
+      if(sx<-TS*2||sx>=pw||sy<-TS*2||sy>=H) return;
+      const lev=Math.min(4,Math.max(0,Math.floor(c.y/LEV_H)));
+      if(Math.sin(t*0.22+c.x*2.1+c.y*1.5)>0.1){
+        ctx.fillStyle=PALETTES[lev].cCol;
+        const sz=TS*0.45;
+        ctx.fillRect(sx,sy,sz,sz);
+        ctx.fillStyle='rgba(0,0,0,0.4)';
+        ctx.fillRect(sx+sz*0.35,sy+sz*0.35,sz*0.4,sz*0.4);
+      }
+    });
+  }
+
+  function drawGameWorld(pw) {
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0,0,pw,H); ctx.clip();
+    const visTX=Math.ceil(pw/TS)+2, visTY=Math.ceil(H/TS)+2;
+    const stX=Math.floor(camTX), stY=Math.floor(camTY);
+    const offX=-(camTX-stX)*TS, offY=-(camTY-stY)*TS;
+    for(let dy=0;dy<visTY;dy++) for(let dx=0;dx<visTX;dx++){
+      ctx.fillStyle=getTileColor(stX+dx,stY+dy);
+      ctx.fillRect(offX+dx*TS,offY+dy*TS,TS,TS);
+    }
+    ctx.strokeStyle='rgba(0,0,0,0.28)'; ctx.lineWidth=0.5;
+    for(let dx=0;dx<visTX;dx++){const sx=offX+dx*TS;ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx,H);ctx.stroke();}
+    for(let dy=0;dy<visTY;dy++){const sy=offY+dy*TS;ctx.beginPath();ctx.moveTo(0,sy);ctx.lineTo(pw,sy);ctx.stroke();}
+    drawGameChars(pw);
+
+    // Draw connections between level stops on the background grid (fog-of-war)
+    ctx.lineWidth = 1.5;
+    const numCats = CAT.length;
+
+    CAT.forEach((cat, c) => {
+      const nc = cat.items.length;
+
+      // 1. Draw vertical tracks segment-by-segment with fog-of-war
+      if (nc > 1) {
+        for (let s = 0; s < nc - 1; s++) {
+          const isDestRevealed = isVisited(c, s + 1) || isUnlocked(c, s + 1);
+          if (!isDestRevealed) continue;
+          const pA = getLevelGridCoords(c, s, pw);
+          const pB = getLevelGridCoords(c, s + 1, pw);
+          const ax = (pA.tx - camTX) * TS;
+          const ay = (pA.ty - camTY) * TS;
+          const bx = (pB.tx - camTX) * TS;
+          const by = (pB.ty - camTY) * TS;
+
+          ctx.strokeStyle = isVisited(c, s + 1) ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.06)';
+          ctx.beginPath();
+          ctx.moveTo(ax, ay);
+          ctx.lineTo(bx, by);
+          ctx.stroke();
+
+          const midY = (ay + by) / 2;
+          const dir = (by > ay) ? 1 : -1;
+          ctx.strokeStyle = isVisited(c, s + 1) ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.1)';
+          ctx.beginPath();
+          ctx.moveTo(ax - 4, midY - dir * 3);
+          ctx.lineTo(ax, midY + dir * 3);
+          ctx.lineTo(ax + 4, midY - dir * 3);
+          ctx.stroke();
+        }
+      }
+
+      // 2. Draw world-to-world jumps with fog-of-war
+      if (c < numCats - 1) {
+        const isDestRevealed = isVisited(c + 1, 0) || isUnlocked(c + 1, 0);
+        if (isDestRevealed) {
+          const p1 = getLevelGridCoords(c, nc - 1, pw);
+          const p2 = getLevelGridCoords(c + 1, 0, pw);
+          const sx1 = (p1.tx - camTX) * TS;
+          const sy1 = (p1.ty - camTY) * TS;
+          const sx2 = (p2.tx - camTX) * TS;
+          const sy2 = (p2.ty - camTY) * TS;
+          const revealed = isVisited(c + 1, 0);
+
+          if (c === 3) {
+            ctx.strokeStyle = revealed ? 'rgba(255, 255, 255, 0.22)' : 'rgba(255, 255, 255, 0.09)';
+            ctx.beginPath();
+            ctx.moveTo(sx1, sy1);
+            ctx.lineTo(sx2, sy2);
+            ctx.stroke();
+            const midX = (sx1 + sx2) / 2;
+            ctx.strokeStyle = revealed ? 'rgba(255, 255, 255, 0.35)' : 'rgba(255, 255, 255, 0.14)';
+            ctx.beginPath();
+            ctx.moveTo(midX - 3, sy1 - 4);
+            ctx.lineTo(midX + 3, sy1);
+            ctx.lineTo(midX - 3, sy1 + 4);
+            ctx.stroke();
+          } else {
+            const isTopJump = (p1.ty < LEV_H * 2 && p2.ty < LEV_H * 2);
+            const scpx = (sx1 + sx2) / 2;
+            const cpy = isTopJump ? Math.max(p1.ty, p2.ty) + 20 : Math.min(p1.ty, p2.ty) - 20;
+            const scpy = (cpy - camTY) * TS;
+            ctx.strokeStyle = revealed ? 'rgba(234, 179, 8, 0.35)' : 'rgba(234, 179, 8, 0.12)';
+            ctx.beginPath();
+            ctx.moveTo(sx1, sy1);
+            ctx.quadraticCurveTo(scpx, scpy, sx2, sy2);
+            ctx.setLineDash([4, 4]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+        }
+      }
+    });
+
+    // Draw level stops on the background grid (fog-of-war)
+    CAT.forEach((cat, c) => {
+      const isColReached = isVisited(c, 0) || isUnlocked(c, 0);
+
+      // 1. Draw 8-bit blocks in empty slots only if column is revealed
+      if (isColReached) {
+        for (let slotIdx = 0; slotIdx < 4; slotIdx++) {
+          if (isSlotEmpty(c, slotIdx)) {
+            const tx = c * SEC_W + (pw / (2 * TS));
+            const slotFrac = slotIdx / 3;
+            const ty = LEV_H * 1.4 + slotFrac * LEV_H * 1.05;
+            const sx = (tx - camTX) * TS;
+            const sy = (ty - camTY) * TS;
+            if (sx >= -15 && sx < pw + 15 && sy >= -15 && sy < H + 15) {
+              draw8BitBlock(ctx, sx, sy, 14);
+            }
+          }
+        }
+      }
+
+      // 2. Draw actual level stops with fog-of-war
+      cat.items.forEach((_, s) => {
+        const { tx, ty } = getLevelGridCoords(c, s, pw);
+        const sx = (tx - camTX) * TS;
+        const sy = (ty - camTY) * TS;
+
+        if (sx >= -10 && sx < pw + 10 && sy >= -10 && sy < H + 10) {
+          const visitedState = isVisited(c, s);
+          const unlockedState = isUnlocked(c, s);
+
+          if (!visitedState && !unlockedState) {
+            // Locked: faint grey dot
+            ctx.beginPath();
+            ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.07)';
+            ctx.fill();
+            return;
+          }
+
+          const isActive = (catIdx === c && subIdx === s);
+          if (isActive) {
+            const pulseR = 8 + Math.abs(Math.sin(t * 0.12)) * 6;
+            ctx.beginPath();
+            ctx.arc(sx, sy, pulseR, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(sx, sy, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(sx - 12, sy); ctx.lineTo(sx + 12, sy);
+            ctx.moveTo(sx, sy - 12); ctx.lineTo(sx, sy + 12);
+            ctx.stroke();
+          } else {
+            ctx.beginPath();
+            ctx.arc(sx, sy, 4.5, 0, Math.PI * 2);
+            ctx.fillStyle = visitedState ? 'rgba(255, 255, 255, 0.75)' : 'rgba(255, 255, 255, 0.28)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      });
+    });
+
+    const vg=ctx.createLinearGradient(pw*0.55,0,pw,0);
+    vg.addColorStop(0,'transparent'); vg.addColorStop(1,'rgba(0,0,0,0.72)');
+    ctx.fillStyle=vg; ctx.fillRect(0,0,pw,H);
+    ctx.restore();
+  }
+
+  function drawFilm() {
+    const filmX=W*0.30, filmW=W*(Z_FILM-0.30);
+    ctx.fillStyle='rgba(0,0,0,0.95)'; ctx.fillRect(filmX,0,filmW,H);
+    const pw2=7,mg=4;
+    ctx.fillStyle='rgba(255,255,255,1.0)';
+    ctx.fillRect(filmX+mg,0,pw2,H);
+    ctx.fillRect(filmX+filmW-mg-pw2,0,pw2,H);
+  }
+
+  function initMatrix() {
+    const lh=14, count=Math.ceil(H/lh)+2;
+    matRows=Array.from({length:count},(_,i)=>({y:i*lh,vals:Array.from({length:60},()=>Math.floor(Math.random()*2500))}));
+  }
+
+  const HOLES=Array.from({length:3},()=>({
+    cx:0.15+Math.random()*0.70,cy:0.15+Math.random()*0.70,
+    oR:0.06+Math.random()*0.10,angle:Math.random()*Math.PI*2,
+    spd:0.004+Math.random()*0.004,r:55+Math.random()*55,
+  }));
+
+  function holeAlpha(cx,cy,mx,mw){
+    let mn=1;
+    for(const h of HOLES){
+      const hx2=mx+(h.cx+Math.cos(h.angle)*h.oR)*mw;
+      const hy2=(h.cy+Math.sin(h.angle)*h.oR*0.5)*H;
+      const dx=cx-hx2,dy=cy-hy2,d=Math.sqrt(dx*dx+dy*dy);
+      const outerR=h.r*1.9;
+      if(d<outerR){
+        const ang=Math.atan2(dy,dx);
+        const phase=((ang-h.angle*4)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+        const swirl=0.2+(Math.cos(phase)+1)*0.40;
+        const dFrac=d/outerR;
+        const mult=dFrac<0.18?0:dFrac*swirl;
+        if(mult<mn)mn=mult;
+      }
+    }
+    return mn;
+  }
+
+  const NN=Array.from({length:28},()=>({
+    nx:0.25+Math.random()*0.72,ny:0.04+Math.random()*0.92,
+    pulse:Math.random()*200,pMax:90+Math.floor(Math.random()*140),x:0,y:0,
+  }));
+  function initNN(mx,mw){NN.forEach(n=>{n.x=mx+n.nx*mw;n.y=n.ny*H;});}
+  function drawNN(){
+    for(let i=0;i<NN.length;i++) for(let j=i+1;j<NN.length;j++){
+      const dx=NN[i].x-NN[j].x,dy=NN[i].y-NN[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<195){ctx.strokeStyle=`rgba(155,195,255,${0.10*(1-d/195)})`;ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(NN[i].x,NN[i].y);ctx.lineTo(NN[j].x,NN[j].y);ctx.stroke();}
+    }
+    NN.forEach(n=>{
+      n.pulse=(n.pulse+1)%n.pMax;
+      const tN=n.pulse/n.pMax,glow=tN<0.25?tN/0.25:tN>0.55?0:(0.55-tN)/0.30;
+      ctx.fillStyle=`rgba(155,210,255,${0.14+glow*0.55})`;
+      ctx.beginPath();ctx.arc(n.x,n.y,1.2+glow*2.2,0,Math.PI*2);ctx.fill();
+    });
+  }
+
+  const INV=[[0,1,0,0,0,0,1,0],[0,0,1,0,0,1,0,0],[0,1,1,1,1,1,1,0],[1,1,0,1,1,0,1,1],[1,1,1,1,1,1,1,1],[0,1,0,1,1,0,1,0],[1,0,0,0,0,0,0,1]];
+  const SHIP=[[0,0,1,0,0],[0,1,1,1,0],[1,1,1,1,1],[0,1,0,1,0]];
+  const GHST=[[0,1,1,1,1,0],[1,0,1,0,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,0,1,0,1,1]];
+  const PATS=[INV,SHIP,GHST,SHIP,INV];
+  const SPRITES=Array.from({length:5},(_,i)=>({
+    nx:0.05+Math.random()*0.90,ny:0.05+Math.random()*0.90,
+    vx:(Math.random()>0.5?1:-1)*(0.00025+Math.random()*0.0003),
+    vy:(Math.random()>0.5?1:-1)*(0.00015+Math.random()*0.0002),
+    pat:PATS[i%PATS.length],sc:2,
+  }));
+  function drawSprites(mx,mw){
+    ctx.fillStyle='rgba(255,255,255,0.13)';
+    SPRITES.forEach(s=>{
+      s.nx+=s.vx;s.ny+=s.vy;
+      if(s.nx<0.02||s.nx>0.96)s.vx*=-1;
+      if(s.ny<0.02||s.ny>0.96)s.vy*=-1;
+      const px=mx+s.nx*mw,py=s.ny*H;
+      const rows=s.pat.length,cols=s.pat[0].length;
+      const ox=-(cols*s.sc)/2,oy=-(rows*s.sc)/2;
+      s.pat.forEach((row,ri)=>row.forEach((cell,ci)=>{if(cell)ctx.fillRect(px+ox+ci*s.sc,py+oy+ri*s.sc,s.sc,s.sc);}));
+    });
+  }
+
+  const MC=['#ff4444','#4488ff','#44ff88','#ffffff','#ff9944','#ffffff'];
+  function hx(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
+
+  function drawMatrix(){
+    const mx=W*Z_FILM,mw=W*(1-Z_FILM);
+    ctx.fillStyle='rgba(0,0,0,0.82)';ctx.fillRect(mx,0,mw,H);
+    ctx.font='10px "Helvetica Neue",Helvetica,monospace';
+    HOLES.forEach(h=>{h.angle+=h.spd;});
+    const isComplete = (getPoints() === 42);
+    matRows.forEach(row=>{
+      if(Math.random()<0.002)row.vals=Array.from({length:60},()=>Math.floor(Math.random()*2500));
+      let x=mx+6;
+      row.vals.forEach((v,vi)=>{
+        const str = isComplete ? '★,' : v+',';
+        const alpha=holeAlpha(x,row.y,mx,mw);
+        if(alpha>0.04){
+          ctx.fillStyle = isComplete ? `rgba(234, 179, 8, ${0.65*alpha})` : hx(MC[vi%MC.length],0.55*alpha);
+          ctx.fillText(str,x,row.y);
+        }
+        x+=ctx.measureText(str).width;
+        if(x>mx+mw-12)return;
+      });
+    });
+    drawNN();
+    drawSprites(mx,mw);
+  }
+
+  function resize(){
+    W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;
+    initMatrix();initNN(W*Z_FILM,W*(1-Z_FILM));
+  }
+
+  // ── Minimap Logic ─────────────────────────────────────────────────────────────
+  const minimapCanvas = document.getElementById('minimap-canvas');
+  const minimapCtx = minimapCanvas.getContext('2d');
+
+  function drawMinimap() {
+    if (!minimapCanvas) return;
+    const w = minimapCanvas.width;
+    const h = minimapCanvas.height;
+    minimapCtx.clearRect(0, 0, w, h);
+
+    const numCats = CAT.length;
+    const colW = w / numCats;
+
+    // 1. Draw themed column backgrounds and divider lines
+    for (let c = 0; c < numCats; c++) {
+      const pal = PALETTES[Math.min(4, c)];
+      const x = c * colW;
+      minimapCtx.fillStyle = pal.fA;
+      minimapCtx.fillRect(x, 0, colW, h);
+
+      if (c > 0) {
+        minimapCtx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        minimapCtx.lineWidth = 1;
+        minimapCtx.setLineDash([4, 4]);
+        minimapCtx.beginPath();
+        minimapCtx.moveTo(x, 0);
+        minimapCtx.lineTo(x, h);
+        minimapCtx.stroke();
+        minimapCtx.setLineDash([]);
+      }
+    }
+
+    // ── Draw tree root at top center ──
+    const rx = 100, ry = 15;
+    minimapCtx.beginPath();
+    minimapCtx.arc(rx, ry, 4.5, 0, Math.PI * 2);
+    minimapCtx.fillStyle = '#ffffff';
+    minimapCtx.fill();
+    minimapCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+    minimapCtx.lineWidth = 1.5;
+    minimapCtx.stroke();
+
+    // 2. Draw tracks and cannon jumps
+    CAT.forEach((cat, c) => {
+      const x = 20 + c * 40;
+      const nc = cat.items.length;
+      
+      const isStartNodeRevealed = isVisited(c, 0) || isUnlocked(c, 0);
+      
+      // Connect Root node (100, 15) to first node of each world
+      if (isStartNodeRevealed) {
+        minimapCtx.strokeStyle = isVisited(c, 0) ? 'rgba(255, 255, 255, 0.38)' : 'rgba(255, 255, 255, 0.18)';
+        minimapCtx.lineWidth = 1;
+        minimapCtx.beginPath();
+        minimapCtx.moveTo(rx, ry);
+        minimapCtx.lineTo(x, getNodeY(c, 0));
+        minimapCtx.stroke();
+      }
+
+      // Vertical line within same World
+      if (nc > 1) {
+        for (let s = 0; s < nc - 1; s++) {
+          const yA = getNodeY(c, s);
+          const yB = getNodeY(c, s + 1);
+          
+          const isDestRevealed = isVisited(c, s + 1) || isUnlocked(c, s + 1);
+          if (isDestRevealed) {
+            minimapCtx.beginPath();
+            minimapCtx.moveTo(x, yA);
+            minimapCtx.lineTo(x, yB);
+            minimapCtx.strokeStyle = isVisited(c, s + 1) ? 'rgba(255, 255, 255, 0.35)' : 'rgba(255, 255, 255, 0.15)';
+            minimapCtx.lineWidth = 2;
+            minimapCtx.stroke();
+
+            // Draw small direction indicators (arrowheads) on the vertical tracks
+            const midY = (yA + yB) / 2;
+            const dir = (yB > yA) ? 1 : -1;
+            minimapCtx.strokeStyle = isVisited(c, s + 1) ? 'rgba(255, 255, 255, 0.55)' : 'rgba(255, 255, 255, 0.22)';
+            minimapCtx.lineWidth = 1.5;
+            minimapCtx.beginPath();
+            minimapCtx.moveTo(x - 3, midY - dir * 2);
+            minimapCtx.lineTo(x, midY + dir * 2);
+            minimapCtx.lineTo(x + 3, midY - dir * 2);
+            minimapCtx.stroke();
+          }
+        }
+      }
+
+      // Cannon jump/adjacent track to the next World
+      if (c < numCats - 1) {
+        const x1 = x;
+        const y1 = getNodeY(c, nc - 1);
+        const x2 = 20 + (c + 1) * 40;
+        const y2 = getNodeY(c + 1, 0);
+        
+        const isDestRevealed = isVisited(c + 1, 0) || isUnlocked(c + 1, 0);
+
+        if (isDestRevealed) {
+          if (c === 3) {
+            // World 4 to World 5 connection is adjacent (solid straight line, no cannon)
+            minimapCtx.beginPath();
+            minimapCtx.moveTo(x1, y1);
+            minimapCtx.lineTo(x2, y2);
+            minimapCtx.strokeStyle = isVisited(c + 1, 0) ? 'rgba(255, 255, 255, 0.45)' : 'rgba(255, 255, 255, 0.2)';
+            minimapCtx.lineWidth = 2;
+            minimapCtx.stroke();
+
+            // Small arrowhead pointing right
+            const midX = (x1 + x2) / 2;
+            minimapCtx.strokeStyle = isVisited(c + 1, 0) ? 'rgba(255, 255, 255, 0.65)' : 'rgba(255, 255, 255, 0.35)';
+            minimapCtx.lineWidth = 1.5;
+            minimapCtx.beginPath();
+            minimapCtx.moveTo(midX - 2, y1 - 3);
+            minimapCtx.lineTo(midX + 2, y1);
+            minimapCtx.lineTo(midX - 2, y1 + 3);
+            minimapCtx.stroke();
+          } else {
+            // Control point: curve downwards for top jumps, upwards for bottom/diagonal jumps
+            const isTopJump = (y1 < 150 && y2 < 150);
+            const cpX = (x1 + x2) / 2;
+            const cpY = isTopJump ? Math.max(y1, y2) + 30 : Math.min(y1, y2) - 30;
+
+            // Draw dotted quadratic curve path
+            minimapCtx.beginPath();
+            minimapCtx.moveTo(x1, y1);
+            minimapCtx.quadraticCurveTo(cpX, cpY, x2, y2);
+            minimapCtx.strokeStyle = isVisited(c + 1, 0) ? '#eab308' : 'rgba(234, 179, 8, 0.3)';
+            minimapCtx.lineWidth = 1.5;
+            minimapCtx.setLineDash([3, 3]);
+            minimapCtx.stroke();
+            minimapCtx.setLineDash([]);
+
+            // Draw small cannon barrel pointing along the jump arc
+            const angle = Math.atan2(cpY - y1, cpX - x1);
+            minimapCtx.save();
+            minimapCtx.translate(x1, y1);
+            minimapCtx.rotate(angle + Math.PI / 2);
+            minimapCtx.fillStyle = isVisited(c + 1, 0) ? '#eab308' : 'rgba(234, 179, 8, 0.3)';
+            minimapCtx.fillRect(-3, -11, 6, 11);
+            minimapCtx.beginPath();
+            minimapCtx.arc(0, 0, 4, 0, Math.PI * 2);
+            minimapCtx.fill();
+            minimapCtx.restore();
+
+            // Draw target ring on the destination node
+            minimapCtx.beginPath();
+            minimapCtx.arc(x2, y2, 8, 0, Math.PI * 2);
+            minimapCtx.strokeStyle = isVisited(c + 1, 0) ? 'rgba(234, 179, 8, 0.4)' : 'rgba(234, 179, 8, 0.15)';
+            minimapCtx.lineWidth = 1;
+            minimapCtx.stroke();
+          }
+        }
+      }
+    });
+
+    // 3. Draw level node points
+    CAT.forEach((cat, c) => {
+      const x = 20 + c * 40;
+      const isColReached = isVisited(c, 0) || isUnlocked(c, 0);
+
+      // Draw 8-bit blocks for empty slots in this column (only if this column is unlocked/visited)
+      if (isColReached) {
+        for (let slotIdx = 0; slotIdx < 4; slotIdx++) {
+          if (isSlotEmpty(c, slotIdx)) {
+            draw8BitBlock(minimapCtx, x, SLOT_YS[slotIdx], 8);
+          }
+        }
+      }
+
+      cat.items.forEach((item, s) => {
+        const y = getNodeY(c, s);
+        const isActive = (catIdx === c && subIdx === s);
+        
+        const visitedState = isVisited(c, s);
+        const unlockedState = isUnlocked(c, s);
+
+        if (!visitedState && !unlockedState) {
+          // Locked/Hidden node: draw a very faint dark dot so the map reveals gradually
+          minimapCtx.beginPath();
+          minimapCtx.arc(x, y, 2.5, 0, Math.PI * 2);
+          minimapCtx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+          minimapCtx.fill();
+          return;
+        }
+
+        // 1. Draw sub-tree branches to the right if this level has children
+        if (item.children) {
+          const numChildren = item.children.length;
+          minimapCtx.strokeStyle = (catIdx === c) ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.15)';
+          minimapCtx.lineWidth = 1;
+          
+          // Main stem going right
+          minimapCtx.beginPath();
+          minimapCtx.moveTo(x + 4, y);
+          minimapCtx.lineTo(x + 11, y);
+          minimapCtx.stroke();
+          
+          // Vertical split
+          minimapCtx.beginPath();
+          minimapCtx.moveTo(x + 11, y - 5);
+          minimapCtx.lineTo(x + 11, y + 5);
+          minimapCtx.stroke();
+          
+          // Top and bottom horizontal twigs
+          minimapCtx.beginPath();
+          minimapCtx.moveTo(x + 11, y - 5);
+          minimapCtx.lineTo(x + 15, y - 5);
+          minimapCtx.moveTo(x + 11, y + 5);
+          minimapCtx.lineTo(x + 15, y + 5);
+          minimapCtx.stroke();
+          
+          // Center twig (for 3+ children)
+          if (numChildren > 2) {
+            minimapCtx.beginPath();
+            minimapCtx.moveTo(x + 11, y);
+            minimapCtx.lineTo(x + 15, y);
+            minimapCtx.stroke();
+          }
+          
+          // Leaf 1 (top)
+          const isTopActive = (isActive && depth === 2 && childIdx === 0);
+          const leaf1Visited = isChildVisited(c, s, 0);
+          const leaf1Unlocked = isChildUnlocked(c, s, 0);
+          
+          if (leaf1Visited || leaf1Unlocked) {
+            minimapCtx.beginPath();
+            minimapCtx.arc(x + 15, y - 5, 1.5, 0, Math.PI * 2);
+            minimapCtx.fillStyle = isTopActive ? '#a3e635' : (leaf1Visited ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.2)');
+            minimapCtx.fill();
+          }
+          
+          // Leaf 2 (bottom)
+          const isBottomActive = (isActive && depth === 2 && childIdx === numChildren - 1);
+          const leaf2Visited = isChildVisited(c, s, numChildren - 1);
+          const leaf2Unlocked = isChildUnlocked(c, s, numChildren - 1);
+          
+          if (leaf2Visited || leaf2Unlocked) {
+            minimapCtx.beginPath();
+            minimapCtx.arc(x + 15, y + 5, 1.5, 0, Math.PI * 2);
+            minimapCtx.fillStyle = isBottomActive ? '#a3e635' : (leaf2Visited ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.2)');
+            minimapCtx.fill();
+          }
+          
+          // Leaf 3 (center - mid range children)
+          if (numChildren > 2) {
+            const isMidActive = (isActive && depth === 2 && childIdx > 0 && childIdx < numChildren - 1);
+            const leaf3Visited = isChildVisited(c, s, 1);
+            const leaf3Unlocked = isChildUnlocked(c, s, 1);
+            
+            if (leaf3Visited || leaf3Unlocked) {
+              minimapCtx.beginPath();
+              minimapCtx.arc(x + 15, y, 1.5, 0, Math.PI * 2);
+              minimapCtx.fillStyle = isMidActive ? '#a3e635' : (leaf3Visited ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.2)');
+              minimapCtx.fill();
+            }
+          }
+        }
+
+        // 2. Draw the parent level node itself
+        if (isActive) {
+          // Pulse halo
+          const pulseR = 8 + Math.abs(Math.sin(t * 0.12)) * 6;
+          minimapCtx.beginPath();
+          minimapCtx.arc(x, y, pulseR, 0, Math.PI * 2);
+          minimapCtx.fillStyle = 'rgba(163, 230, 53, 0.25)';
+          minimapCtx.fill();
+
+          // Active node center
+          minimapCtx.beginPath();
+          minimapCtx.arc(x, y, 5, 0, Math.PI * 2);
+          minimapCtx.fillStyle = '#ffffff';
+          minimapCtx.fill();
+          minimapCtx.strokeStyle = '#a3e635';
+          minimapCtx.lineWidth = 2.5;
+          minimapCtx.stroke();
+        } else {
+          // Standard node
+          minimapCtx.beginPath();
+          minimapCtx.arc(x, y, 4, 0, Math.PI * 2);
+          minimapCtx.fillStyle = visitedState ? 'rgba(255, 255, 255, 0.75)' : 'rgba(255, 255, 255, 0.22)';
+          minimapCtx.fill();
+          minimapCtx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+          minimapCtx.lineWidth = 1;
+          minimapCtx.stroke();
+        }
+      });
+    });
+
+    // 4. Draw current camera viewport box
+    const viewW = (window.innerWidth / TS) * 0.4;
+    const viewH = (window.innerHeight / TS) * 0.4;
+    const viewX = camTX * 0.4;
+    const viewY = camTY * 0.4;
+
+    minimapCtx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+    minimapCtx.fillRect(viewX, viewY, viewW, viewH);
+
+    minimapCtx.strokeStyle = '#ffffff';
+    minimapCtx.lineWidth = 1;
+    minimapCtx.setLineDash([4, 3]);
+    minimapCtx.strokeRect(viewX, viewY, viewW, viewH);
+    minimapCtx.setLineDash([]);
+  }
+
+  function navigateToMinimapPos(clickX, clickY) {
+    const rect = minimapCanvas.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+    
+    const scaleX = (clickX / w) * minimapCanvas.width;
+    const scaleY = (clickY / h) * minimapCanvas.height;
+
+    let closestNode = null;
+    let minDist = Infinity;
+
+    CAT.forEach((cat, c) => {
+      cat.items.forEach((_, s) => {
+        if (isVisited(c, s) || isUnlocked(c, s)) {
+          const nodeX = 20 + c * 40;
+          const nodeY = getNodeY(c, s);
+          
+          const dx = scaleX - nodeX;
+          const dy = scaleY - nodeY;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          
+          if (dist < minDist) {
+            minDist = dist;
+            closestNode = { catIdx: c, subIdx: s };
+          }
+        }
+      });
+    });
+
+    if (closestNode && minDist < 35) { // Snapping tolerance
+      catIdx = closestNode.catIdx;
+      subIdx = closestNode.subIdx;
+      childIdx = 0;
+      updateCats();
+      goTo(1);
+    }
+  }
+
+  function handleMinimapClick(e) {
+    const rect = minimapCanvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+    navigateToMinimapPos(clickX, clickY);
+  }
+
+  minimapCanvas.addEventListener('mousedown', handleMinimapClick);
+  minimapCanvas.addEventListener('mousemove', (e) => {
+    if (e.buttons === 1) {
+      handleMinimapClick(e);
+    }
+  });
+
+  function frame(){
+    t++;
+    camTX+=(tgtTX-camTX)*0.055;camTY+=(tgtTY-camTY)*0.055;
+    ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+    drawGameWorld(W*0.30);
+    drawFilm();
+    drawMatrix();
+    drawMinimap();
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+  window.addEventListener('resize',resize);
+  requestAnimationFrame(frame);
+})();
+
+// ── Idle Guidance Timer ───────────────────────────────────────────────────────
+function getNextStepArrow() {
+  const item = CAT[catIdx].items[subIdx];
+  if (item && item.children) {
+    if (depth === 1) {
+      // Check if any child of this level is unvisited
+      let unvisitedChild = false;
+      for (let i = 0; i < item.children.length; i++) {
+        if (!localStorage.getItem(`visited_${catIdx}_${subIdx}_${i}`)) {
+          unvisitedChild = true;
+          break;
+        }
+      }
+      if (unvisitedChild) return 'arr-right';
+    } else if (depth === 2) {
+      if (childIdx < item.children.length - 1) {
+        return 'arr-right';
+      } else {
+        return 'arr-left';
+      }
+    }
+  }
+  return 'arr-down';
+}
+
+let idleTimer = null;
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  document.querySelectorAll('.nav-arr').forEach(btn => {
+    btn.classList.remove('shake-up', 'shake-down', 'shake-left', 'shake-right');
+  });
+  
+  idleTimer = setTimeout(() => {
+    const nextArrowId = getNextStepArrow();
+    const btn = document.getElementById(nextArrowId);
+    if (btn && !btn.classList.contains('dim')) {
+      if (nextArrowId === 'arr-up') btn.classList.add('shake-up');
+      else if (nextArrowId === 'arr-down') btn.classList.add('shake-down');
+      else if (nextArrowId === 'arr-left') btn.classList.add('shake-left');
+      else if (nextArrowId === 'arr-right') btn.classList.add('shake-right');
+    }
+  }, 5000);
+}
+
+document.addEventListener('keydown', resetIdleTimer);
+document.addEventListener('mousemove', resetIdleTimer);
+document.addEventListener('click', resetIdleTimer);
+
+resetIdleTimer();
+</script>
+</body>
+</html>
