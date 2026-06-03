@@ -440,6 +440,50 @@ body::after {
   pointer-events: auto;
   transform: translate(-50%, -50%) scale(1);
 }
+/* ── Reward key ── */
+#reward-key {
+  position: fixed;
+  bottom: 36px;
+  right: 36px;
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.6) translateY(20px);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+#reward-key.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1) translateY(0);
+}
+#reward-key-icon {
+  font-size: 52px;
+  display: block;
+  filter: drop-shadow(0 0 12px rgba(234,179,8,0.9)) drop-shadow(0 0 28px rgba(234,179,8,0.5));
+  animation: key-float 3s ease-in-out infinite;
+}
+#reward-key-label {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(234,179,8,0.9);
+  text-shadow: 0 0 8px rgba(234,179,8,0.7);
+}
+#reward-key:hover #reward-key-icon {
+  filter: drop-shadow(0 0 18px rgba(234,179,8,1)) drop-shadow(0 0 40px rgba(234,179,8,0.8));
+  transform: scale(1.12);
+}
+@keyframes key-float {
+  0%, 100% { transform: translateY(0px) rotate(-8deg); }
+  50%       { transform: translateY(-8px) rotate(8deg); }
+}
 .nav-arr.guide {
   border-color: rgba(255,255,255,0.8) !important;
   color: #ffffff !important;
@@ -576,6 +620,10 @@ body::after {
     <div style="font-size: 14px; margin-top: 8px; color: rgba(255,255,255,0.8);">YOU FOUND ALL 4 HIDDEN GEMS</div>
     <div style="font-size: 10px; margin-top: 14px; color: rgba(255,255,255,0.35); letter-spacing: 0.18em;">CLICK TO DISMISS</div>
   </div>
+  <a id="reward-key" href="https://linktr.ee/Divyum.m" target="_blank" rel="noopener" title="Your reward — unlock everything">
+    <span id="reward-key-icon">🗝</span>
+    <span id="reward-key-label">YOUR KEY</span>
+  </a>
   <div id="stage">
     <div id="cat-carousel"></div>
     <div id="sub-nav">
@@ -970,6 +1018,11 @@ function updatePoints() {
     HOLES.forEach(h => { h.cx = 0.15 + Math.random() * 0.70; });
     const banner = document.getElementById('celebration-banner');
     if (banner) banner.classList.add('show');
+    // Show the reward key after a short delay
+    setTimeout(() => {
+      const key = document.getElementById('reward-key');
+      if (key) key.classList.add('show');
+    }, 1800);
   }
 }
 
