@@ -306,16 +306,16 @@ body::after {
   box-shadow: 0 4px 24px rgba(255, 255, 255, 0.05), 0 4px 20px rgba(0, 0, 0, 0.8);
 }
 #minimap-canvas {
-  width: 100px;
-  height: 180px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 3px;
+  width: 148px;
+  height: 148px;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50%;
   background: #000000;
   cursor: crosshair;
   transition: border-color 0.2s;
 }
 #minimap-canvas:hover {
-  border-color: rgba(255, 255, 255, 0.55);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 .minimap-card-label {
   font-size: 8px;
@@ -532,7 +532,7 @@ body::after {
       </div>
     </div>
     <div id="minimap-card">
-      <canvas id="minimap-canvas" width="200" height="360"></canvas>
+      <canvas id="minimap-canvas" width="220" height="220"></canvas>
       <div class="minimap-card-label">MINI MAP</div>
     </div>
     <button id="sitemap-toggle" aria-label="Toggle sitemap">
@@ -960,6 +960,9 @@ function updatePoints() {
     if (banner) banner.classList.add('show');
   }
 }
+
+// Clear exploration state on every fresh page load
+Object.keys(localStorage).filter(k => k.startsWith('visited_')).forEach(k => localStorage.removeItem(k));
 
 updatePoints();
 
@@ -1821,311 +1824,138 @@ window.addEventListener('resize', () => {
   const minimapCanvas = document.getElementById('minimap-canvas');
   const minimapCtx = minimapCanvas.getContext('2d');
 
+  const MM_SCALE = 0.72; // node-space units → minimap pixels
+
+  function nodeToMM(nx, ny) {
+    const cx = minimapCanvas.width  / 2;
+    const cy = minimapCanvas.height / 2;
+    const curNX = 20 + catIdx * 40;
+    const curNY = getNodeY(catIdx, subIdx);
+    return { sx: cx + (nx - curNX) * MM_SCALE, sy: cy + (ny - curNY) * MM_SCALE };
+  }
+
   function drawMinimap() {
     if (!minimapCanvas) return;
-    const w = minimapCanvas.width;
-    const h = minimapCanvas.height;
+    const w  = minimapCanvas.width;
+    const h  = minimapCanvas.height;
+    const cx = w / 2, cy = h / 2;
+    const r  = w / 2 - 2;
+
     minimapCtx.clearRect(0, 0, w, h);
 
-    const numCats = CAT.length;
-    const colW = w / numCats;
-
-    // 1. Draw themed column backgrounds and divider lines
-    for (let c = 0; c < numCats; c++) {
-      const pal = PALETTES[Math.min(4, c)];
-      const x = c * colW;
-      minimapCtx.fillStyle = pal.fA;
-      minimapCtx.fillRect(x, 0, colW, h);
-
-      if (c > 0) {
-        minimapCtx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-        minimapCtx.lineWidth = 1;
-        minimapCtx.setLineDash([4, 4]);
-        minimapCtx.beginPath();
-        minimapCtx.moveTo(x, 0);
-        minimapCtx.lineTo(x, h);
-        minimapCtx.stroke();
-        minimapCtx.setLineDash([]);
-      }
-    }
-
-    // ── Draw tree root at top center ──
-    const rx = 100, ry = 15;
+    // Dark background disc
+    minimapCtx.fillStyle = 'rgba(4,4,12,0.92)';
     minimapCtx.beginPath();
-    minimapCtx.arc(rx, ry, 4.5, 0, Math.PI * 2);
-    minimapCtx.fillStyle = '#ffffff';
+    minimapCtx.arc(cx, cy, r, 0, Math.PI * 2);
     minimapCtx.fill();
-    minimapCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-    minimapCtx.lineWidth = 1.5;
-    minimapCtx.stroke();
 
-    // 2. Draw tracks and cannon jumps
+    // Clip all drawing to circle
+    minimapCtx.save();
+    minimapCtx.beginPath();
+    minimapCtx.arc(cx, cy, r, 0, Math.PI * 2);
+    minimapCtx.clip();
+
+    // ── World-to-world connectors ──
     CAT.forEach((cat, c) => {
-      const x = 20 + c * 40;
       const nc = cat.items.length;
-      
-      const isStartNodeRevealed = isVisited(c, 0) || isUnlocked(c, 0);
-      
-      // Connect Root node (100, 15) to first node of each world
-      if (isStartNodeRevealed) {
-        minimapCtx.strokeStyle = isVisited(c, 0) ? 'rgba(255, 255, 255, 0.38)' : 'rgba(255, 255, 255, 0.18)';
-        minimapCtx.lineWidth = 1;
+      if (c >= CAT.length - 1) return;
+      if (!isVisited(c, 0) && !isUnlocked(c, 0)) return;
+      const x1 = 20 + c * 40,       y1 = getNodeY(c, nc - 1);
+      const x2 = 20 + (c + 1) * 40, y2 = getNodeY(c + 1, 0);
+      const p1 = nodeToMM(x1, y1), p2 = nodeToMM(x2, y2);
+      const nextRev = isVisited(c + 1, 0) || isUnlocked(c + 1, 0);
+      const prog = getWorldProgress(c);
+      minimapCtx.lineWidth = 1.5;
+      minimapCtx.strokeStyle = nextRev ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)';
+      minimapCtx.beginPath(); minimapCtx.moveTo(p1.sx, p1.sy); minimapCtx.lineTo(p2.sx, p2.sy); minimapCtx.stroke();
+      if (prog > 0) {
+        minimapCtx.strokeStyle = nextRev ? 'rgba(255,255,255,0.55)' : 'rgba(163,230,53,0.75)';
+        minimapCtx.lineWidth = 2;
         minimapCtx.beginPath();
-        minimapCtx.moveTo(rx, ry);
-        minimapCtx.lineTo(x, getNodeY(c, 0));
-        minimapCtx.stroke();
-      }
-
-      // Vertical line within same World
-      if (nc > 1) {
-        for (let s = 0; s < nc - 1; s++) {
-          const yA = getNodeY(c, s);
-          const yB = getNodeY(c, s + 1);
-          
-          const isDestRevealed = isVisited(c, s + 1) || isUnlocked(c, s + 1);
-          if (isDestRevealed) {
-            minimapCtx.beginPath();
-            minimapCtx.moveTo(x, yA);
-            minimapCtx.lineTo(x, yB);
-            minimapCtx.strokeStyle = isVisited(c, s + 1) ? 'rgba(255, 255, 255, 0.35)' : 'rgba(255, 255, 255, 0.15)';
-            minimapCtx.lineWidth = 2;
-            minimapCtx.stroke();
-
-            // Draw small direction indicators (arrowheads) on the vertical tracks
-            const midY = (yA + yB) / 2;
-            const dir = (yB > yA) ? 1 : -1;
-            minimapCtx.strokeStyle = isVisited(c, s + 1) ? 'rgba(255, 255, 255, 0.55)' : 'rgba(255, 255, 255, 0.22)';
-            minimapCtx.lineWidth = 1.5;
-            minimapCtx.beginPath();
-            minimapCtx.moveTo(x - 3, midY - dir * 2);
-            minimapCtx.lineTo(x, midY + dir * 2);
-            minimapCtx.lineTo(x + 3, midY - dir * 2);
-            minimapCtx.stroke();
-          }
-        }
-      }
-
-      // Linear world-to-world connector with completion progress fill
-      if (c < numCats - 1) {
-        const x1 = x;
-        const y1 = getNodeY(c, nc - 1);
-        const x2 = 20 + (c + 1) * 40;
-        const y2 = getNodeY(c + 1, 0);
-        const progress = getWorldProgress(c);
-        const nextRevealed = isVisited(c + 1, 0) || isUnlocked(c + 1, 0);
-
-        // Only draw anything if this world has been reached
-        if (!isVisited(c, 0) && !isUnlocked(c, 0)) return; // skip connector entirely if world not reached
-
-        // Base track (dim until next world opens)
-        minimapCtx.beginPath();
-        minimapCtx.moveTo(x1, y1);
-        minimapCtx.lineTo(x2, y2);
-        minimapCtx.strokeStyle = nextRevealed ? 'rgba(255, 255, 255, 0.18)' : 'rgba(255, 255, 255, 0.08)';
-        minimapCtx.lineWidth = 1.5;
-        minimapCtx.stroke();
-
-        // Progress fill (lime green, grows from start as levels are completed)
-        if (progress > 0) {
-          const fx = x1 + (x2 - x1) * progress;
-          const fy = y1 + (y2 - y1) * progress;
-          minimapCtx.beginPath();
-          minimapCtx.moveTo(x1, y1);
-          minimapCtx.lineTo(fx, fy);
-          minimapCtx.strokeStyle = nextRevealed ? 'rgba(255, 255, 255, 0.55)' : 'rgba(163, 230, 53, 0.7)';
-          minimapCtx.lineWidth = 2;
-          minimapCtx.stroke();
-        }
-
-        // Arrowhead at midpoint pointing toward next world
-        const midX = (x1 + x2) / 2;
-        const midY = (y1 + y2) / 2;
-        const angle = Math.atan2(y2 - y1, x2 - x1);
-        const aw = 4;
-        minimapCtx.strokeStyle = nextRevealed ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.15)';
-        minimapCtx.lineWidth = 1.5;
-        minimapCtx.beginPath();
-        minimapCtx.moveTo(midX - Math.cos(angle - 0.5) * aw, midY - Math.sin(angle - 0.5) * aw);
-        minimapCtx.lineTo(midX + Math.cos(angle) * aw, midY + Math.sin(angle) * aw);
-        minimapCtx.lineTo(midX - Math.cos(angle + 0.5) * aw, midY - Math.sin(angle + 0.5) * aw);
+        minimapCtx.moveTo(p1.sx, p1.sy);
+        minimapCtx.lineTo(p1.sx + (p2.sx - p1.sx) * prog, p1.sy + (p2.sy - p1.sy) * prog);
         minimapCtx.stroke();
       }
     });
 
-    // 3. Draw level node points
+    // ── Vertical level tracks ──
     CAT.forEach((cat, c) => {
       const x = 20 + c * 40;
-      const isColReached = isVisited(c, 0) || isUnlocked(c, 0);
-
-      // Draw 8-bit blocks for empty slots in this column (only if this column is unlocked/visited)
-      if (isColReached) {
-        for (let slotIdx = 0; slotIdx < 4; slotIdx++) {
-          if (isSlotEmpty(c, slotIdx)) {
-            draw8BitBlock(minimapCtx, x, SLOT_YS[slotIdx], 8);
-          }
-        }
+      for (let s = 0; s < cat.items.length - 1; s++) {
+        if (!isVisited(c, s + 1) && !isUnlocked(c, s + 1)) continue;
+        const pA = nodeToMM(x, getNodeY(c, s));
+        const pB = nodeToMM(x, getNodeY(c, s + 1));
+        minimapCtx.strokeStyle = isVisited(c, s + 1) ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.14)';
+        minimapCtx.lineWidth = 1.5;
+        minimapCtx.beginPath(); minimapCtx.moveTo(pA.sx, pA.sy); minimapCtx.lineTo(pB.sx, pB.sy); minimapCtx.stroke();
       }
+    });
 
-      cat.items.forEach((item, s) => {
-        const y = getNodeY(c, s);
+    // ── Level nodes ──
+    CAT.forEach((cat, c) => {
+      const x = 20 + c * 40;
+      cat.items.forEach((_, s) => {
+        const visited = isVisited(c, s), unlocked = isUnlocked(c, s);
+        if (!visited && !unlocked) return;
+        const { sx, sy } = nodeToMM(x, getNodeY(c, s));
         const isActive = (catIdx === c && subIdx === s);
-        
-        const visitedState = isVisited(c, s);
-        const unlockedState = isUnlocked(c, s);
-
-        if (!visitedState && !unlockedState) {
-          return; // locked — hidden until unlocked
-        }
-
-        // 1. Draw sub-tree branches to the right if this level has children
-        if (item.children) {
-          const numChildren = item.children.length;
-          minimapCtx.strokeStyle = (catIdx === c) ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.15)';
-          minimapCtx.lineWidth = 1;
-          
-          // Main stem going right
-          minimapCtx.beginPath();
-          minimapCtx.moveTo(x + 4, y);
-          minimapCtx.lineTo(x + 11, y);
-          minimapCtx.stroke();
-          
-          // Vertical split
-          minimapCtx.beginPath();
-          minimapCtx.moveTo(x + 11, y - 5);
-          minimapCtx.lineTo(x + 11, y + 5);
-          minimapCtx.stroke();
-          
-          // Top and bottom horizontal twigs
-          minimapCtx.beginPath();
-          minimapCtx.moveTo(x + 11, y - 5);
-          minimapCtx.lineTo(x + 15, y - 5);
-          minimapCtx.moveTo(x + 11, y + 5);
-          minimapCtx.lineTo(x + 15, y + 5);
-          minimapCtx.stroke();
-          
-          // Center twig (for 3+ children)
-          if (numChildren > 2) {
-            minimapCtx.beginPath();
-            minimapCtx.moveTo(x + 11, y);
-            minimapCtx.lineTo(x + 15, y);
-            minimapCtx.stroke();
-          }
-          
-          // Leaf 1 (top)
-          const isTopActive = (isActive && depth === 2 && childIdx === 0);
-          const leaf1Visited = isChildVisited(c, s, 0);
-          const leaf1Unlocked = isChildUnlocked(c, s, 0);
-          
-          if (leaf1Visited || leaf1Unlocked) {
-            minimapCtx.beginPath();
-            minimapCtx.arc(x + 15, y - 5, 1.5, 0, Math.PI * 2);
-            minimapCtx.fillStyle = isTopActive ? '#a3e635' : (leaf1Visited ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.2)');
-            minimapCtx.fill();
-          }
-          
-          // Leaf 2 (bottom)
-          const isBottomActive = (isActive && depth === 2 && childIdx === numChildren - 1);
-          const leaf2Visited = isChildVisited(c, s, numChildren - 1);
-          const leaf2Unlocked = isChildUnlocked(c, s, numChildren - 1);
-          
-          if (leaf2Visited || leaf2Unlocked) {
-            minimapCtx.beginPath();
-            minimapCtx.arc(x + 15, y + 5, 1.5, 0, Math.PI * 2);
-            minimapCtx.fillStyle = isBottomActive ? '#a3e635' : (leaf2Visited ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.2)');
-            minimapCtx.fill();
-          }
-          
-          // Leaf 3 (center - mid range children)
-          if (numChildren > 2) {
-            const isMidActive = (isActive && depth === 2 && childIdx > 0 && childIdx < numChildren - 1);
-            const leaf3Visited = isChildVisited(c, s, 1);
-            const leaf3Unlocked = isChildUnlocked(c, s, 1);
-            
-            if (leaf3Visited || leaf3Unlocked) {
-              minimapCtx.beginPath();
-              minimapCtx.arc(x + 15, y, 1.5, 0, Math.PI * 2);
-              minimapCtx.fillStyle = isMidActive ? '#a3e635' : (leaf3Visited ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.2)');
-              minimapCtx.fill();
-            }
-          }
-        }
-
-        // 2. Draw the parent level node itself
         if (isActive) {
-          // Pulse halo
-          const pulseR = 8 + Math.abs(Math.sin(t * 0.12)) * 6;
-          minimapCtx.beginPath();
-          minimapCtx.arc(x, y, pulseR, 0, Math.PI * 2);
-          minimapCtx.fillStyle = 'rgba(163, 230, 53, 0.25)';
-          minimapCtx.fill();
-
-          // Active node center
-          minimapCtx.beginPath();
-          minimapCtx.arc(x, y, 5, 0, Math.PI * 2);
+          const pr = 5 + Math.abs(Math.sin(t * 0.12)) * 4;
+          minimapCtx.fillStyle = 'rgba(163,230,53,0.22)';
+          minimapCtx.beginPath(); minimapCtx.arc(sx, sy, pr, 0, Math.PI * 2); minimapCtx.fill();
           minimapCtx.fillStyle = '#ffffff';
-          minimapCtx.fill();
-          minimapCtx.strokeStyle = '#a3e635';
-          minimapCtx.lineWidth = 2.5;
+          minimapCtx.beginPath(); minimapCtx.arc(sx, sy, 4, 0, Math.PI * 2); minimapCtx.fill();
+          minimapCtx.strokeStyle = '#a3e635'; minimapCtx.lineWidth = 2;
+          minimapCtx.stroke();
+          minimapCtx.strokeStyle = 'rgba(255,255,255,0.45)'; minimapCtx.lineWidth = 0.75;
+          minimapCtx.beginPath();
+          minimapCtx.moveTo(sx - 9, sy); minimapCtx.lineTo(sx + 9, sy);
+          minimapCtx.moveTo(sx, sy - 9); minimapCtx.lineTo(sx, sy + 9);
           minimapCtx.stroke();
         } else {
-          // Standard node
-          minimapCtx.beginPath();
-          minimapCtx.arc(x, y, 4, 0, Math.PI * 2);
-          minimapCtx.fillStyle = visitedState ? 'rgba(255, 255, 255, 0.75)' : 'rgba(255, 255, 255, 0.22)';
-          minimapCtx.fill();
-          minimapCtx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
-          minimapCtx.lineWidth = 1;
-          minimapCtx.stroke();
+          minimapCtx.fillStyle = visited ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.22)';
+          minimapCtx.beginPath(); minimapCtx.arc(sx, sy, 3.5, 0, Math.PI * 2); minimapCtx.fill();
         }
       });
     });
 
-    // 4. Draw current camera viewport box
-    const viewW = (window.innerWidth / TS) * 0.4;
-    const viewH = (window.innerHeight / TS) * 0.4;
-    const viewX = camTX * 0.4;
-    const viewY = camTY * 0.4;
+    // Edge vignette — creates the "radar" fade at the perimeter
+    const vg = minimapCtx.createRadialGradient(cx, cy, r * 0.55, cx, cy, r);
+    vg.addColorStop(0, 'transparent');
+    vg.addColorStop(1, 'rgba(0,0,0,0.75)');
+    minimapCtx.fillStyle = vg;
+    minimapCtx.fillRect(0, 0, w, h);
 
-    minimapCtx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-    minimapCtx.fillRect(viewX, viewY, viewW, viewH);
+    minimapCtx.restore();
 
-    minimapCtx.strokeStyle = '#ffffff';
-    minimapCtx.lineWidth = 1;
-    minimapCtx.setLineDash([4, 3]);
-    minimapCtx.strokeRect(viewX, viewY, viewW, viewH);
-    minimapCtx.setLineDash([]);
+    // Circle border
+    minimapCtx.strokeStyle = 'rgba(255,255,255,0.2)';
+    minimapCtx.lineWidth = 1.5;
+    minimapCtx.beginPath(); minimapCtx.arc(cx, cy, r, 0, Math.PI * 2); minimapCtx.stroke();
   }
 
   function navigateToMinimapPos(clickX, clickY) {
     const rect = minimapCanvas.getBoundingClientRect();
-    const w = rect.width;
-    const h = rect.height;
-    
-    const scaleX = (clickX / w) * minimapCanvas.width;
-    const scaleY = (clickY / h) * minimapCanvas.height;
+    const canvasX = (clickX - rect.left) * (minimapCanvas.width  / rect.width);
+    const canvasY = (clickY - rect.top)  * (minimapCanvas.height / rect.height);
+    const cx = minimapCanvas.width / 2, cy = minimapCanvas.height / 2;
+    const curNX = 20 + catIdx * 40;
+    const curNY = getNodeY(catIdx, subIdx);
+    const nodeX = curNX + (canvasX - cx) / MM_SCALE;
+    const nodeY = curNY + (canvasY - cy) / MM_SCALE;
 
     let closestNode = null;
     let minDist = Infinity;
-
     CAT.forEach((cat, c) => {
       cat.items.forEach((_, s) => {
         if (isVisited(c, s) || isUnlocked(c, s)) {
-          const nodeX = 20 + c * 40;
-          const nodeY = getNodeY(c, s);
-          
-          const dx = scaleX - nodeX;
-          const dy = scaleY - nodeY;
-          const dist = Math.sqrt(dx*dx + dy*dy);
-          
-          if (dist < minDist) {
-            minDist = dist;
-            closestNode = { catIdx: c, subIdx: s };
-          }
+          const d = Math.hypot(nodeX - (20 + c * 40), nodeY - getNodeY(c, s));
+          if (d < minDist) { minDist = d; closestNode = { catIdx: c, subIdx: s }; }
         }
       });
     });
 
-    if (closestNode && minDist < 35) { // Snapping tolerance
+    if (closestNode && minDist < 55) {
       catIdx = closestNode.catIdx;
       subIdx = closestNode.subIdx;
       childIdx = 0;
