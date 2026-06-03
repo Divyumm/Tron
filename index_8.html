@@ -29,9 +29,15 @@ body::after {
 #ui { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; }
 #topbar {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 20px 36px 0;
+  padding: 18px 36px 0 80px;
   font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
   color: #e8e8e8; font-weight: 700; flex-shrink: 0;
+}
+#topbar-name {
+  font-size: 18px; font-weight: 900; letter-spacing: 0.12em;
+  text-transform: uppercase; color: #ffffff;
+  text-shadow: 0 0 2px #000, 1px 1px 0 rgba(0,0,0,0.8);
+  white-space: nowrap;
 }
 #topbar a { color: #e8e8e8; text-decoration: none; }
 #topbar a:hover { opacity: 0.65; }
@@ -42,12 +48,18 @@ body::after {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   display: grid;
   grid-template-columns: 56px 44px 44px 44px 56px;
-  grid-template-rows: 44px 44px 44px;
+  grid-template-rows: 44px 44px 44px 20px;
   column-gap: 5px;
   row-gap: 5px;
   z-index: 50;
   align-items: center;
   justify-items: center;
+}
+#dpad-keyhint {
+  grid-column: 1 / 6; grid-row: 4;
+  font-size: 8px; font-weight: 700; letter-spacing: 0.18em;
+  text-transform: uppercase; color: rgba(255,255,255,0.28);
+  text-align: center; pointer-events: none; white-space: nowrap;
 }
 .nav-arr {
   position: relative;
@@ -174,45 +186,35 @@ body::after {
   text-shadow: 0 0 3px #000, 1px 1px 0 rgba(0,0,0,0.85), 0 2px 8px rgba(0,0,0,0.9);
 }
 
-/* ── L3b child item view — starts below header ── */
+/* ── L3b child item view — flex column so header never overlaps body ── */
 #child-view {
   position: absolute;
   top: 0; bottom: 0; left: 32%; right: 0;
-  padding: 26vh 6% 200px 8%;
+  padding: 6vh 6% 0 8%;
   opacity: 0; pointer-events: none; transition: opacity 0.38s ease;
-  overflow-y: auto;
-  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
+  display: flex; flex-direction: column;
+  overflow: hidden;
 }
-#child-view::-webkit-scrollbar { width: 2px; }
-#child-view::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
 #child-view.active { opacity: 1; pointer-events: auto; }
 #child-header {
-  position: absolute;
-  top: calc(26vh - 22px);
-  left: calc(32% + 8%);
-  right: 6%;
-  z-index: 40;
+  flex-shrink: 0;
   display: flex;
   align-items: baseline;
   gap: 16px;
   flex-wrap: wrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.38s ease;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 24px;
 }
-#child-header.active {
-  opacity: 1;
-  pointer-events: auto;
+#child-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 140px;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
 }
-#child-sep {
-  position: absolute;
-  left: -24px;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 26px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.3);
-}
+#child-scroll::-webkit-scrollbar { width: 2px; }
+#child-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
+
 #child-title {
   font-size: 32px;
   font-weight: 700;
@@ -581,11 +583,12 @@ body::after {
   <button class="nav-arr" id="arr-down" aria-label="Down">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
   </button>
+  <div id="dpad-keyhint">USE YOUR ARROW KEYS</div>
 </div>
 
 <div id="ui">
   <div id="topbar">
-    <span>Divyum Maheshwari</span>
+    <span id="topbar-name">Divyum Maheshwari</span>
     <a href="https://www.linkedin.com/in/divyum-maheshwari/" target="_blank" rel="noopener">LinkedIn ↗</a>
     <div style="display:flex;align-items:center;gap:10px;">
       <div id="easter-hint">FOLLOW THE GREEN ARROW !</div>
@@ -603,17 +606,18 @@ body::after {
       <div id="parent-label"></div>
       <div id="desc-preview"></div>
     </div>
-    <div id="child-header">
-      <span id="child-sep">›</span>
-      <div id="child-title"></div>
-      <div id="child-counter"></div>
-    </div>
     <div id="desc-full">
       <div id="desc-full-body"></div>
     </div>
     <div id="child-view">
-      <div id="child-body"></div>
-      <div id="child-next"></div>
+      <div id="child-header">
+        <div id="child-title"></div>
+        <div id="child-counter"></div>
+      </div>
+      <div id="child-scroll">
+        <div id="child-body"></div>
+        <div id="child-next"></div>
+      </div>
     </div>
     <div id="minimap-card">
       <canvas id="minimap-canvas" width="220" height="220"></canvas>
@@ -645,12 +649,12 @@ const CAT = [
       {
         label: 'Tech + Data',
         children: [
-          { label: 'Inventory System',            links: [{url: 'https://github.com', label: 'GitHub Repo'}], desc: 'Group Project · Ideation, Coding, Pitching\n\nFormalising part-sourcing and repair workflows of informal electronic vendors in Mumbai. Addresses inventory overload, part traceability, and customer retention.\n\nPOEMS · Empathy Maps · Persona Clustering · QR inventory sharing · CSV traceability.' },
-          { label: 'OURoute · Safety Matching', easter: true, links: [{url: 'https://www.figma.com', label: 'Figma Prototype'}], desc: 'Group Project · Ideation, User Testing\n\nMobility and safety platform for walking alone at night on campus. Matches students along shared routes via institutional verification.\n\n93% of students walk at night. 56% report feeling unsafe.\nKey insight: Safety is achieved through presence, not alerts.' },
+          { label: 'Inventory System',            desc:'Group Project · Ideation, Coding, Pitching\n\nFormalising part-sourcing and repair workflows of informal electronic vendors in Mumbai. Addresses inventory overload, part traceability, and customer retention.\n\nPOEMS · Empathy Maps · Persona Clustering · QR inventory sharing · CSV traceability.' },
+          { label: 'OURoute · Safety Matching', easter: true, desc: 'Group Project · Ideation, User Testing\n\nMobility and safety platform for walking alone at night on campus. Matches students along shared routes via institutional verification.\n\n93% of students walk at night. 56% report feeling unsafe.\nKey insight: Safety is achieved through presence, not alerts.' },
           { label: 'Scaling Design Education',    desc: 'Systemic challenges of scaling design education through formal licensure frameworks in India. Policy, pedagogy, and institutional barriers.' },
           { label: 'Systemic Biases in Agent AI', desc: 'How systemic biases propagate within agent-based AI systems deployed for design decision-making in the Indian context.' },
           { label: 'Traffic Optimisation',        desc: 'Data-driven traffic flow analysis and optimisation for Kurla district, Mumbai. Congestion modelling and intervention strategies.' },
-          { label: 'Full Stack Social Platform',  links: [{url: 'https://github.com', label: 'Source Code'}, {url: 'https://flask.palletsprojects.com', label: 'Built with Flask'}], desc: 'End-to-end social media platform built with Flask, SQL, JavaScript, CSS and Python.' },
+          { label: 'Full Stack Social Platform',  desc: 'End-to-end social media platform built with Flask, SQL, JavaScript, CSS and Python.' },
         ]
       },
       {
@@ -665,8 +669,8 @@ const CAT = [
       {
         label: 'Design',
         children: [
-          { label: 'Jam Jong · Memory Game',      links: [{url: 'https://www.figma.com', label: 'Design Prototype'}], desc: 'Group Project · Ideation, User Testing\n\nMulti-sensory cognitive game for seniors at risk of dementia. Music, tactile interaction, and social gameplay — inspired by Mahjong and record players.' },
-          { label: 'Ercon · Rebranding',          links: [{url: 'https://erconcomposites.com', label: 'Ercon Composites'}], desc: 'Pitching, specifications, hundreds of design iterations, certification, fabrication, and finishing. Qualified for NEOM City, KSA.' },
+          { label: 'Jam Jong · Memory Game',      desc: 'Group Project · Ideation, User Testing\n\nMulti-sensory cognitive game for seniors at risk of dementia. Music, tactile interaction, and social gameplay — inspired by Mahjong and record players.' },
+          { label: 'Ercon · Rebranding',          desc: 'Pitching, specifications, hundreds of design iterations, certification, fabrication, and finishing. Qualified for NEOM City, KSA.' },
           { label: 'Indigenous House Bricks',     desc: 'Indigenous materials and traditional construction for passive cooling in residential architecture.' },
           { label: 'Mycelium Agriculture',        desc: 'Mycelium-based agricultural facilitation — circular bioeconomy and sustainable farming.' },
           { label: 'Cycle Battery Lock',          desc: 'Parametric product design for a cycle battery locking mechanism.' },
@@ -877,20 +881,21 @@ const parentLabel = document.getElementById('parent-label');
 const descPreview = document.getElementById('desc-preview');
 const descFullEl  = document.getElementById('desc-full');
 const descFullBody= document.getElementById('desc-full-body');
-const childViewEl = document.getElementById('child-view');
-const childHeader = document.getElementById('child-header');
-const childCounter= document.getElementById('child-counter');
-const childTitle  = document.getElementById('child-title');
-const childBody   = document.getElementById('child-body');
-const childNext   = document.getElementById('child-next');
-const footerEl    = document.getElementById('footer');
-const arrUp       = document.getElementById('arr-up');
-const arrDown     = document.getElementById('arr-down');
-const arrLeft     = document.getElementById('arr-left');
-const arrRight    = document.getElementById('arr-right');
+const childViewEl  = document.getElementById('child-view');
+const childScrollEl= document.getElementById('child-scroll');
+const childHeader  = document.getElementById('child-header');
+const childCounter = document.getElementById('child-counter');
+const childTitle   = document.getElementById('child-title');
+const childBody    = document.getElementById('child-body');
+const childNext    = document.getElementById('child-next');
+const footerEl     = document.getElementById('footer');
+const arrUp        = document.getElementById('arr-up');
+const arrDown      = document.getElementById('arr-down');
+const arrLeft      = document.getElementById('arr-left');
+const arrRight     = document.getElementById('arr-right');
 
 descFullEl.addEventListener('scroll', updateNavArrows);
-childViewEl.addEventListener('scroll', updateNavArrows);
+childScrollEl.addEventListener('scroll', updateNavArrows);
 
 
 
@@ -1284,7 +1289,7 @@ function renderChildView() {
     });
     childBody.appendChild(linksEl);
   }
-  childViewEl.scrollTop  = 0;
+  childScrollEl.scrollTop = 0;
   // Next item peek
   const next = item.children[childIdx + 1];
   if (next) {
@@ -1314,8 +1319,7 @@ function goTo(newDepth) {
   subNavEl.classList.add('active');
   subNavEl.style.pointerEvents = (depth === 1) ? 'auto' : 'none';
 
-  const showChildHeader = depth === 2 && hasChildren();
-  childHeader.classList.toggle('active', showChildHeader);
+  // child-header is now always inside #child-view; no separate active toggle needed
 
   descPreview.style.opacity = '0';
   if (depth === 0) {
@@ -1370,7 +1374,7 @@ function updateNavArrows() {
     set(arrDown,  subIdx < count - 1);
   } else {
     // depth === 2: Up/Down control vertical scrolling of content
-    const el = hc ? childViewEl : descFullEl;
+    const el = hc ? childScrollEl : descFullEl;
     const canScrollUp = el.scrollTop > 2;
     const canScrollDown = el.scrollHeight > el.clientHeight + 1 && el.scrollTop < el.scrollHeight - el.clientHeight - 2;
 
@@ -1497,9 +1501,9 @@ function handleNav(key) {
       } else if (key === 'Escape') {
         goTo(1);
       } else if (key === 'ArrowDown') {
-        childViewEl.scrollBy({ top: 80, behavior: 'smooth' });
+        childScrollEl.scrollBy({ top: 80, behavior: 'smooth' });
       } else if (key === 'ArrowUp') {
-        childViewEl.scrollBy({ top: -80, behavior: 'smooth' });
+        childScrollEl.scrollBy({ top: -80, behavior: 'smooth' });
       }
     } else {
       if (key === 'ArrowRight') {
