@@ -338,6 +338,20 @@ body::after {
 #minimap-canvas:hover {
   border-color: rgba(255, 255, 255, 0.5);
 }
+/* Hamburger menu button — top left */
+#hamburger-btn {
+  position: fixed; top: 12px; left: 12px; z-index: 300;
+  width: 40px; height: 40px;
+  background: rgba(0,0,0,0.75); border: 1.5px solid rgba(255,255,255,0.22);
+  border-radius: 8px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+  transition: border-color 0.2s, background 0.2s;
+}
+#hamburger-btn:hover { border-color: rgba(255,255,255,0.5); background: rgba(30,30,30,0.9); }
+.hb-bar { width: 18px; height: 2px; background: rgba(255,255,255,0.8); border-radius: 2px; transition: all 0.2s; }
+#hamburger-btn.open .hb-bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+#hamburger-btn.open .hb-bar:nth-child(2) { opacity: 0; }
+#hamburger-btn.open .hb-bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 /* Full map overlay — left panel */
 #full-map-overlay {
   position: fixed; top: 0; left: 0; width: 30%; height: 100%;
@@ -530,6 +544,11 @@ body::after {
 </head>
 <body>
 <canvas id="bg"></canvas>
+<button id="hamburger-btn" aria-label="Menu">
+  <div class="hb-bar"></div>
+  <div class="hb-bar"></div>
+  <div class="hb-bar"></div>
+</button>
 
 <!-- D-pad directional arrow cluster -->
 <div id="dpad">
@@ -594,14 +613,6 @@ body::after {
       <canvas id="minimap-canvas" width="220" height="220"></canvas>
       <div class="minimap-card-label">MINI MAP</div>
     </div>
-    <button id="sitemap-toggle" aria-label="Toggle sitemap">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" color="rgba(255,255,255,0.8)">
-        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
-      </svg>
-      <span id="sitemap-toggle-label">MAP</span>
-    </button>
-    <div id="sitemap-panel"></div>
   </div>
   <div id="footer"></div>
 </div>
@@ -1039,8 +1050,8 @@ updatePoints();
 })();
 
 // ── Sitemap ───────────────────────────────────────────────────────────────────
-const sitemapPanel  = document.getElementById('sitemap-panel');
-const sitemapToggle = document.getElementById('sitemap-toggle');
+const sitemapPanel  = { classList: { contains: () => false, toggle: () => {}, remove: () => {} }, innerHTML: '' };
+// sitemap-toggle replaced by hamburger-btn
 
 function buildSitemap() {
   sitemapPanel.innerHTML = '';
@@ -1093,18 +1104,14 @@ function refreshSitemap() {
   if (sitemapPanel.classList.contains('open')) buildSitemap();
 }
 
-sitemapToggle.addEventListener('click', (e) => {
-  e.stopPropagation();
-  const opening = !sitemapPanel.classList.contains('open');
-  sitemapPanel.classList.toggle('open', opening);
-  if (opening) buildSitemap();
-});
-
-document.addEventListener('click', (e) => {
-  if (!sitemapPanel.contains(e.target) && e.target !== sitemapToggle) {
-    sitemapPanel.classList.remove('open');
-  }
-});
+const hamburgerBtn = document.getElementById('hamburger-btn');
+if (hamburgerBtn) {
+  hamburgerBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    hamburgerBtn.classList.toggle('open', !fullMapOpen);
+    toggleFullMap();
+  });
+}
 
 // ── L1 carousel (spread RIGHT from top-left anchor) ──────────────────────────
 CAT.forEach((cat, i) => {
@@ -2202,6 +2209,8 @@ function toggleFullMap() {
   fullMapOpen = !fullMapOpen;
   buildFullMap();
   fullMapOverlay.classList.toggle('open', fullMapOpen);
+  const hb = document.getElementById('hamburger-btn');
+  if (hb) hb.classList.toggle('open', fullMapOpen);
 }
 
 // Close map when clicking outside
