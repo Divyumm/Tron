@@ -441,10 +441,9 @@ body::after {
   transform: translate(-50%, -50%) scale(1);
 }
 .nav-arr.guide {
-  border-color: #a3e635 !important;
-  color: #a3e635 !important;
-  box-shadow: 0 0 14px rgba(163,230,53,0.6), inset 0 0 6px rgba(163,230,53,0.12);
-  background: rgba(163,230,53,0.08) !important;
+  border-color: rgba(255,255,255,0.8) !important;
+  color: #ffffff !important;
+  background: rgba(255,255,255,0.12) !important;
 }
 
 /* ── Sitemap ── */
@@ -568,7 +567,7 @@ body::after {
     <span id="topbar-name">Divyum Maheshwari</span>
     <a href="https://www.linkedin.com/in/divyum-maheshwari/" target="_blank" rel="noopener">LinkedIn ↗</a>
     <div style="display:flex;align-items:center;gap:10px;">
-      <div id="easter-hint">FOLLOW THE GREEN ARROW !</div>
+      <div id="easter-hint">FIND THE EASTER EGGS</div>
       <div id="points-block"><span class="label">★</span><span id="score-val">0</span>/4</div>
     </div>
   </div>
@@ -1069,12 +1068,13 @@ function updateCats() {
   const SP = Math.min(420, W / 3.2);
   Array.from(catCarousel.querySelectorAll('.cat-btn')).forEach((btn, i) => {
     const off = i - catIdx, abs = Math.abs(off);
-    // Spread to the right; active at left: 6% (no X shift), others shift right
     btn.style.transform    = `translate(${off > 0 ? off * SP : off * SP * 0.6}px, -50%)`;
     const completed = getWorldProgress(i) >= 1;
+    // Only show non-active worlds at depth 0 to avoid overlap with level list
+    const showFaded = depth === 0;
     btn.style.fontSize     = abs === 0 ? getActiveFontSize() + 'px' : '26px';
-    btn.style.opacity      = completed ? '1' : abs === 0 ? '1' : abs === 1 ? '0.45' : abs === 2 ? '0.18' : '0';
-    btn.style.pointerEvents = abs <= 2 ? 'auto' : 'none';
+    btn.style.opacity      = abs === 0 ? '1' : (showFaded ? (completed ? '0.55' : abs === 1 ? '0.35' : abs === 2 ? '0.15' : '0') : '0');
+    btn.style.pointerEvents = (abs === 0 || showFaded) && abs <= 2 ? 'auto' : 'none';
     btn.style.zIndex       = String(10 - abs);
   });
   // Dynamically rebuild subcategories under the newly active category
@@ -1302,6 +1302,7 @@ function goTo(newDepth) {
   updateGuideArrow();
   updateFooter();
   refreshSitemap();
+  updateCats(); // hide/show faded world labels based on depth
 }
 
 // ── Nav arrows: show/dim based on available moves ────────────────────────────
