@@ -1139,33 +1139,8 @@ function applyBulletList() {
   const children = item && item.children ? item.children : [];
   const nc = children.length;
 
-  // Desc lines shown inline after active item/child
-  function getDescLines(src, maxLines) {
-    if (!src || !src.desc) return [];
-    return src.desc.split('\n').filter(l => l.trim()).slice(0, maxLines);
-  }
-
-  // Compute active child desc (shown after child-tease list)
-  const activeChild = nc > 0 ? children[childIdx] : null;
-  const childDescLines = activeChild ? getDescLines(activeChild, 3) : [];
-  const levelDescLines = (nc === 0) ? getDescLines(item, 3) : [];
-
-  const totalH = n * LGAP
-    + (nc > 0 ? nc * CGAP + 8 : 0)
-    + (childDescLines.length > 0 ? childDescLines.length * DGAP + 10 : 0)
-    + (levelDescLines.length > 0 ? levelDescLines.length * DGAP + 10 : 0);
+  const totalH = n * LGAP + (nc > 0 ? nc * CGAP + 8 : 0);
   let y = -totalH / 2 + LGAP / 2;
-
-  function addDescLine(text, indentX, opacity) {
-    const d = document.createElement('div');
-    d.className = 'desc-tease';
-    d.textContent = text;
-    d.style.opacity = String(opacity);
-    d.style.transform = `translate(${indentX}px, calc(-50% + ${y}px))`;
-    subNavEl.insertBefore(d, descPreview);
-    childTeaseBtns.push(d);
-    y += DGAP;
-  }
 
   subBtns.forEach((btn, i) => {
     const isActive = (i === subIdx);
@@ -1192,19 +1167,6 @@ function applyBulletList() {
         childTeaseBtns.push(btn2);
         y += CGAP;
       });
-      y += 4;
-      // Show active child's desc inline below child list
-      if (childDescLines.length > 0) {
-        y += 2;
-        childDescLines.forEach(line => addDescLine(line, 20, 0.42));
-        y += 4;
-      }
-    }
-
-    // Show active level's desc inline (when no children)
-    if (isActive && nc === 0 && levelDescLines.length > 0) {
-      y += 6;
-      levelDescLines.forEach(line => addDescLine(line, 10, 0.42));
       y += 4;
     }
   });
@@ -1320,7 +1282,7 @@ function goTo(newDepth) {
     parentLabel.style.opacity = '0.55';
   }
 
-  const showDescFull = depth === 2 && !hasChildren();
+  const showDescFull = !hasChildren() && (depth === 1 || depth === 2);
   descFullEl.classList.toggle('active', showDescFull);
   childViewEl.classList.toggle('active', depth === 2 && hasChildren());
 
@@ -1893,55 +1855,96 @@ window.addEventListener('resize', () => {
 
     minimapCtx.clearRect(0, 0, w, h);
 
-    // Dark background disc
-    minimapCtx.fillStyle = 'rgba(4,4,12,0.92)';
+    // Deep space background
+    minimapCtx.fillStyle = 'rgba(2,3,14,0.96)';
     minimapCtx.beginPath();
     minimapCtx.arc(cx, cy, r, 0, Math.PI * 2);
     minimapCtx.fill();
 
-    // Clip all drawing to circle
     minimapCtx.save();
     minimapCtx.beginPath();
     minimapCtx.arc(cx, cy, r, 0, Math.PI * 2);
     minimapCtx.clip();
 
-    // ── World-to-world connectors ──
+    // ── Constellation edges between worlds (diagonal arcs) ──
     CAT.forEach((cat, c) => {
       const nc = cat.items.length;
       if (c >= CAT.length - 1) return;
-      if (!isVisited(c, 0) && !isUnlocked(c, 0)) return;
+      const revealed = isVisited(c, 0) || isUnlocked(c, 0);
+      if (!revealed) return;
       const x1 = 20 + c * 40,       y1 = getNodeY(c, nc - 1);
       const x2 = 20 + (c + 1) * 40, y2 = getNodeY(c + 1, 0);
       const p1 = nodeToMM(x1, y1), p2 = nodeToMM(x2, y2);
       const nextRev = isVisited(c + 1, 0) || isUnlocked(c + 1, 0);
+      // Midpoint with slight curve offset for constellation feel
+      const midX = (p1.sx + p2.sx) / 2 + (p2.sy - p1.sy) * 0.15;
+      const midY = (p1.sy + p2.sy) / 2 - (p2.sx - p1.sx) * 0.15;
+      minimapCtx.setLineDash([3, 5]);
+      minimapCtx.lineWidth = 1;
+      minimapCtx.strokeStyle = nextRev ? 'rgba(180,200,255,0.22)' : 'rgba(120,140,200,0.1)';
+      minimapCtx.beginPath();
+      minimapCtx.moveTo(p1.sx, p1.sy);
+      minimapCtx.quadraticCurveTo(midX, midY, p2.sx, p2.sy);
+      minimapCtx.stroke();
+      minimapCtx.setLineDash([]);
+      // Progress fill along the curve
       const prog = getWorldProgress(c);
-      minimapCtx.lineWidth = 1.5;
-      minimapCtx.strokeStyle = nextRev ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)';
-      minimapCtx.beginPath(); minimapCtx.moveTo(p1.sx, p1.sy); minimapCtx.lineTo(p2.sx, p2.sy); minimapCtx.stroke();
       if (prog > 0) {
-        minimapCtx.strokeStyle = nextRev ? 'rgba(255,255,255,0.55)' : 'rgba(163,230,53,0.75)';
-        minimapCtx.lineWidth = 2;
+        minimapCtx.lineWidth = 1.5;
+        minimapCtx.strokeStyle = nextRev ? 'rgba(200,220,255,0.6)' : 'rgba(163,230,53,0.7)';
         minimapCtx.beginPath();
         minimapCtx.moveTo(p1.sx, p1.sy);
-        minimapCtx.lineTo(p1.sx + (p2.sx - p1.sx) * prog, p1.sy + (p2.sy - p1.sy) * prog);
+        const ex = p1.sx + (p2.sx - p1.sx) * prog;
+        const ey = p1.sy + (p2.sy - p1.sy) * prog;
+        minimapCtx.lineTo(ex, ey);
         minimapCtx.stroke();
       }
     });
 
-    // ── Vertical level tracks ──
+    // ── Constellation branches within each world ──
     CAT.forEach((cat, c) => {
       const x = 20 + c * 40;
       for (let s = 0; s < cat.items.length - 1; s++) {
         if (!isVisited(c, s + 1) && !isUnlocked(c, s + 1)) continue;
         const pA = nodeToMM(x, getNodeY(c, s));
         const pB = nodeToMM(x, getNodeY(c, s + 1));
-        minimapCtx.strokeStyle = isVisited(c, s + 1) ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.14)';
-        minimapCtx.lineWidth = 1.5;
-        minimapCtx.beginPath(); minimapCtx.moveTo(pA.sx, pA.sy); minimapCtx.lineTo(pB.sx, pB.sy); minimapCtx.stroke();
+        const visited = isVisited(c, s + 1);
+        // Slight lateral wobble for constellation feel
+        const wobble = (c % 2 === 0 ? 1 : -1) * 3;
+        const mX = (pA.sx + pB.sx) / 2 + wobble;
+        const mY = (pA.sy + pB.sy) / 2;
+        minimapCtx.lineWidth = visited ? 1.2 : 0.8;
+        minimapCtx.strokeStyle = visited
+          ? 'rgba(200,215,255,0.45)'
+          : 'rgba(140,160,220,0.18)';
+        minimapCtx.beginPath();
+        minimapCtx.moveTo(pA.sx, pA.sy);
+        minimapCtx.quadraticCurveTo(mX, mY, pB.sx, pB.sy);
+        minimapCtx.stroke();
       }
     });
 
-    // ── Level nodes ──
+    // ── Star nodes ──
+    function drawStar(sx, sy, outerR, innerR, points, fillColor, glowColor, glowR) {
+      if (glowColor) {
+        const g = minimapCtx.createRadialGradient(sx, sy, 0, sx, sy, glowR);
+        g.addColorStop(0, glowColor);
+        g.addColorStop(1, 'transparent');
+        minimapCtx.fillStyle = g;
+        minimapCtx.beginPath(); minimapCtx.arc(sx, sy, glowR, 0, Math.PI * 2); minimapCtx.fill();
+      }
+      minimapCtx.fillStyle = fillColor;
+      minimapCtx.beginPath();
+      for (let i = 0; i < points * 2; i++) {
+        const rad = (i % 2 === 0) ? outerR : innerR;
+        const angle = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
+        if (i === 0) minimapCtx.moveTo(sx + rad * Math.cos(angle), sy + rad * Math.sin(angle));
+        else minimapCtx.lineTo(sx + rad * Math.cos(angle), sy + rad * Math.sin(angle));
+      }
+      minimapCtx.closePath();
+      minimapCtx.fill();
+    }
+
     CAT.forEach((cat, c) => {
       const x = 20 + c * 40;
       cat.items.forEach((_, s) => {
@@ -1950,37 +1953,41 @@ window.addEventListener('resize', () => {
         const { sx, sy } = nodeToMM(x, getNodeY(c, s));
         const isActive = (catIdx === c && subIdx === s);
         if (isActive) {
-          const pr = 5 + Math.abs(Math.sin(t * 0.12)) * 4;
-          minimapCtx.fillStyle = 'rgba(163,230,53,0.22)';
-          minimapCtx.beginPath(); minimapCtx.arc(sx, sy, pr, 0, Math.PI * 2); minimapCtx.fill();
-          minimapCtx.fillStyle = '#ffffff';
-          minimapCtx.beginPath(); minimapCtx.arc(sx, sy, 4, 0, Math.PI * 2); minimapCtx.fill();
-          minimapCtx.strokeStyle = '#a3e635'; minimapCtx.lineWidth = 2;
-          minimapCtx.stroke();
-          minimapCtx.strokeStyle = 'rgba(255,255,255,0.45)'; minimapCtx.lineWidth = 0.75;
+          // Animated pulsing crosshair + bright star
+          const pulse = 5 + Math.abs(Math.sin(t * 0.1)) * 4;
+          drawStar(sx, sy, 5, 2.5, 4, '#ffffff', 'rgba(163,230,53,0.35)', pulse + 6);
+          minimapCtx.strokeStyle = 'rgba(163,230,53,0.7)';
+          minimapCtx.lineWidth = 1;
           minimapCtx.beginPath();
-          minimapCtx.moveTo(sx - 9, sy); minimapCtx.lineTo(sx + 9, sy);
-          minimapCtx.moveTo(sx, sy - 9); minimapCtx.lineTo(sx, sy + 9);
+          minimapCtx.moveTo(sx - pulse, sy); minimapCtx.lineTo(sx + pulse, sy);
+          minimapCtx.moveTo(sx, sy - pulse); minimapCtx.lineTo(sx, sy + pulse);
           minimapCtx.stroke();
+        } else if (visited) {
+          // Visited: bright 4-pointed star
+          drawStar(sx, sy, 4, 1.8, 4, 'rgba(220,235,255,0.9)', 'rgba(180,200,255,0.2)', 7);
         } else {
-          minimapCtx.fillStyle = visited ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.22)';
-          minimapCtx.beginPath(); minimapCtx.arc(sx, sy, 3.5, 0, Math.PI * 2); minimapCtx.fill();
+          // Unlocked but not visited: dim dot
+          minimapCtx.fillStyle = 'rgba(140,160,200,0.28)';
+          minimapCtx.beginPath(); minimapCtx.arc(sx, sy, 2, 0, Math.PI * 2); minimapCtx.fill();
         }
       });
     });
 
-    // Edge vignette — creates the "radar" fade at the perimeter
-    const vg = minimapCtx.createRadialGradient(cx, cy, r * 0.55, cx, cy, r);
+    // Edge vignette
+    const vg = minimapCtx.createRadialGradient(cx, cy, r * 0.52, cx, cy, r);
     vg.addColorStop(0, 'transparent');
-    vg.addColorStop(1, 'rgba(0,0,0,0.75)');
+    vg.addColorStop(1, 'rgba(0,0,5,0.88)');
     minimapCtx.fillStyle = vg;
     minimapCtx.fillRect(0, 0, w, h);
 
     minimapCtx.restore();
 
-    // Circle border
-    minimapCtx.strokeStyle = 'rgba(255,255,255,0.2)';
-    minimapCtx.lineWidth = 1.5;
+    // Circle border — subtle double ring
+    minimapCtx.strokeStyle = 'rgba(100,120,200,0.15)';
+    minimapCtx.lineWidth = 4;
+    minimapCtx.beginPath(); minimapCtx.arc(cx, cy, r - 1, 0, Math.PI * 2); minimapCtx.stroke();
+    minimapCtx.strokeStyle = 'rgba(255,255,255,0.18)';
+    minimapCtx.lineWidth = 1;
     minimapCtx.beginPath(); minimapCtx.arc(cx, cy, r, 0, Math.PI * 2); minimapCtx.stroke();
   }
 
@@ -2047,14 +2054,15 @@ window.addEventListener('resize', () => {
 // ── Idle Guidance Timer ───────────────────────────────────────────────────────
 function getNextStepArrow() {
   const item = CAT[catIdx].items[subIdx];
-  if (item && item.children) {
-    if (depth === 2) {
-      if (childIdx < item.children.length - 1) {
-        return 'arr-right';
-      } else {
-        return 'arr-left';
-      }
-    }
+  if (depth === 2 && item && item.children) {
+    return childIdx < item.children.length - 1 ? 'arr-right' : 'arr-left';
+  }
+  if (depth === 1 && item && item.children) {
+    // Guide right to enter the children view
+    const hasUnvisited = item.children.some((_, idx) =>
+      !localStorage.getItem(`visited_${catIdx}_${subIdx}_${idx}`)
+    );
+    if (hasUnvisited) return 'arr-right';
   }
   return 'arr-down';
 }
