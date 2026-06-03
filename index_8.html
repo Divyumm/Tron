@@ -106,6 +106,18 @@ body::after {
   border-color: rgba(255,255,255,0.38);
   background: rgba(255,255,255,0.05);
 }
+.child-tease {
+  position: absolute; top: 26%; left: 6%;
+  background: none; border: 1px solid transparent; cursor: pointer;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700;
+  color: #e8e8e8; font-size: 12px; line-height: 1; padding: 3px 8px;
+  white-space: nowrap; border-radius: 3px;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.child-tease.sel {
+  border-color: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.05);
+}
 /* Preview of sub-item desc on the right side */
 #desc-preview {
   position: absolute; top: 26%; left: 58%; right: 2%;
@@ -1081,8 +1093,36 @@ function subBtnLabel(i) {
   return 'Level ' + (catIdx + 1) + '.' + (i + 1) + ' · ' + cat.items[i].label;
 }
 
+let childTeaseBtns = [];
+
+function clearChildTease() {
+  childTeaseBtns.forEach(b => b.remove());
+  childTeaseBtns = [];
+}
+
+function buildChildTease(levelYOff) {
+  clearChildTease();
+  const item = CAT[catIdx].items[subIdx];
+  if (!item.children) return;
+
+  const YGAP = 26;
+  // Start the tease list just below the selected level rectangle
+  const startOff = levelYOff + 28;
+
+  item.children.forEach((child, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'child-tease' + (idx === childIdx ? ' sel' : '');
+    btn.textContent = (idx === childIdx ? '› ' : '· ') +
+      (catIdx + 1) + '.' + (subIdx + 1) + '.' + (idx + 1) + ' · ' + child.label;
+    btn.style.opacity   = idx === childIdx ? '0.75' : '0.38';
+    btn.style.transform = `translate(0, calc(-50% + ${startOff + idx * YGAP}px))`;
+    btn.addEventListener('click', () => { childIdx = idx; goTo(2); });
+    subNavEl.insertBefore(btn, descPreview);
+    childTeaseBtns.push(btn);
+  });
+}
+
 function applyBulletList() {
-  // Shared logic: flat equal-opacity bullet list for depth 1 and depth 2
   const YGAP = 38;
   const n = subBtns.length;
   const listTop = -(n - 1) / 2 * YGAP;
@@ -1091,15 +1131,25 @@ function applyBulletList() {
     btn.textContent = (isActive ? '› ' : '· ') + subBtnLabel(i);
     btn.classList.toggle('sel', isActive);
     btn.style.fontSize      = '15px';
-    btn.style.opacity       = '0.65';
+    btn.style.opacity       = '1';
     btn.style.transform     = `translate(0, calc(-50% + ${listTop + i * YGAP}px))`;
     btn.style.pointerEvents = 'auto';
   });
+
+  // At depth 2, show child tease below the active level item
+  if (depth === 2) {
+    const n = subBtns.length;
+    const activeLevelYOff = -(n - 1) / 2 * YGAP + subIdx * YGAP;
+    buildChildTease(activeLevelYOff);
+  } else {
+    clearChildTease();
+  }
 }
 
 function positionAllSubBtns() {
   if (depth >= 1) { applyBulletList(); return; }
 
+  clearChildTease();
   // depth === 0: faint stacked preview below the world title
   const YGAP = 80;
   subBtns.forEach((btn, i) => {
@@ -1166,9 +1216,8 @@ function renderChildView() {
     childNext.style.opacity = '0';
   }
   updateTvView();
+  applyBulletList(); // refresh child tease highlight
 }
-
-
 
 // ── Navigation core ───────────────────────────────────────────────────────────
 function hasChildren() {
