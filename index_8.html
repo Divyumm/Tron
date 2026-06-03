@@ -188,17 +188,17 @@ body::after {
 #child-view.active { opacity: 1; pointer-events: auto; }
 #child-header {
   position: absolute;
-  top: 26%;
-  left: 34%;
-  transform: translateY(-50%);
+  top: calc(26vh - 22px);
+  left: calc(32% + 8%);
+  right: 6%;
   z-index: 40;
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 16px;
+  flex-wrap: wrap;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.38s ease;
-  white-space: nowrap;
 }
 #child-header.active {
   opacity: 1;
@@ -257,6 +257,32 @@ body::after {
   color: #ffffff;
   transition: opacity 0.3s;
 }
+/* External link buttons in sub-sub descriptions */
+.ext-links {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-top: 32px;
+}
+.ext-link-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 10px 18px;
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 4px;
+  background: rgba(0,0,0,0.55);
+  color: #ffffff;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: none;
+  width: fit-content;
+  transition: background 0.2s, border-color 0.2s;
+  text-shadow: none;
+}
+.ext-link-btn:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.7);
+}
+.ext-link-btn .ext-arrow { font-size: 16px; opacity: 0.7; }
 
 /* ── Work preview (TV placeholder) ── 4× area (2× each dimension) ── */
 
@@ -374,12 +400,13 @@ body::after {
   pointer-events: none;
 }
 #easter-hint {
-  font-size: 9px;
-  font-family: "Courier New", Courier, monospace;
+  font-size: 13px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
-  color: rgba(163, 230, 53, 0.55);
+  color: #a3e635;
+  text-shadow: 0 0 8px rgba(163,230,53,0.9), 0 0 20px rgba(163,230,53,0.5), 0 0 40px rgba(163,230,53,0.25);
   user-select: none;
   pointer-events: none;
 }
@@ -561,7 +588,7 @@ body::after {
     <span>Divyum Maheshwari</span>
     <a href="https://www.linkedin.com/in/divyum-maheshwari/" target="_blank" rel="noopener">LinkedIn ↗</a>
     <div style="display:flex;align-items:center;gap:10px;">
-      <div id="easter-hint">FIND THE EASTER EGGS</div>
+      <div id="easter-hint">FOLLOW THE GREEN ARROW !</div>
       <div id="points-block"><span class="label">★</span><span id="score-val">0</span>/4</div>
     </div>
   </div>
@@ -1200,7 +1227,23 @@ function updateDescPreview() {
 // ── L3 renders ────────────────────────────────────────────────────────────────
 function renderFullDesc() {
   const item = CAT[catIdx].items[subIdx];
-  descFullBody.textContent = item.desc || '';
+  descFullBody.innerHTML = '';
+  const descNode = document.createElement('div');
+  descNode.style.cssText = 'font-size:22px;font-weight:700;line-height:1.62;color:#ffffff;white-space:pre-line;max-width:700px;text-shadow:0 0 3px #000,1px 1px 0 rgba(0,0,0,0.85),0 2px 8px rgba(0,0,0,0.9);';
+  descNode.textContent = item.desc || '';
+  descFullBody.appendChild(descNode);
+  if (item.links && item.links.length) {
+    const linksEl = document.createElement('div');
+    linksEl.className = 'ext-links';
+    item.links.forEach(link => {
+      const a = document.createElement('a');
+      a.className = 'ext-link-btn';
+      a.href = link.url; a.target = '_blank'; a.rel = 'noopener';
+      a.innerHTML = `<span>${link.label}</span><span class="ext-arrow">↗</span>`;
+      linksEl.appendChild(a);
+    });
+    descFullBody.appendChild(linksEl);
+  }
   descFullEl.scrollTop = 0;
 }
 
@@ -1223,7 +1266,24 @@ function renderChildView() {
   });
 
   childTitle.textContent = 'Level ' + (catIdx + 1) + '.' + (subIdx + 1) + '.' + (childIdx + 1) + ' · ' + child.label;
-  childBody.textContent  = child.desc || '';
+  // Build body: description text + optional external link buttons
+  childBody.innerHTML = '';
+  const descNode = document.createElement('div');
+  descNode.style.cssText = 'font-size:18px;font-weight:700;line-height:1.68;color:#ffffff;white-space:pre-line;max-width:700px;text-shadow:0 0 3px #000,1px 1px 0 rgba(0,0,0,0.85),0 2px 8px rgba(0,0,0,0.9);';
+  descNode.textContent = child.desc || '';
+  childBody.appendChild(descNode);
+  if (child.links && child.links.length) {
+    const linksEl = document.createElement('div');
+    linksEl.className = 'ext-links';
+    child.links.forEach(link => {
+      const a = document.createElement('a');
+      a.className = 'ext-link-btn';
+      a.href = link.url; a.target = '_blank'; a.rel = 'noopener';
+      a.innerHTML = `<span>${link.label}</span><span class="ext-arrow">↗</span>`;
+      linksEl.appendChild(a);
+    });
+    childBody.appendChild(linksEl);
+  }
   childViewEl.scrollTop  = 0;
   // Next item peek
   const next = item.children[childIdx + 1];
