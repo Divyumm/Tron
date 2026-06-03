@@ -87,7 +87,7 @@ body::after {
     font-size 0.42s cubic-bezier(0.16,1,0.3,1),
     opacity   0.42s cubic-bezier(0.16,1,0.3,1),
     transform 0.42s cubic-bezier(0.16,1,0.3,1);
-  text-shadow: 0 2px 20px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.7);
+  text-shadow: 0 0 2px #000, 1px 1px 0 rgba(0,0,0,0.9), 0 2px 20px rgba(0,0,0,0.98), 0 0 40px rgba(0,0,0,0.85);
 }
 
 /* ── L2 vertical sub-nav — anchor: top-left ── */
@@ -97,53 +97,56 @@ body::after {
 #parent-label {
   position: absolute; top: 6%; left: 6%;
   font-size: 44px; font-weight: 900;
-  color: rgba(232,232,232,0.92); white-space: nowrap;
+  color: #ffffff; white-space: nowrap;
   pointer-events: none; letter-spacing: -0.02em;
-  text-shadow: 0 2px 32px rgba(0,0,0,0.95);
+  text-shadow: 0 0 2px #000, 0 2px 4px #000, 0 0 24px rgba(0,0,0,0.98), 2px 2px 0 rgba(0,0,0,0.8);
 }
 /* Sub-item buttons anchored lower so world title never overlaps */
 .sub-btn {
   position: absolute; top: 55%; left: 6%;
   background: none; border: 1px solid transparent; cursor: pointer;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700;
-  color: #e8e8e8; line-height: 1; padding: 4px 10px; white-space: nowrap;
+  color: #ffffff; line-height: 1; padding: 4px 10px; white-space: nowrap;
   border-radius: 3px;
-  text-shadow: 0 2px 24px rgba(0,0,0,0.95);
+  text-shadow: 0 0 2px #000, 1px 1px 0 rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.95);
   transition:
     font-size   0.18s ease,
     opacity     0.18s ease,
     transform   0.18s ease;
 }
 .sub-btn.sel {
-  border-color: rgba(255,255,255,0.38);
-  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.5);
+  background: rgba(0,0,0,0.55);
 }
 .child-tease {
   position: absolute; top: 55%; left: 6%;
   background: none; border: 1px solid transparent; cursor: pointer;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700;
-  color: #e8e8e8; font-size: 12px; line-height: 1; padding: 3px 8px;
+  color: #ffffff; font-size: 12px; line-height: 1; padding: 3px 8px;
   white-space: nowrap; border-radius: 3px;
+  text-shadow: 0 0 2px #000, 1px 1px 0 rgba(0,0,0,0.9);
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
 /* Inline desc preview lines — allow wrapping, not interactive */
 .desc-tease {
   position: absolute; top: 55%; left: 6%;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 400;
-  color: #e8e8e8; font-size: 11px; line-height: 1.45; padding: 2px 8px;
+  color: #ffffff; font-size: 11px; line-height: 1.45; padding: 2px 8px;
   white-space: normal; max-width: 46%; border-radius: 3px;
   pointer-events: none;
+  text-shadow: 0 0 2px #000, 1px 1px 0 rgba(0,0,0,0.9);
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
 .child-tease.sel {
-  border-color: rgba(255,255,255,0.3);
-  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.5);
+  background: rgba(0,0,0,0.55);
 }
 /* Preview of sub-item desc on the right side */
 #desc-preview {
   position: absolute; top: 26%; left: 34%; right: 2%;
   transform: translateY(-50%);
-  font-size: 15px; font-weight: 700; color: #e8e8e8;
+  font-size: 15px; font-weight: 700; color: #ffffff;
+  text-shadow: 0 0 3px #000, 1px 1px 0 rgba(0,0,0,0.85), 0 2px 8px rgba(0,0,0,0.9);
   overflow: hidden; white-space: pre-line;
   line-height: 1.7;
   -webkit-mask-image: linear-gradient(to bottom, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 60%, transparent 92%);
@@ -166,8 +169,9 @@ body::after {
 #desc-full.active { opacity: 1; pointer-events: auto; }
 #desc-full-body {
   font-size: 22px; font-weight: 700;
-  line-height: 1.62; color: #e8e8e8;
+  line-height: 1.62; color: #ffffff;
   white-space: pre-line; max-width: 780px;
+  text-shadow: 0 0 3px #000, 1px 1px 0 rgba(0,0,0,0.85), 0 2px 8px rgba(0,0,0,0.9);
 }
 
 /* ── L3b child item view — starts below header ── */
@@ -213,8 +217,9 @@ body::after {
   font-size: 32px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: #e8e8e8;
+  color: #ffffff;
   line-height: 1;
+  text-shadow: 0 0 3px #000, 1px 1px 0 rgba(0,0,0,0.85), 0 2px 12px rgba(0,0,0,0.95);
 }
 #child-counter {
   font-size: 11px;
@@ -241,8 +246,9 @@ body::after {
 }
 #child-body {
   font-size: 18px; font-weight: 700;
-  line-height: 1.68; color: rgba(232,232,232,0.72);
+  line-height: 1.68; color: #ffffff;
   white-space: pre-line; max-width: 680px;
+  text-shadow: 0 0 3px #000, 1px 1px 0 rgba(0,0,0,0.85), 0 2px 8px rgba(0,0,0,0.9);
 }
 /* Next item peek */
 #child-next {
@@ -364,6 +370,16 @@ body::after {
   color: rgba(255, 255, 255, 0.35);
   font-weight: 700;
   text-transform: uppercase;
+  user-select: none;
+  pointer-events: none;
+}
+#easter-hint {
+  font-size: 9px;
+  font-family: "Courier New", Courier, monospace;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(163, 230, 53, 0.55);
   user-select: none;
   pointer-events: none;
 }
@@ -544,7 +560,10 @@ body::after {
   <div id="topbar">
     <span>Divyum Maheshwari</span>
     <a href="https://www.linkedin.com/in/divyum-maheshwari/" target="_blank" rel="noopener">LinkedIn ↗</a>
-    <div id="points-block"><span class="label">★</span><span id="score-val">0</span>/4</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div id="easter-hint">FIND THE EASTER EGGS</div>
+      <div id="points-block"><span class="label">★</span><span id="score-val">0</span>/4</div>
+    </div>
   </div>
   <div id="celebration-banner">
     <div>★ ALL EASTER EGGS FOUND ★</div>
@@ -1863,7 +1882,7 @@ window.addEventListener('resize', () => {
       }
     }
     // Dim the tile layer so constellation is readable
-    minimapCtx.fillStyle = 'rgba(0,0,8,0.62)';
+    minimapCtx.fillStyle = 'rgba(0,0,8,0.72)';
     minimapCtx.fillRect(0, 0, w, h);
 
     // ── Always show full constellation — brightness reflects progress ──
@@ -1896,8 +1915,8 @@ window.addEventListener('resize', () => {
       const midX = (p1.sx + p2.sx) / 2 + (p2.sy - p1.sy) * 0.18;
       const midY = (p1.sy + p2.sy) / 2 - (p2.sx - p1.sx) * 0.18;
       minimapCtx.setLineDash([3, 6]);
-      minimapCtx.lineWidth = done ? 1.2 : 0.6;
-      minimapCtx.strokeStyle = done ? 'rgba(180,210,255,0.5)' : 'rgba(100,120,180,0.2)';
+      minimapCtx.lineWidth = done ? 2.0 : 0.8;
+      minimapCtx.strokeStyle = done ? 'rgba(200,230,255,0.85)' : 'rgba(120,150,220,0.4)';
       minimapCtx.beginPath();
       minimapCtx.moveTo(p1.sx, p1.sy);
       minimapCtx.quadraticCurveTo(midX, midY, p2.sx, p2.sy);
@@ -1914,8 +1933,8 @@ window.addEventListener('resize', () => {
         const visited = isVisited(c, s) && isVisited(c, s + 1);
         const wobble = (c % 2 === 0 ? 1 : -1) * 3;
         const mX = (pA.sx + pB.sx) / 2 + wobble, mY = (pA.sy + pB.sy) / 2;
-        minimapCtx.lineWidth = visited ? 1.2 : 0.6;
-        minimapCtx.strokeStyle = visited ? 'rgba(200,220,255,0.5)' : 'rgba(100,120,180,0.18)';
+        minimapCtx.lineWidth = visited ? 2.0 : 0.8;
+        minimapCtx.strokeStyle = visited ? 'rgba(180,210,255,0.9)' : 'rgba(100,130,200,0.35)';
         minimapCtx.beginPath();
         minimapCtx.moveTo(pA.sx, pA.sy);
         minimapCtx.quadraticCurveTo(mX, mY, pB.sx, pB.sy);
@@ -1932,18 +1951,18 @@ window.addEventListener('resize', () => {
         const isActive = (catIdx === c && subIdx === s);
         if (isActive) {
           const pulse = 5 + Math.abs(Math.sin(t * 0.1)) * 4;
-          drawStar(sx, sy, 5, 2.2, '#ffffff', 'rgba(163,230,53,0.4)', pulse + 7);
-          minimapCtx.strokeStyle = 'rgba(163,230,53,0.75)'; minimapCtx.lineWidth = 1;
+          drawStar(sx, sy, 7, 3, '#ffffff', 'rgba(163,230,53,0.75)', pulse + 12);
+          minimapCtx.strokeStyle = 'rgba(163,230,53,1.0)'; minimapCtx.lineWidth = 1.5;
           minimapCtx.beginPath();
           minimapCtx.moveTo(sx - pulse, sy); minimapCtx.lineTo(sx + pulse, sy);
           minimapCtx.moveTo(sx, sy - pulse); minimapCtx.lineTo(sx, sy + pulse);
           minimapCtx.stroke();
         } else if (visited) {
-          drawStar(sx, sy, 4, 1.6, 'rgba(220,235,255,0.95)', 'rgba(160,190,255,0.25)', 8);
+          drawStar(sx, sy, 5, 2.2, '#ffffff', 'rgba(160,200,255,0.65)', 12);
         } else {
           // Unvisited — dim but visible
-          minimapCtx.fillStyle = 'rgba(100,120,180,0.35)';
-          minimapCtx.beginPath(); minimapCtx.arc(sx, sy, 1.8, 0, Math.PI * 2); minimapCtx.fill();
+          minimapCtx.fillStyle = 'rgba(140,165,230,0.65)';
+          minimapCtx.beginPath(); minimapCtx.arc(sx, sy, 2.5, 0, Math.PI * 2); minimapCtx.fill();
         }
       });
     });
