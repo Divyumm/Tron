@@ -37,9 +37,17 @@ body::after {
 #topbar a:hover { opacity: 0.65; }
 #stage { flex: 1; position: relative; overflow: hidden; }
 
-/* ── Directional navigation arrows ── */
+/* ── Directional navigation arrows — D-pad cluster ── */
+#dpad {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  grid-template-rows: repeat(3, 44px);
+  gap: 5px;
+  z-index: 50;
+}
 .nav-arr {
-  position: fixed; z-index: 50;
+  position: relative;
   background: rgba(0,0,0,0.65);
   border: 2px solid rgba(255,255,255,0.35);
   color: rgba(255,255,255,0.95);
@@ -55,15 +63,11 @@ body::after {
   color: #ffffff;
 }
 .nav-arr.dim { opacity: 0.18; pointer-events: none; }
-#arr-up    { top: 58px;    left: 50%; transform: translateX(-50%); }
-#arr-down  { bottom: 58px; left: 50%; transform: translateX(-50%); }
-#arr-left  { top: 50%;     left: 16px; transform: translateY(-50%); }
-#arr-right { top: 50%;     right: 16px; transform: translateY(-50%); }
-
-#arr-up:active    { transform: translateX(-50%) scale(0.92); }
-#arr-down:active  { transform: translateX(-50%) scale(0.92); }
-#arr-left:active  { transform: translateY(-50%) scale(0.92); }
-#arr-right:active { transform: translateY(-50%) scale(0.92); }
+#arr-up    { grid-column: 2; grid-row: 1; }
+#arr-left  { grid-column: 1; grid-row: 2; }
+#arr-right { grid-column: 3; grid-row: 2; }
+#arr-down  { grid-column: 2; grid-row: 3; }
+.nav-arr:active { transform: scale(0.92); }
 
 /* ── L1 horizontal carousel — anchor: top-left ── */
 #cat-carousel { position: absolute; inset: 0; transition: opacity 0.38s ease; }
@@ -476,19 +480,21 @@ body::after {
 <body>
 <canvas id="bg"></canvas>
 
-<!-- Persistent directional arrows -->
-<button class="nav-arr" id="arr-up" aria-label="Up">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
-</button>
-<button class="nav-arr" id="arr-down" aria-label="Down">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
-</button>
-<button class="nav-arr" id="arr-left" aria-label="Left">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-</button>
-<button class="nav-arr" id="arr-right" aria-label="Right">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-</button>
+<!-- D-pad directional arrow cluster -->
+<div id="dpad">
+  <button class="nav-arr" id="arr-up" aria-label="Up">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+  </button>
+  <button class="nav-arr" id="arr-left" aria-label="Left">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+  </button>
+  <button class="nav-arr" id="arr-right" aria-label="Right">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+  </button>
+  <button class="nav-arr" id="arr-down" aria-label="Down">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+  </button>
+</div>
 
 <div id="ui">
   <div id="topbar">
@@ -1118,14 +1124,42 @@ function applyBulletList() {
 
   const LGAP = 38;  // gap between level items
   const CGAP = 26;  // gap between child items
+  const DGAP = 17;  // gap between desc lines
   const n    = subBtns.length;
   const item = CAT[catIdx].items[subIdx];
-  const children = (depth === 2 && item && item.children) ? item.children : [];
+  const children = item && item.children ? item.children : [];
   const nc = children.length;
 
-  // Total virtual height: n level items + nc child items (if expanded) + small separator
-  const totalH = n * LGAP + (nc > 0 ? nc * CGAP + 8 : 0);
+  // Desc lines shown inline after active item/child
+  function getDescLines(src, maxLines) {
+    if (!src || !src.desc) return [];
+    return src.desc.split('\n').filter(l => l.trim()).slice(0, maxLines);
+  }
+
+  // Compute active child desc (shown after child-tease list)
+  const activeChild = nc > 0 ? children[childIdx] : null;
+  const childDescLines = activeChild ? getDescLines(activeChild, 3) : [];
+  const levelDescLines = (nc === 0) ? getDescLines(item, 3) : [];
+
+  const totalH = n * LGAP
+    + (nc > 0 ? nc * CGAP + 8 : 0)
+    + (childDescLines.length > 0 ? childDescLines.length * DGAP + 10 : 0)
+    + (levelDescLines.length > 0 ? levelDescLines.length * DGAP + 10 : 0);
   let y = -totalH / 2 + LGAP / 2;
+
+  function addDescLine(text, indentX, opacity, fontSize) {
+    const d = document.createElement('div');
+    d.className = 'child-tease';
+    d.textContent = text;
+    d.style.opacity = String(opacity);
+    d.style.fontSize = fontSize || '11px';
+    d.style.pointerEvents = 'none';
+    d.style.fontWeight = '400';
+    d.style.transform = `translate(${indentX}px, calc(-50% + ${y}px))`;
+    subNavEl.insertBefore(d, descPreview);
+    childTeaseBtns.push(d);
+    y += DGAP;
+  }
 
   subBtns.forEach((btn, i) => {
     const isActive = (i === subIdx);
@@ -1137,9 +1171,8 @@ function applyBulletList() {
     btn.style.pointerEvents = 'auto';
     y += LGAP;
 
-    // Inject child tease inline right after the active level item
     if (isActive && nc > 0) {
-      y += 4; // small gap before children
+      y += 4;
       children.forEach((child, idx) => {
         const isChildActive = (idx === childIdx);
         const btn2 = document.createElement('button');
@@ -1153,7 +1186,20 @@ function applyBulletList() {
         childTeaseBtns.push(btn2);
         y += CGAP;
       });
-      y += 4; // small gap after children
+      y += 4;
+      // Show active child's desc inline below child list
+      if (childDescLines.length > 0) {
+        y += 2;
+        childDescLines.forEach(line => addDescLine(line, 20, 0.42, '11px'));
+        y += 4;
+      }
+    }
+
+    // Show active level's desc inline (when no children)
+    if (isActive && nc === 0 && levelDescLines.length > 0) {
+      y += 6;
+      levelDescLines.forEach(line => addDescLine(line, 10, 0.42, '11px'));
+      y += 4;
     }
   });
 }
@@ -1256,17 +1302,15 @@ function goTo(newDepth) {
   const showChildHeader = depth === 2 && hasChildren();
   childHeader.classList.toggle('active', showChildHeader);
 
+  descPreview.style.opacity = '0'; // content shown inline on left panel
   if (depth === 0) {
     positionAllSubBtns();
-    descPreview.style.opacity = '0';
     parentLabel.style.opacity = '0';
   } else if (depth === 1) {
     positionAllSubBtns();
-    descPreview.style.opacity = hasChildren() ? '1' : '0';
     parentLabel.style.opacity = '1';
   } else if (depth === 2) {
     applyHeaderMode();
-    descPreview.style.opacity = '0';
     parentLabel.style.opacity = '0.55';
   }
 
