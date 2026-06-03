@@ -2090,7 +2090,7 @@ window.addEventListener('resize', () => {
 
   function frame(){
     t++;
-    camTX+=(tgtTX-camTX)*0.055;camTY+=(tgtTY-camTY)*0.055;
+    camTX = tgtTX; camTY = tgtTY;
     ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
     drawGameWorld(W*0.30);
     drawFilm();
