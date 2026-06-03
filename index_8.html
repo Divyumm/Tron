@@ -41,9 +41,10 @@ body::after {
 #dpad {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   display: grid;
-  grid-template-columns: 58px 44px 58px;
+  grid-template-columns: 56px 44px 44px 44px 56px;
   grid-template-rows: 44px 44px 44px;
-  gap: 5px;
+  column-gap: 5px;
+  row-gap: 5px;
   z-index: 50;
   align-items: center;
   justify-items: center;
@@ -61,19 +62,19 @@ body::after {
 }
 .nav-arr:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.6); color: #ffffff; }
 .nav-arr.dim { opacity: 0.18; pointer-events: none; }
-#arr-up    { grid-column: 2; grid-row: 1; }
-#arr-left  { grid-column: 1; grid-row: 2; }
-#arr-right { grid-column: 3; grid-row: 2; }
-#arr-down  { grid-column: 2; grid-row: 3; }
+#arr-up    { grid-column: 3; grid-row: 1; }
+#arr-left  { grid-column: 2; grid-row: 2; }
+#arr-right { grid-column: 4; grid-row: 2; }
+#arr-down  { grid-column: 3; grid-row: 3; }
 .nav-arr:active { transform: scale(0.92); }
-/* Arrow hint labels flanking left/right */
+/* Arrow hint labels flanking left/right in separate grid columns */
 .arr-hint {
-  font-size: 8px; font-weight: 700; letter-spacing: 0.09em;
-  color: rgba(255,255,255,0.32); white-space: nowrap; text-align: center;
-  pointer-events: none; text-transform: uppercase;
+  font-size: 8px; font-weight: 700; letter-spacing: 0.07em;
+  color: rgba(255,255,255,0.38); white-space: nowrap;
+  pointer-events: none; text-transform: uppercase; line-height: 1.2;
 }
-#hint-left  { grid-column: 1; grid-row: 2; justify-self: start; padding-left: 2px; }
-#hint-right { grid-column: 3; grid-row: 2; justify-self: end;   padding-right: 2px; }
+#hint-left  { grid-column: 1; grid-row: 2; text-align: right;  justify-self: end; }
+#hint-right { grid-column: 5; grid-row: 2; text-align: left;   justify-self: start; }
 
 /* ── L1 horizontal carousel — anchor: top-left ── */
 #cat-carousel { position: absolute; inset: 0; transition: opacity 0.38s ease; }
@@ -92,17 +93,17 @@ body::after {
 /* ── L2 vertical sub-nav — anchor: top-left ── */
 #sub-nav { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity 0.38s ease; }
 #sub-nav.active { opacity: 1; pointer-events: auto; }
-/* World title — large bold heading above level list */
+/* World title — large bold heading, fixed above level list */
 #parent-label {
-  position: absolute; top: 11%; left: 6%;
+  position: absolute; top: 8%; left: 6%;
   font-size: 22px; font-weight: 900;
   color: rgba(232,232,232,0.88); white-space: nowrap;
   pointer-events: none; letter-spacing: -0.01em;
   text-shadow: 0 2px 24px rgba(0,0,0,0.95);
 }
-/* Sub-item buttons all anchored to top: 26%, left: 6% */
+/* Sub-item buttons anchored lower so world title never overlaps */
 .sub-btn {
-  position: absolute; top: 26%; left: 6%;
+  position: absolute; top: 55%; left: 6%;
   background: none; border: 1px solid transparent; cursor: pointer;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700;
   color: #e8e8e8; line-height: 1; padding: 4px 10px; white-space: nowrap;
@@ -118,7 +119,7 @@ body::after {
   background: rgba(255,255,255,0.05);
 }
 .child-tease {
-  position: absolute; top: 26%; left: 6%;
+  position: absolute; top: 55%; left: 6%;
   background: none; border: 1px solid transparent; cursor: pointer;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700;
   color: #e8e8e8; font-size: 12px; line-height: 1; padding: 3px 8px;
@@ -127,7 +128,7 @@ body::after {
 }
 /* Inline desc preview lines — allow wrapping, not interactive */
 .desc-tease {
-  position: absolute; top: 26%; left: 6%;
+  position: absolute; top: 55%; left: 6%;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 400;
   color: #e8e8e8; font-size: 11px; line-height: 1.45; padding: 2px 8px;
   white-space: normal; max-width: 46%; border-radius: 3px;
@@ -1883,57 +1884,56 @@ window.addEventListener('resize', () => {
     minimapCtx.arc(cx, cy, r, 0, Math.PI * 2);
     minimapCtx.clip();
 
-    // ── Constellation edges between worlds (diagonal arcs) ──
+    // ── Always show full constellation — brightness reflects progress ──
+
+    function drawStar(sx, sy, outerR, innerR, fillColor, glowColor, glowR) {
+      if (glowColor) {
+        const g = minimapCtx.createRadialGradient(sx, sy, 0, sx, sy, glowR);
+        g.addColorStop(0, glowColor); g.addColorStop(1, 'transparent');
+        minimapCtx.fillStyle = g;
+        minimapCtx.beginPath(); minimapCtx.arc(sx, sy, glowR, 0, Math.PI * 2); minimapCtx.fill();
+      }
+      minimapCtx.fillStyle = fillColor;
+      minimapCtx.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const rad = (i % 2 === 0) ? outerR : innerR;
+        const angle = (i / 8) * Math.PI * 2 - Math.PI / 2;
+        if (i === 0) minimapCtx.moveTo(sx + rad * Math.cos(angle), sy + rad * Math.sin(angle));
+        else minimapCtx.lineTo(sx + rad * Math.cos(angle), sy + rad * Math.sin(angle));
+      }
+      minimapCtx.closePath(); minimapCtx.fill();
+    }
+
+    // Edges between worlds
     CAT.forEach((cat, c) => {
-      const nc = cat.items.length;
       if (c >= CAT.length - 1) return;
-      const revealed = isVisited(c, 0) || isUnlocked(c, 0);
-      if (!revealed) return;
-      const x1 = 20 + c * 40,       y1 = getNodeY(c, nc - 1);
+      const x1 = 20 + c * 40, y1 = getNodeY(c, cat.items.length - 1);
       const x2 = 20 + (c + 1) * 40, y2 = getNodeY(c + 1, 0);
       const p1 = nodeToMM(x1, y1), p2 = nodeToMM(x2, y2);
-      const nextRev = isVisited(c + 1, 0) || isUnlocked(c + 1, 0);
-      // Midpoint with slight curve offset for constellation feel
-      const midX = (p1.sx + p2.sx) / 2 + (p2.sy - p1.sy) * 0.15;
-      const midY = (p1.sy + p2.sy) / 2 - (p2.sx - p1.sx) * 0.15;
-      minimapCtx.setLineDash([3, 5]);
-      minimapCtx.lineWidth = 1;
-      minimapCtx.strokeStyle = nextRev ? 'rgba(180,200,255,0.22)' : 'rgba(120,140,200,0.1)';
+      const done = isVisited(c, cat.items.length - 1);
+      const midX = (p1.sx + p2.sx) / 2 + (p2.sy - p1.sy) * 0.18;
+      const midY = (p1.sy + p2.sy) / 2 - (p2.sx - p1.sx) * 0.18;
+      minimapCtx.setLineDash([3, 6]);
+      minimapCtx.lineWidth = done ? 1.2 : 0.6;
+      minimapCtx.strokeStyle = done ? 'rgba(180,210,255,0.5)' : 'rgba(100,120,180,0.2)';
       minimapCtx.beginPath();
       minimapCtx.moveTo(p1.sx, p1.sy);
       minimapCtx.quadraticCurveTo(midX, midY, p2.sx, p2.sy);
       minimapCtx.stroke();
       minimapCtx.setLineDash([]);
-      // Progress fill along the curve
-      const prog = getWorldProgress(c);
-      if (prog > 0) {
-        minimapCtx.lineWidth = 1.5;
-        minimapCtx.strokeStyle = nextRev ? 'rgba(200,220,255,0.6)' : 'rgba(163,230,53,0.7)';
-        minimapCtx.beginPath();
-        minimapCtx.moveTo(p1.sx, p1.sy);
-        const ex = p1.sx + (p2.sx - p1.sx) * prog;
-        const ey = p1.sy + (p2.sy - p1.sy) * prog;
-        minimapCtx.lineTo(ex, ey);
-        minimapCtx.stroke();
-      }
     });
 
-    // ── Constellation branches within each world ──
+    // Branches within each world
     CAT.forEach((cat, c) => {
       const x = 20 + c * 40;
       for (let s = 0; s < cat.items.length - 1; s++) {
-        if (!isVisited(c, s + 1) && !isUnlocked(c, s + 1)) continue;
         const pA = nodeToMM(x, getNodeY(c, s));
         const pB = nodeToMM(x, getNodeY(c, s + 1));
-        const visited = isVisited(c, s + 1);
-        // Slight lateral wobble for constellation feel
+        const visited = isVisited(c, s) && isVisited(c, s + 1);
         const wobble = (c % 2 === 0 ? 1 : -1) * 3;
-        const mX = (pA.sx + pB.sx) / 2 + wobble;
-        const mY = (pA.sy + pB.sy) / 2;
-        minimapCtx.lineWidth = visited ? 1.2 : 0.8;
-        minimapCtx.strokeStyle = visited
-          ? 'rgba(200,215,255,0.45)'
-          : 'rgba(140,160,220,0.18)';
+        const mX = (pA.sx + pB.sx) / 2 + wobble, mY = (pA.sy + pB.sy) / 2;
+        minimapCtx.lineWidth = visited ? 1.2 : 0.6;
+        minimapCtx.strokeStyle = visited ? 'rgba(200,220,255,0.5)' : 'rgba(100,120,180,0.18)';
         minimapCtx.beginPath();
         minimapCtx.moveTo(pA.sx, pA.sy);
         minimapCtx.quadraticCurveTo(mX, mY, pB.sx, pB.sy);
@@ -1941,51 +1941,27 @@ window.addEventListener('resize', () => {
       }
     });
 
-    // ── Star nodes ──
-    function drawStar(sx, sy, outerR, innerR, points, fillColor, glowColor, glowR) {
-      if (glowColor) {
-        const g = minimapCtx.createRadialGradient(sx, sy, 0, sx, sy, glowR);
-        g.addColorStop(0, glowColor);
-        g.addColorStop(1, 'transparent');
-        minimapCtx.fillStyle = g;
-        minimapCtx.beginPath(); minimapCtx.arc(sx, sy, glowR, 0, Math.PI * 2); minimapCtx.fill();
-      }
-      minimapCtx.fillStyle = fillColor;
-      minimapCtx.beginPath();
-      for (let i = 0; i < points * 2; i++) {
-        const rad = (i % 2 === 0) ? outerR : innerR;
-        const angle = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
-        if (i === 0) minimapCtx.moveTo(sx + rad * Math.cos(angle), sy + rad * Math.sin(angle));
-        else minimapCtx.lineTo(sx + rad * Math.cos(angle), sy + rad * Math.sin(angle));
-      }
-      minimapCtx.closePath();
-      minimapCtx.fill();
-    }
-
+    // All nodes — always visible, brightness = progress
     CAT.forEach((cat, c) => {
       const x = 20 + c * 40;
       cat.items.forEach((_, s) => {
-        const visited = isVisited(c, s), unlocked = isUnlocked(c, s);
-        if (!visited && !unlocked) return;
         const { sx, sy } = nodeToMM(x, getNodeY(c, s));
+        const visited = isVisited(c, s);
         const isActive = (catIdx === c && subIdx === s);
         if (isActive) {
-          // Animated pulsing crosshair + bright star
           const pulse = 5 + Math.abs(Math.sin(t * 0.1)) * 4;
-          drawStar(sx, sy, 5, 2.5, 4, '#ffffff', 'rgba(163,230,53,0.35)', pulse + 6);
-          minimapCtx.strokeStyle = 'rgba(163,230,53,0.7)';
-          minimapCtx.lineWidth = 1;
+          drawStar(sx, sy, 5, 2.2, '#ffffff', 'rgba(163,230,53,0.4)', pulse + 7);
+          minimapCtx.strokeStyle = 'rgba(163,230,53,0.75)'; minimapCtx.lineWidth = 1;
           minimapCtx.beginPath();
           minimapCtx.moveTo(sx - pulse, sy); minimapCtx.lineTo(sx + pulse, sy);
           minimapCtx.moveTo(sx, sy - pulse); minimapCtx.lineTo(sx, sy + pulse);
           minimapCtx.stroke();
         } else if (visited) {
-          // Visited: bright 4-pointed star
-          drawStar(sx, sy, 4, 1.8, 4, 'rgba(220,235,255,0.9)', 'rgba(180,200,255,0.2)', 7);
+          drawStar(sx, sy, 4, 1.6, 'rgba(220,235,255,0.95)', 'rgba(160,190,255,0.25)', 8);
         } else {
-          // Unlocked but not visited: dim dot
-          minimapCtx.fillStyle = 'rgba(140,160,200,0.28)';
-          minimapCtx.beginPath(); minimapCtx.arc(sx, sy, 2, 0, Math.PI * 2); minimapCtx.fill();
+          // Unvisited — dim but visible
+          minimapCtx.fillStyle = 'rgba(100,120,180,0.35)';
+          minimapCtx.beginPath(); minimapCtx.arc(sx, sy, 1.8, 0, Math.PI * 2); minimapCtx.fill();
         }
       });
     });
@@ -2069,26 +2045,37 @@ window.addEventListener('resize', () => {
 })();
 
 // ── Idle Guidance Timer ───────────────────────────────────────────────────────
-function getNextStepArrow() {
+function getGuideArrows() {
   const item = CAT[catIdx].items[subIdx];
+  const count = CAT[catIdx].items.length;
+  const ids = [];
   if (depth === 2 && item && item.children) {
-    return childIdx < item.children.length - 1 ? 'arr-right' : 'arr-left';
+    ids.push(childIdx < item.children.length - 1 ? 'arr-right' : 'arr-left');
+    return ids;
   }
-  if (depth === 1 && item && item.children) {
-    // Guide right to enter the children view
-    const hasUnvisited = item.children.some((_, idx) =>
-      !localStorage.getItem(`visited_${catIdx}_${subIdx}_${idx}`)
-    );
-    if (hasUnvisited) return 'arr-right';
+  if (depth === 1) {
+    // Always guide down if there are more levels to explore
+    if (subIdx < count - 1) ids.push('arr-down');
+    // Guide right if current level has unvisited children
+    if (item && item.children) {
+      const hasUnvisited = item.children.some((_, idx) =>
+        !localStorage.getItem(`visited_${catIdx}_${subIdx}_${idx}`)
+      );
+      if (hasUnvisited) ids.push('arr-right');
+    }
+    if (ids.length === 0) ids.push('arr-down');
+  } else {
+    ids.push('arr-down');
   }
-  return 'arr-down';
+  return ids;
 }
 
 function updateGuideArrow() {
   document.querySelectorAll('.nav-arr').forEach(btn => btn.classList.remove('guide'));
-  const nextArrowId = getNextStepArrow();
-  const btn = document.getElementById(nextArrowId);
-  if (btn && !btn.classList.contains('dim')) btn.classList.add('guide');
+  getGuideArrows().forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn && !btn.classList.contains('dim')) btn.classList.add('guide');
+  });
 }
 
 updateGuideArrow();
