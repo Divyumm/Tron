@@ -159,7 +159,7 @@ body::after {
 #desc-full {
   position: absolute;
   top: 0; bottom: 0; left: 32%; right: 0;
-  padding: 6vh 52px 180px 48px;
+  padding: 8vh 6% 180px 8%;
   opacity: 0; pointer-events: none; transition: opacity 0.38s ease;
   overflow-y: auto;
   scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
@@ -170,7 +170,7 @@ body::after {
 #desc-full-body {
   font-size: 22px; font-weight: 700;
   line-height: 1.62; color: #ffffff;
-  white-space: pre-line; max-width: 780px;
+  white-space: pre-line; max-width: 700px;
   text-shadow: 0 0 3px #000, 1px 1px 0 rgba(0,0,0,0.85), 0 2px 8px rgba(0,0,0,0.9);
 }
 
@@ -178,7 +178,7 @@ body::after {
 #child-view {
   position: absolute;
   top: 0; bottom: 0; left: 32%; right: 0;
-  padding: 28vh 52px 200px 48px;
+  padding: 26vh 6% 200px 8%;
   opacity: 0; pointer-events: none; transition: opacity 0.38s ease;
   overflow-y: auto;
   scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
@@ -247,7 +247,7 @@ body::after {
 #child-body {
   font-size: 18px; font-weight: 700;
   line-height: 1.68; color: #ffffff;
-  white-space: pre-line; max-width: 680px;
+  white-space: pre-line; max-width: 700px;
   text-shadow: 0 0 3px #000, 1px 1px 0 rgba(0,0,0,0.85), 0 2px 8px rgba(0,0,0,0.9);
 }
 /* Next item peek */
@@ -1320,8 +1320,10 @@ function updateNavArrows() {
       set(arrUp,    canScrollUp);
       set(arrDown,  canScrollDown);
     } else {
+      // Non-children leaf: right goes to next level/world (unless very last)
+      const isLastLevel = subIdx === CAT[catIdx].items.length - 1 && catIdx === CAT.length - 1;
       set(arrLeft,  true);
-      set(arrRight, false);
+      set(arrRight, !isLastLevel);
       set(arrUp,    canScrollUp);
       set(arrDown,  canScrollDown);
     }
@@ -1335,7 +1337,7 @@ function updateFooter() {
     1: `<span><span class="key">↑</span><span class="key">↓</span> LEVELS</span><span><span class="key">←</span> WORLDS</span>` + (hc ? `<span><span class="key">→</span> DIVE IN</span>` : ''),
     2: hc
       ? `<span><span class="key">←</span><span class="key">→</span> ITEMS</span><span><span class="key">ESC</span> BACK</span>`
-      : `<span><span class="key">↑</span><span class="key">↓</span> SCROLL</span><span><span class="key">←</span> BACK</span>`,
+      : `<span><span class="key">↑</span><span class="key">↓</span> SCROLL</span><span><span class="key">←</span> BACK</span><span><span class="key">→</span> NEXT</span>`,
   };
   footerEl.innerHTML = hints[depth];
   // Update D-pad side labels
@@ -1346,6 +1348,26 @@ function updateFooter() {
     else if (depth === 1) { hintL.textContent = 'WORLDS'; hintR.textContent = hc ? 'DIVE IN' : ''; }
     else { hintL.textContent = hc ? 'PREV' : 'BACK'; hintR.textContent = hc ? 'NEXT' : ''; }
   }
+}
+
+// Advance from depth-2 to the next level, or next world if at last level
+function advanceToNextLevel() {
+  const n = CAT.length;
+  const count = CAT[catIdx].items.length;
+  if (subIdx < count - 1) {
+    subIdx++;
+    childIdx = 0;
+    buildSubBtns();
+    goTo(1);
+  } else if (catIdx < n - 1) {
+    catIdx++;
+    subIdx = 0;
+    childIdx = 0;
+    updateCats();
+    buildSubBtns();
+    goTo(1);
+  }
+  // At the very last level of last world — do nothing (already at the end)
 }
 
 // ── Keyboard + arrow-button handler ──────────────────────────────────────────
@@ -1398,6 +1420,9 @@ function handleNav(key) {
           updateCamTarget();
           updateNavArrows();
           updateGuideArrow();
+        } else {
+          // Last child → advance to next level or next world
+          advanceToNextLevel();
         }
       } else if (key === 'ArrowLeft') {
         if (childIdx > 0) {
@@ -1417,7 +1442,10 @@ function handleNav(key) {
         childViewEl.scrollBy({ top: -80, behavior: 'smooth' });
       }
     } else {
-      if (key === 'ArrowLeft' || key === 'Escape') {
+      if (key === 'ArrowRight') {
+        // Advance to next level or next world from a leaf description
+        advanceToNextLevel();
+      } else if (key === 'ArrowLeft' || key === 'Escape') {
         goTo(1);
       } else if (key === 'ArrowDown') {
         descFullEl.scrollBy({ top: 80, behavior: 'smooth' });
@@ -1725,12 +1753,11 @@ window.addEventListener('resize', () => {
     const rw = W * (1 - Z_FILM);
     ctx.save();
     ctx.beginPath(); ctx.rect(rx, 0, rw, H); ctx.clip();
-    const visTX = Math.ceil(rw / TS) + 2;
+    // Use identical offset logic to drawGameWorld so tiles align seamlessly
+    const visTX = Math.ceil(W / TS) + 2;
     const visTY = Math.ceil(H / TS) + 2;
-    const stX = Math.floor(camTX + rx / TS);
-    const stY = Math.floor(camTY);
-    const offX = rx - (camTX - Math.floor(camTX)) * TS;
-    const offY = -(camTY - stY) * TS;
+    const stX = Math.floor(camTX), stY = Math.floor(camTY);
+    const offX = -(camTX - stX) * TS, offY = -(camTY - stY) * TS;
     for (let dy = 0; dy < visTY; dy++) for (let dx = 0; dx < visTX; dx++) {
       ctx.fillStyle = getTileColor(stX + dx, stY + dy);
       ctx.fillRect(offX + dx * TS, offY + dy * TS, TS, TS);
