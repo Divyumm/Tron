@@ -1055,7 +1055,9 @@ function buildSubBtns() {
   cat.items.forEach((item, i) => {
     const btn = document.createElement('button');
     btn.className = 'sub-btn';
-    btn.textContent = 'Level ' + (catIdx + 1) + '.' + (i + 1) + ' · ' + item.label;
+    btn.dataset.i = i;
+    btn.dataset.base = 'Level ' + (catIdx + 1) + '.' + (i + 1) + ' · ' + item.label;
+    btn.textContent = btn.dataset.base;
     btn.addEventListener('click', () => {
       if (i === subIdx) {
         if (hasChildren()) { childIdx = 0; goTo(2); }
@@ -1074,27 +1076,38 @@ function buildSubBtns() {
 
 function positionAllSubBtns() {
   if (depth === 2) { applyHeaderMode(); return; }
+
+  if (depth === 1) {
+    // Flat equal-weight bullet list — every item same size and opacity
+    const YGAP = 40;
+    const n = subBtns.length;
+    // Centre the list on the anchor row so it reads top-to-bottom
+    const listTop = -(n - 1) / 2 * YGAP;
+    subBtns.forEach((btn, i) => {
+      const isActive = (i === subIdx);
+      btn.textContent = (isActive ? '› ' : '· ') + btn.dataset.base;
+      btn.style.fontSize  = '16px';
+      btn.style.opacity   = '0.62';
+      btn.style.transform = `translate(0, calc(-50% + ${listTop + i * YGAP}px))`;
+      btn.style.pointerEvents = 'auto';
+    });
+    return;
+  }
+
+  // depth === 0: gentle preview list below the world title
   const YGAP = 80;
   subBtns.forEach((btn, i) => {
-    const off = (depth === 0) ? i : (i - subIdx);
-    const abs = Math.abs(off);
+    btn.textContent = btn.dataset.base;
+    const off = i;
     let size, opacity, yOff;
-    if (depth === 0) {
-      // At category level (depth 0), list subheadings beneath the category header (at yOff = 0) with decreasing brightness
-      if      (off === 0) { size = 26; opacity = 0.72; yOff = YGAP; }
-      else if (off === 1) { size = 17; opacity = 0.44; yOff = YGAP * 1.55; }
-      else if (off === 2) { size = 13; opacity = 0.22; yOff = YGAP * 2.1; }
-      else                { size = 11; opacity = 0;    yOff = YGAP * 2.55; }
-    } else {
-      if      (abs === 0) { size = getActiveFontSize(); opacity = 1.00; yOff = 0; }
-      else if (abs === 1) { size = 26; opacity = 0.72; yOff = off * YGAP; }
-      else if (abs === 2) { size = 17; opacity = 0.44; yOff = off > 0 ? YGAP*1.55 : -YGAP*1.55; }
-      else if (abs === 3) { size = 13; opacity = 0.22; yOff = off > 0 ? YGAP*2.1  : -YGAP*2.1;  }
-      else                { size = 11; opacity = 0;    yOff = off > 0 ? YGAP*2.55 : -YGAP*2.55; }
-    }
+    if      (off === 0) { size = 17; opacity = 0.44; yOff = YGAP; }
+    else if (off === 1) { size = 14; opacity = 0.28; yOff = YGAP * 1.55; }
+    else if (off === 2) { size = 12; opacity = 0.16; yOff = YGAP * 2.1; }
+    else                { size = 11; opacity = 0;    yOff = YGAP * 2.55; }
     btn.style.fontSize  = size + 'px';
     btn.style.opacity   = String(opacity);
     btn.style.transform = `translate(0, calc(-50% + ${yOff}px))`;
+    btn.style.pointerEvents = 'none';
   });
 }
 
