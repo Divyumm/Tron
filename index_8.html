@@ -598,6 +598,23 @@ function isChildUnlocked(c, s, idx) {
   return isChildVisited(c, s, idx - 1);
 }
 
+function getWorldProgress(c) {
+  const cat = CAT[c];
+  let total = 0, completed = 0;
+  cat.items.forEach((item, s) => {
+    if (item.children) {
+      item.children.forEach((_, idx) => {
+        total++;
+        if (localStorage.getItem(`visited_${c}_${s}_${idx}`)) completed++;
+      });
+    } else {
+      total++;
+      if (localStorage.getItem(`visited_${c}_${s}`)) completed++;
+    }
+  });
+  return total > 0 ? completed / total : 0;
+}
+
 function draw8BitBlock(cContext, x, y, size) {
   cContext.fillStyle = '#4a5568';
   cContext.fillRect(x - size/2, y - size/2, size, size);
@@ -1357,32 +1374,36 @@ window.addEventListener('resize', () => {
           const sy2 = (p2.ty - camTY) * TS;
           const revealed = isVisited(c + 1, 0);
 
-          if (c === 3) {
-            ctx.strokeStyle = revealed ? 'rgba(255, 255, 255, 0.22)' : 'rgba(255, 255, 255, 0.09)';
+          // Straight linear connector with progress fill
+          ctx.strokeStyle = revealed ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)';
+          ctx.beginPath();
+          ctx.moveTo(sx1, sy1);
+          ctx.lineTo(sx2, sy2);
+          ctx.stroke();
+
+          const prog = getWorldProgress(c);
+          if (prog > 0) {
+            const fx = sx1 + (sx2 - sx1) * prog;
+            const fy = sy1 + (sy2 - sy1) * prog;
+            ctx.strokeStyle = revealed ? 'rgba(255, 255, 255, 0.38)' : 'rgba(163, 230, 53, 0.5)';
+            ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(sx1, sy1);
-            ctx.lineTo(sx2, sy2);
+            ctx.lineTo(fx, fy);
             ctx.stroke();
-            const midX = (sx1 + sx2) / 2;
-            ctx.strokeStyle = revealed ? 'rgba(255, 255, 255, 0.35)' : 'rgba(255, 255, 255, 0.14)';
-            ctx.beginPath();
-            ctx.moveTo(midX - 3, sy1 - 4);
-            ctx.lineTo(midX + 3, sy1);
-            ctx.lineTo(midX - 3, sy1 + 4);
-            ctx.stroke();
-          } else {
-            const isTopJump = (p1.ty < LEV_H * 2 && p2.ty < LEV_H * 2);
-            const scpx = (sx1 + sx2) / 2;
-            const cpy = isTopJump ? Math.max(p1.ty, p2.ty) + 20 : Math.min(p1.ty, p2.ty) - 20;
-            const scpy = (cpy - camTY) * TS;
-            ctx.strokeStyle = revealed ? 'rgba(234, 179, 8, 0.35)' : 'rgba(234, 179, 8, 0.12)';
-            ctx.beginPath();
-            ctx.moveTo(sx1, sy1);
-            ctx.quadraticCurveTo(scpx, scpy, sx2, sy2);
-            ctx.setLineDash([4, 4]);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            ctx.lineWidth = 1.5;
           }
+
+          // Arrowhead at midpoint
+          const bmx = (sx1 + sx2) / 2, bmy = (sy1 + sy2) / 2;
+          const bang = Math.atan2(sy2 - sy1, sx2 - sx1);
+          const baw = 5;
+          ctx.strokeStyle = revealed ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.08)';
+          ctx.beginPath();
+          ctx.moveTo(bmx - Math.cos(bang - 0.5) * baw, bmy - Math.sin(bang - 0.5) * baw);
+          ctx.lineTo(bmx + Math.cos(bang) * baw, bmy + Math.sin(bang) * baw);
+          ctx.lineTo(bmx - Math.cos(bang + 0.5) * baw, bmy - Math.sin(bang + 0.5) * baw);
+          ctx.stroke();
         }
       }
     });
@@ -1662,70 +1683,47 @@ window.addEventListener('resize', () => {
         }
       }
 
-      // Cannon jump/adjacent track to the next World
+      // Linear world-to-world connector with completion progress fill
       if (c < numCats - 1) {
         const x1 = x;
         const y1 = getNodeY(c, nc - 1);
         const x2 = 20 + (c + 1) * 40;
         const y2 = getNodeY(c + 1, 0);
-        
-        const isDestRevealed = isVisited(c + 1, 0) || isUnlocked(c + 1, 0);
+        const progress = getWorldProgress(c);
+        const nextRevealed = isVisited(c + 1, 0) || isUnlocked(c + 1, 0);
 
-        if (isDestRevealed) {
-          if (c === 3) {
-            // World 4 to World 5 connection is adjacent (solid straight line, no cannon)
-            minimapCtx.beginPath();
-            minimapCtx.moveTo(x1, y1);
-            minimapCtx.lineTo(x2, y2);
-            minimapCtx.strokeStyle = isVisited(c + 1, 0) ? 'rgba(255, 255, 255, 0.45)' : 'rgba(255, 255, 255, 0.2)';
-            minimapCtx.lineWidth = 2;
-            minimapCtx.stroke();
+        // Base track — always visible (very faint) so the full map is readable from the start
+        minimapCtx.beginPath();
+        minimapCtx.moveTo(x1, y1);
+        minimapCtx.lineTo(x2, y2);
+        minimapCtx.strokeStyle = nextRevealed ? 'rgba(255, 255, 255, 0.18)' : 'rgba(255, 255, 255, 0.06)';
+        minimapCtx.lineWidth = 1.5;
+        minimapCtx.stroke();
 
-            // Small arrowhead pointing right
-            const midX = (x1 + x2) / 2;
-            minimapCtx.strokeStyle = isVisited(c + 1, 0) ? 'rgba(255, 255, 255, 0.65)' : 'rgba(255, 255, 255, 0.35)';
-            minimapCtx.lineWidth = 1.5;
-            minimapCtx.beginPath();
-            minimapCtx.moveTo(midX - 2, y1 - 3);
-            minimapCtx.lineTo(midX + 2, y1);
-            minimapCtx.lineTo(midX - 2, y1 + 3);
-            minimapCtx.stroke();
-          } else {
-            // Control point: curve downwards for top jumps, upwards for bottom/diagonal jumps
-            const isTopJump = (y1 < 150 && y2 < 150);
-            const cpX = (x1 + x2) / 2;
-            const cpY = isTopJump ? Math.max(y1, y2) + 30 : Math.min(y1, y2) - 30;
-
-            // Draw dotted quadratic curve path
-            minimapCtx.beginPath();
-            minimapCtx.moveTo(x1, y1);
-            minimapCtx.quadraticCurveTo(cpX, cpY, x2, y2);
-            minimapCtx.strokeStyle = isVisited(c + 1, 0) ? '#eab308' : 'rgba(234, 179, 8, 0.3)';
-            minimapCtx.lineWidth = 1.5;
-            minimapCtx.setLineDash([3, 3]);
-            minimapCtx.stroke();
-            minimapCtx.setLineDash([]);
-
-            // Draw small cannon barrel pointing along the jump arc
-            const angle = Math.atan2(cpY - y1, cpX - x1);
-            minimapCtx.save();
-            minimapCtx.translate(x1, y1);
-            minimapCtx.rotate(angle + Math.PI / 2);
-            minimapCtx.fillStyle = isVisited(c + 1, 0) ? '#eab308' : 'rgba(234, 179, 8, 0.3)';
-            minimapCtx.fillRect(-3, -11, 6, 11);
-            minimapCtx.beginPath();
-            minimapCtx.arc(0, 0, 4, 0, Math.PI * 2);
-            minimapCtx.fill();
-            minimapCtx.restore();
-
-            // Draw target ring on the destination node
-            minimapCtx.beginPath();
-            minimapCtx.arc(x2, y2, 8, 0, Math.PI * 2);
-            minimapCtx.strokeStyle = isVisited(c + 1, 0) ? 'rgba(234, 179, 8, 0.4)' : 'rgba(234, 179, 8, 0.15)';
-            minimapCtx.lineWidth = 1;
-            minimapCtx.stroke();
-          }
+        // Progress fill (lime green, grows from start as levels are completed)
+        if (progress > 0) {
+          const fx = x1 + (x2 - x1) * progress;
+          const fy = y1 + (y2 - y1) * progress;
+          minimapCtx.beginPath();
+          minimapCtx.moveTo(x1, y1);
+          minimapCtx.lineTo(fx, fy);
+          minimapCtx.strokeStyle = nextRevealed ? 'rgba(255, 255, 255, 0.55)' : 'rgba(163, 230, 53, 0.7)';
+          minimapCtx.lineWidth = 2;
+          minimapCtx.stroke();
         }
+
+        // Arrowhead at midpoint pointing toward next world
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2;
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+        const aw = 4;
+        minimapCtx.strokeStyle = nextRevealed ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.15)';
+        minimapCtx.lineWidth = 1.5;
+        minimapCtx.beginPath();
+        minimapCtx.moveTo(midX - Math.cos(angle - 0.5) * aw, midY - Math.sin(angle - 0.5) * aw);
+        minimapCtx.lineTo(midX + Math.cos(angle) * aw, midY + Math.sin(angle) * aw);
+        minimapCtx.lineTo(midX - Math.cos(angle + 0.5) * aw, midY - Math.sin(angle + 0.5) * aw);
+        minimapCtx.stroke();
       }
     });
 
@@ -1751,10 +1749,10 @@ window.addEventListener('resize', () => {
         const unlockedState = isUnlocked(c, s);
 
         if (!visitedState && !unlockedState) {
-          // Locked/Hidden node: draw a very faint dark dot so the map reveals gradually
+          // Locked node: slightly more visible dot so the linear chain reads from the start
           minimapCtx.beginPath();
-          minimapCtx.arc(x, y, 2.5, 0, Math.PI * 2);
-          minimapCtx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+          minimapCtx.arc(x, y, 3, 0, Math.PI * 2);
+          minimapCtx.fillStyle = 'rgba(255, 255, 255, 0.10)';
           minimapCtx.fill();
           return;
         }
