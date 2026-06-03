@@ -1100,22 +1100,24 @@ function clearChildTease() {
   childTeaseBtns = [];
 }
 
-function buildChildTease(levelYOff) {
+function buildChildTease(bottomOfLevelList) {
   clearChildTease();
   const item = CAT[catIdx].items[subIdx];
   if (!item.children) return;
 
-  const YGAP = 26;
-  // Start the tease list just below the selected level rectangle
-  const startOff = levelYOff + 28;
+  const YGAP = 28;
+  // Start the child list 20px below the last level item — never overlaps the level list
+  const startOff = bottomOfLevelList + 20;
 
   item.children.forEach((child, idx) => {
     const btn = document.createElement('button');
-    btn.className = 'child-tease' + (idx === childIdx ? ' sel' : '');
-    btn.textContent = (idx === childIdx ? '› ' : '· ') +
+    const isActive = (idx === childIdx);
+    btn.className = 'child-tease' + (isActive ? ' sel' : '');
+    btn.textContent = (isActive ? '› ' : '· ') +
       (catIdx + 1) + '.' + (subIdx + 1) + '.' + (idx + 1) + ' · ' + child.label;
-    btn.style.opacity   = idx === childIdx ? '0.75' : '0.38';
-    btn.style.transform = `translate(0, calc(-50% + ${startOff + idx * YGAP}px))`;
+    // Equal opacity for all — no dimness gradient
+    btn.style.opacity   = '0.72';
+    btn.style.transform = `translate(8px, calc(-50% + ${startOff + idx * YGAP}px))`;
     btn.addEventListener('click', () => { childIdx = idx; goTo(2); });
     subNavEl.insertBefore(btn, descPreview);
     childTeaseBtns.push(btn);
@@ -1124,11 +1126,13 @@ function buildChildTease(levelYOff) {
 
 function applyBulletList() {
   const YGAP = 38;
-  const n = subBtns.length;
-  const listTop = -(n - 1) / 2 * YGAP;
+  const n    = subBtns.length;
+  const listTop    = -(n - 1) / 2 * YGAP;
+  const listBottom =  (n - 1) / 2 * YGAP;   // Y offset of the last level item
+
   subBtns.forEach((btn, i) => {
     const isActive = (i === subIdx);
-    btn.textContent = (isActive ? '› ' : '· ') + subBtnLabel(i);
+    btn.textContent      = (isActive ? '› ' : '· ') + subBtnLabel(i);
     btn.classList.toggle('sel', isActive);
     btn.style.fontSize      = '15px';
     btn.style.opacity       = '1';
@@ -1136,11 +1140,8 @@ function applyBulletList() {
     btn.style.pointerEvents = 'auto';
   });
 
-  // At depth 2, show child tease below the active level item
   if (depth === 2) {
-    const n = subBtns.length;
-    const activeLevelYOff = -(n - 1) / 2 * YGAP + subIdx * YGAP;
-    buildChildTease(activeLevelYOff);
+    buildChildTease(listBottom);
   } else {
     clearChildTease();
   }
