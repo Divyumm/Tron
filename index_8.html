@@ -358,18 +358,7 @@ body::after {
   pointer-events: auto;
   transform: translate(-50%, -50%) scale(1);
 }
-@keyframes shake-v {
-  0%, 100% { transform: translateX(-50%) scale(1); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-50%) scale(1.05) translateY(-1.5px); }
-  20%, 40%, 60%, 80% { transform: translateX(-50%) scale(1.05) translateY(1.5px); }
-}
-@keyframes shake-h {
-  0%, 100% { transform: translateY(-50%) scale(1); }
-  10%, 30%, 50%, 70%, 90% { transform: translateY(-50%) scale(1.05) translateX(-1.5px); }
-  20%, 40%, 60%, 80% { transform: translateY(-50%) scale(1.05) translateX(1.5px); }
-}
-.shake-up, .shake-down { animation: shake-v 0.6s ease-in-out infinite; border-color: #a3e635 !important; color: #a3e635 !important; box-shadow: 0 0 15px #a3e635; }
-.shake-left, .shake-right { animation: shake-h 0.6s ease-in-out infinite; border-color: #a3e635 !important; color: #a3e635 !important; box-shadow: 0 0 15px #a3e635; }
+.nav-arr.guide { border-color: #a3e635 !important; color: #a3e635 !important; box-shadow: 0 0 12px rgba(163,230,53,0.55); }
 </style>
 </head>
 <body>
@@ -1062,6 +1051,7 @@ function goTo(newDepth) {
 
   updateCamTarget();
   updateNavArrows();
+  updateGuideArrow();
   updateFooter();
 }
 
@@ -1123,8 +1113,8 @@ function handleNav(key) {
   const n = CAT.length;
 
   if (depth === 0) {
-    if (key === 'ArrowRight') { catIdx = (catIdx + 1) % n; updateCats(); updateCamTarget(); updateNavArrows(); }
-    else if (key === 'ArrowLeft')  { catIdx = (catIdx - 1 + n) % n; updateCats(); updateCamTarget(); updateNavArrows(); }
+    if (key === 'ArrowRight') { catIdx = (catIdx + 1) % n; updateCats(); updateCamTarget(); updateNavArrows(); updateGuideArrow(); }
+    else if (key === 'ArrowLeft')  { catIdx = (catIdx - 1 + n) % n; updateCats(); updateCamTarget(); updateNavArrows(); updateGuideArrow(); }
     else if (key === 'ArrowDown' || key === 'Enter') { subIdx = 0; childIdx = 0; buildSubBtns(); goTo(1); }
   }
   else if (depth === 1) {
@@ -1167,6 +1157,7 @@ function handleNav(key) {
           renderChildView();
           updateCamTarget();
           updateNavArrows();
+          updateGuideArrow();
         }
       } else if (key === 'ArrowLeft') {
         if (childIdx > 0) {
@@ -1175,6 +1166,7 @@ function handleNav(key) {
           renderChildView();
           updateCamTarget();
           updateNavArrows();
+          updateGuideArrow();
         }
         else { goTo(1); }
       } else if (key === 'Escape') {
@@ -1692,11 +1684,14 @@ window.addEventListener('resize', () => {
         const progress = getWorldProgress(c);
         const nextRevealed = isVisited(c + 1, 0) || isUnlocked(c + 1, 0);
 
-        // Base track — always visible (very faint) so the full map is readable from the start
+        // Only draw anything if this world has been reached
+        if (!isVisited(c, 0) && !isUnlocked(c, 0)) continue; // skip connector entirely if world not reached
+
+        // Base track (dim until next world opens)
         minimapCtx.beginPath();
         minimapCtx.moveTo(x1, y1);
         minimapCtx.lineTo(x2, y2);
-        minimapCtx.strokeStyle = nextRevealed ? 'rgba(255, 255, 255, 0.18)' : 'rgba(255, 255, 255, 0.06)';
+        minimapCtx.strokeStyle = nextRevealed ? 'rgba(255, 255, 255, 0.18)' : 'rgba(255, 255, 255, 0.08)';
         minimapCtx.lineWidth = 1.5;
         minimapCtx.stroke();
 
@@ -1749,12 +1744,7 @@ window.addEventListener('resize', () => {
         const unlockedState = isUnlocked(c, s);
 
         if (!visitedState && !unlockedState) {
-          // Locked node: slightly more visible dot so the linear chain reads from the start
-          minimapCtx.beginPath();
-          minimapCtx.arc(x, y, 3, 0, Math.PI * 2);
-          minimapCtx.fillStyle = 'rgba(255, 255, 255, 0.10)';
-          minimapCtx.fill();
-          return;
+          return; // locked — hidden until unlocked
         }
 
         // 1. Draw sub-tree branches to the right if this level has children
@@ -1969,30 +1959,14 @@ function getNextStepArrow() {
   return 'arr-down';
 }
 
-let idleTimer = null;
-function resetIdleTimer() {
-  clearTimeout(idleTimer);
-  document.querySelectorAll('.nav-arr').forEach(btn => {
-    btn.classList.remove('shake-up', 'shake-down', 'shake-left', 'shake-right');
-  });
-  
-  idleTimer = setTimeout(() => {
-    const nextArrowId = getNextStepArrow();
-    const btn = document.getElementById(nextArrowId);
-    if (btn && !btn.classList.contains('dim')) {
-      if (nextArrowId === 'arr-up') btn.classList.add('shake-up');
-      else if (nextArrowId === 'arr-down') btn.classList.add('shake-down');
-      else if (nextArrowId === 'arr-left') btn.classList.add('shake-left');
-      else if (nextArrowId === 'arr-right') btn.classList.add('shake-right');
-    }
-  }, 5000);
+function updateGuideArrow() {
+  document.querySelectorAll('.nav-arr').forEach(btn => btn.classList.remove('guide'));
+  const nextArrowId = getNextStepArrow();
+  const btn = document.getElementById(nextArrowId);
+  if (btn && !btn.classList.contains('dim')) btn.classList.add('guide');
 }
 
-document.addEventListener('keydown', resetIdleTimer);
-document.addEventListener('mousemove', resetIdleTimer);
-document.addEventListener('click', resetIdleTimer);
-
-resetIdleTimer();
+updateGuideArrow();
 </script>
 </body>
 </html>
