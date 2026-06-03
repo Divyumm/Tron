@@ -253,34 +253,6 @@ body::after {
 }
 
 /* ── Work preview (TV placeholder) ── 4× area (2× each dimension) ── */
-.work-preview {
-  position: absolute; bottom: 44px; right: 52px;
-  pointer-events: none;
-}
-.tv-outer {
-  width: 296px;
-  border: 2px solid rgba(255,255,255,0.14);
-  border-radius: 8px; padding: 8px;
-  background: rgba(0,0,0,0.55);
-}
-.tv-screen {
-  width: 100%; height: 176px;
-  background: #020208;
-  border-radius: 4px;
-  display: flex; align-items: center; justify-content: center;
-  position: relative; overflow: hidden;
-}
-.tv-screen::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.04) 2px, rgba(255,255,255,0.04) 4px);
-}
-.tv-play { font-size: 42px; color: rgba(255,255,255,0.38); z-index: 1; }
-.tv-label {
-  font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
-  color: rgba(255,255,255,0.16); text-align: center;
-  margin-top: 8px; font-weight: 700;
-}
 
 /* ── Footer ── */
 #footer {
@@ -592,22 +564,10 @@ body::after {
     </div>
     <div id="desc-full">
       <div id="desc-full-body"></div>
-      <div class="work-preview">
-        <div class="tv-outer">
-          <div class="tv-screen"><span class="tv-play">▶</span></div>
-          <div class="tv-label">Upload work image</div>
-        </div>
-      </div>
     </div>
     <div id="child-view">
       <div id="child-body"></div>
       <div id="child-next"></div>
-      <div class="work-preview">
-        <div class="tv-outer">
-          <div class="tv-screen"><span class="tv-play">▶</span></div>
-          <div class="tv-label">Upload work image</div>
-        </div>
-      </div>
     </div>
     <div id="minimap-card">
       <canvas id="minimap-canvas" width="220" height="220"></canvas>
@@ -887,38 +847,6 @@ descFullEl.addEventListener('scroll', updateNavArrows);
 childViewEl.addEventListener('scroll', updateNavArrows);
 
 
-function updateTvView() {
-  // Get current item/child
-  const item = CAT[catIdx].items[subIdx];
-  const child = (depth === 2 && item.children) ? item.children[childIdx] : null;
-  const source = child || (depth >= 2 ? item : null);
-  const links = (source && source.links) ? source.links : (item.links || []);
-
-  // Render into the active work-preview container
-  const container = hasChildren() ? childViewEl.querySelector('.work-preview') : descFullEl.querySelector('.work-preview');
-  if (!container) return;
-
-  if (links.length === 0) {
-    container.innerHTML = `<div class="tv-outer"><div class="tv-screen"><span class="tv-play">▶</span></div><div class="tv-label">Work preview</div></div>`;
-    return;
-  }
-
-  container.innerHTML = links.map(link => {
-    const domain = (() => { try { return new URL(link.url).hostname; } catch { return link.url; } })();
-    const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-    return `<div class="tv-outer link-card" style="margin-bottom:10px;cursor:pointer;" onclick="window.open('${link.url}','_blank')">
-      <div class="tv-screen" style="height:80px;background:#050510;justify-content:flex-start;padding:12px;gap:10px;flex-direction:row;align-items:center;">
-        <img src="${favicon}" style="width:24px;height:24px;border-radius:4px;flex-shrink:0;" onerror="this.style.display='none'"/>
-        <div style="overflow:hidden;">
-          <div style="font-size:11px;font-weight:700;color:#e8e8e8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${link.label}</div>
-          <div style="font-size:9px;color:rgba(255,255,255,0.38);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${domain}</div>
-        </div>
-        <div style="margin-left:auto;font-size:14px;color:rgba(255,255,255,0.3);">↗</div>
-      </div>
-    </div>`;
-  }).join('');
-  container.style.pointerEvents = 'auto';
-}
 
 
 // ── Points System (Easter Eggs only) ─────────────────────────────────────────
@@ -1255,7 +1183,6 @@ function renderFullDesc() {
   const item = CAT[catIdx].items[subIdx];
   descFullBody.textContent = item.desc || '';
   descFullEl.scrollTop = 0;
-  updateTvView();
 }
 
 function renderChildView() {
@@ -1288,7 +1215,6 @@ function renderChildView() {
     childNext.textContent = '';
     childNext.style.opacity = '0';
   }
-  updateTvView();
   applyBulletList(); // refresh child tease highlight
 }
 
@@ -2093,11 +2019,15 @@ window.addEventListener('resize', () => {
     t++;
     camTX = tgtTX; camTY = tgtTY;
     ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+    // Left panel — always draw game world tiles
+    drawGameWorld(W*0.30);
+    // Flash overlay on easter egg collect
     if (gameWorldOpacity > 0.01) {
-      ctx.globalAlpha = gameWorldOpacity;
-      drawGameWorld(W*0.30);
+      ctx.globalAlpha = gameWorldOpacity * 0.45;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, W * 0.30, H);
       ctx.globalAlpha = 1;
-      gameWorldOpacity = Math.max(0, gameWorldOpacity - 0.008);
+      gameWorldOpacity = Math.max(0, gameWorldOpacity - 0.012);
     }
     drawFilm();
     if (celebrationMode) {
